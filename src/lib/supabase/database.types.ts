@@ -39,6 +39,57 @@ export type ContinentCode =
   | "oceania";
 export type TripCoverKind = "gradient" | "upload" | "remote";
 export type TripCoverVariant = "violet" | "ocean" | "sunset" | "forest";
+export type ItineraryDayStatus = "plan" | "confirmed" | "completed";
+export type ItineraryItemType = "activity" | "transport" | "note";
+export type PlaceCategory = "accommodation" | "sight" | "activity" | "food" | "transport" | "shopping" | "nature" | "charging" | "custom";
+
+export type ItineraryDayRow = {
+  city: string | null;
+  created_at: string;
+  created_by: string;
+  day_date: string | null;
+  id: string;
+  is_reserve: boolean;
+  name: string;
+  sort_order: number | null;
+  status: ItineraryDayStatus;
+  trip_id: string;
+  updated_at: string;
+};
+
+export type ItineraryItemRow = {
+  created_at: string;
+  created_by: string;
+  day_id: string;
+  end_time: string | null;
+  id: string;
+  item_type: ItineraryItemType;
+  notes: string | null;
+  place_id: string | null;
+  sort_order: number;
+  start_time: string | null;
+  title: string;
+  updated_at: string;
+};
+
+export type TripPlaceRow = {
+  address: string | null;
+  category: PlaceCategory;
+  category_overridden: boolean;
+  city: string | null;
+  country_code: string | null;
+  created_at: string;
+  created_by: string;
+  id: string;
+  latitude: number | null;
+  longitude: number | null;
+  name: string;
+  provider: string;
+  provider_category: string | null;
+  provider_place_id: string | null;
+  trip_id: string;
+  updated_at: string;
+};
 
 export type TripRow = {
   archived_at: string | null;
@@ -107,6 +158,66 @@ export type TripTravelerRow = {
 export type Database = {
   public: {
     Tables: {
+      itinerary_days: {
+        Row: ItineraryDayRow;
+        Insert: {
+          city?: string | null;
+          created_at?: string;
+          created_by: string;
+          day_date?: string | null;
+          id?: string;
+          is_reserve?: boolean;
+          name: string;
+          sort_order?: number | null;
+          status?: ItineraryDayStatus;
+          trip_id: string;
+          updated_at?: string;
+        };
+        Update: Partial<ItineraryDayRow>;
+        Relationships: [];
+      };
+      itinerary_items: {
+        Row: ItineraryItemRow;
+        Insert: {
+          created_at?: string;
+          created_by: string;
+          day_id: string;
+          end_time?: string | null;
+          id?: string;
+          item_type: ItineraryItemType;
+          notes?: string | null;
+          place_id?: string | null;
+          sort_order?: number;
+          start_time?: string | null;
+          title: string;
+          updated_at?: string;
+        };
+        Update: Partial<ItineraryItemRow>;
+        Relationships: [];
+      };
+      trip_places: {
+        Row: TripPlaceRow;
+        Insert: {
+          address?: string | null;
+          category: PlaceCategory;
+          category_overridden?: boolean;
+          city?: string | null;
+          country_code?: string | null;
+          created_at?: string;
+          created_by: string;
+          id?: string;
+          latitude?: number | null;
+          longitude?: number | null;
+          name: string;
+          provider?: string;
+          provider_category?: string | null;
+          provider_place_id?: string | null;
+          trip_id: string;
+          updated_at?: string;
+        };
+        Update: Partial<TripPlaceRow>;
+        Relationships: [];
+      };
       profiles: {
         Row: ProfileRow;
         Insert: {
@@ -200,6 +311,22 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      create_itinerary_day: {
+        Args: { assigned_date: string | null; day_city: string | null; day_name: string; day_status: ItineraryDayStatus; reserve_day: boolean; target_trip_id: string };
+        Returns: string;
+      };
+      create_itinerary_item: {
+        Args: { item_end_time: string | null; item_notes: string | null; item_start_time: string | null; item_title: string; linked_place_id: string | null; new_item_type: ItineraryItemType; target_day_id: string };
+        Returns: string;
+      };
+      create_manual_trip_place: {
+        Args: { place_address: string | null; place_category: PlaceCategory; place_city: string | null; place_country_code: string | null; place_latitude: number | null; place_longitude: number | null; place_name: string; target_trip_id: string };
+        Returns: string;
+      };
+      create_mapbox_trip_place: {
+        Args: { place_address: string | null; place_category: PlaceCategory; place_city: string | null; place_country_code: string | null; place_latitude: number; place_longitude: number; place_name: string; place_provider_category: string; source_provider_place_id: string; target_trip_id: string };
+        Returns: string;
+      };
       archive_trip: {
         Args: { target_trip_id: string };
         Returns: TripArchiveResult;
@@ -260,6 +387,26 @@ export type Database = {
         };
         Returns: TripDestinationMoveResult;
       };
+      move_undated_itinerary_day: {
+        Args: { direction: number; target_day_id: string };
+        Returns: "moved" | "boundary" | "dated";
+      };
+      move_itinerary_item: {
+        Args: { direction: number; target_item_id: string };
+        Returns: "moved" | "boundary";
+      };
+      remove_itinerary_item: {
+        Args: { target_item_id: string };
+        Returns: "removed";
+      };
+      remove_trip_place: {
+        Args: { target_place_id: string };
+        Returns: "removed" | "in_use";
+      };
+      remove_itinerary_day: {
+        Args: { target_day_id: string };
+        Returns: "removed";
+      };
       remove_trip_destination: {
         Args: { target_destination_id: string };
         Returns: TripDestinationRemovalResult;
@@ -294,6 +441,18 @@ export type Database = {
         };
         Returns: "updated";
       };
+      update_itinerary_day: {
+        Args: { assigned_date: string | null; day_city: string | null; day_name: string; day_status: ItineraryDayStatus; reserve_day: boolean; target_day_id: string };
+        Returns: "updated";
+      };
+      update_itinerary_item: {
+        Args: { item_end_time: string | null; item_notes: string | null; item_start_time: string | null; item_title: string; linked_place_id: string | null; new_item_type: ItineraryItemType; target_item_id: string };
+        Returns: "updated";
+      };
+      update_manual_trip_place: {
+        Args: { place_address: string | null; place_category: PlaceCategory; place_city: string | null; place_country_code: string | null; place_latitude: number | null; place_longitude: number | null; place_name: string; target_place_id: string };
+        Returns: "updated";
+      };
       update_trip_settings: {
         Args: {
           target_trip_id: string;
@@ -318,6 +477,9 @@ export type Database = {
       };
     };
     Enums: {
+      itinerary_day_status: ItineraryDayStatus;
+      itinerary_item_type: ItineraryItemType;
+      place_category: PlaceCategory;
       continent_code: ContinentCode;
       trip_cover_kind: TripCoverKind;
       trip_member_role: TripMemberRole;

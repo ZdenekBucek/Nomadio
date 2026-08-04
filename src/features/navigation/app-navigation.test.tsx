@@ -53,10 +53,36 @@ describe("AppNavigation", () => {
     );
     expect(screen.getByText("Ubytování").closest("[aria-disabled='true']"))
       .toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Itinerář" })).toHaveAttribute(
+      "href",
+      "/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/itinerary",
+    );
+    expect(screen.getByRole("link", { name: "Mapa" })).toHaveAttribute(
+      "href",
+      "/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/map",
+    );
     expect(screen.getByRole("link", { name: "Nastavení cesty" })).toHaveAttribute(
       "href",
       "/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/settings",
     );
+  });
+
+  it("marks itinerary active on desktop and mobile", () => {
+    pathnameState.value = "/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/itinerary";
+    const { unmount } = render(<AppNavigation />);
+    expect(screen.getByRole("link", { name: "Itinerář" })).toHaveAttribute("aria-current", "page");
+    unmount();
+    render(<AppNavigation mobile />);
+    expect(screen.getByRole("link", { name: "Itinerář" })).toHaveAttribute("aria-current", "page");
+  });
+
+  it("marks the trip map active on desktop and mobile", () => {
+    pathnameState.value = "/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/map";
+    const { unmount } = render(<AppNavigation />);
+    expect(screen.getByRole("link", { name: "Mapa" })).toHaveAttribute("aria-current", "page");
+    unmount();
+    render(<AppNavigation mobile />);
+    expect(screen.getByRole("link", { name: "Mapa" })).toHaveAttribute("aria-current", "page");
   });
 
   it("marks settings active and links mobile More to it", () => {

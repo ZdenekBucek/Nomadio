@@ -1,0 +1,12 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+const { getUserMock, redirectMock, revalidatePathMock, rpcMock } = vi.hoisted(() => ({ getUserMock:vi.fn(), redirectMock:vi.fn((path:string)=>{throw new Error(`REDIRECT:${path}`)}), revalidatePathMock:vi.fn(), rpcMock:vi.fn() }));
+vi.mock("next/cache",()=>({revalidatePath:revalidatePathMock})); vi.mock("next/navigation",()=>({redirect:redirectMock})); vi.mock("@/lib/supabase/server",()=>({createClient:vi.fn(async()=>({auth:{getUser:getUserMock},rpc:rpcMock}))}));
+import { createItineraryItem, moveItineraryItem, removeItineraryItem, updateItineraryItem } from "./item-actions";
+const tripId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", dayId="bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", itemId="cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+function form(){const value=new FormData(); value.set("tripId",tripId);value.set("dayId",dayId);value.set("itemId",itemId);value.set("title","Chrám");value.set("type","activity");value.set("startTime","09:00");return value;}
+describe("itinerary item actions",()=>{beforeEach(()=>{getUserMock.mockReset();rpcMock.mockReset();redirectMock.mockClear();revalidatePathMock.mockReset();getUserMock.mockResolvedValue({data:{user:{id:"user"}}});});
+it("creates an item",async()=>{rpcMock.mockResolvedValue({data:itemId,error:null});await expect(createItineraryItem(form())).rejects.toThrow("item=created");expect(rpcMock).toHaveBeenCalledWith("create_itinerary_item",expect.objectContaining({target_day_id:dayId,new_item_type:"activity"}));});
+it("updates an item",async()=>{rpcMock.mockResolvedValue({data:"updated",error:null});await expect(updateItineraryItem(form())).rejects.toThrow("item=updated");expect(revalidatePathMock).toHaveBeenCalledWith(`/app/trips/${tripId}/itinerary/${dayId}`);});
+it("moves an item",async()=>{const value=form();value.set("direction","down");rpcMock.mockResolvedValue({data:"moved",error:null});await expect(moveItineraryItem(value)).rejects.toThrow("item=moved");expect(rpcMock).toHaveBeenCalledWith("move_itinerary_item",{target_item_id:itemId,direction:1});});
+it("removes an item",async()=>{rpcMock.mockResolvedValue({data:"removed",error:null});await expect(removeItineraryItem(form())).rejects.toThrow("item=removed");});
+it("redirects unauthenticated users",async()=>{getUserMock.mockResolvedValue({data:{user:null}});await expect(createItineraryItem(form())).rejects.toThrow(`/login?next=/app/trips/${tripId}/itinerary/${dayId}`);expect(rpcMock).not.toHaveBeenCalled();});});

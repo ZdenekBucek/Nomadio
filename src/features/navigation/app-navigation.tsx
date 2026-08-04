@@ -36,8 +36,8 @@ const mobileItems = navigationItems.filter(({ label }) =>
 
 const tripNavigationItems = [
   { icon: LayoutDashboard, label: "Přehled", section: "overview" },
-  { icon: CalendarDays, label: "Itinerář" },
-  { icon: Map, label: "Mapa" },
+  { icon: CalendarDays, label: "Itinerář", section: "itinerary" },
+  { icon: Map, label: "Mapa", section: "map" },
   { icon: BedDouble, label: "Ubytování" },
   { icon: BusFront, label: "Doprava" },
   { icon: WalletCards, label: "Rozpočet" },
@@ -54,6 +54,14 @@ const mobileTripNavigationItems = [
   tripNavigationItems[5],
   { icon: MoreHorizontal, label: "Více", section: "settings" },
 ] as const;
+
+function tripHref(section: string | undefined, overviewHref: string) {
+  if (section === "overview") return overviewHref;
+  if (section === "itinerary") return `${overviewHref}/itinerary`;
+  if (section === "map") return `${overviewHref}/map`;
+  if (section === "settings") return `${overviewHref}/settings`;
+  return undefined;
+}
 
 type AppNavigationProps = {
   mobile?: boolean;
@@ -172,13 +180,7 @@ function TripNavigation({
       )}
 
       {items.map(({ icon: Icon, label, ...item }) => {
-        const href = "section" in item
-          ? item.section === "overview"
-            ? overviewHref
-            : item.section === "settings"
-              ? `${overviewHref}/settings`
-              : undefined
-          : undefined;
+        const href = tripHref("section" in item ? item.section : undefined, overviewHref);
         const isActive = href === pathname;
         const sharedClassName = cn(
           "group relative flex items-center text-sm font-medium transition-colors",

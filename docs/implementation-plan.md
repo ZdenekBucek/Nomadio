@@ -48,7 +48,7 @@ implementaci.
   běžící aplikaci: privátní route přesměruje na přihlášení, zachová návratovou
   adresu a odstraní neplatnou auth cookie. Stejný kontrakt kryje automatický test.
 
-### 2. Soukromý trip a „Moje cesty“ — probíhá
+### 2. Soukromý trip a „Moje cesty“ — hotovo
 
 - Lokálně dokončeno: schéma `trips`, `trip_members`, automatické vlastnické
   členství a RLS pro owner/editor/viewer včetně negativních pgTAP scénářů.
@@ -66,7 +66,8 @@ implementaci.
   destinací včetně hlavní destinace, pořadí a databázových invariantů.
 - Dokončeno: owner-only archivace, obnovení předchozího stavu a bezpečné
   odstranění po přesném potvrzení názvu; archivovaný obsah je pouze pro čtení.
-- Zbývá: plné přehledové moduly a bezpečná duplikace cesty.
+- Duplikace cesty byla vědomě vyřazena z MVP. Plné přehledové moduly vzniknou
+  až nad skutečnými daty dalších částí aplikace.
 
 ### 3. Sdílení — hotovo
 
@@ -83,18 +84,45 @@ implementaci.
 - Dokončeno: databázové funkce a RLS testy chrání profilová data členů, jediného
   vlastníka i okamžitou ztrátu přístupu po odebrání.
 
-### 4. Destinace a místa
+### 4. Destinace a místa — probíhá
 
-- Mapbox adapter pro vyhledání a normalizaci míst.
-- Uložení provider ID, adresy, souřadnic a dvojice provider/interní kategorie.
+- Dokončeno: interní model míst připravený na provider ID, adresu, souřadnice a
+  dvojici provider/interní kategorie.
+- Dokončeno: ruční vlastní místa se správou kategorií Nomadia a rolově
+  omezeným přístupem.
+- Dokončeno: nabíjecí místa jako samostatná kategorie v databázi, ručních
+  formulářích, Mapbox normalizaci a mapových vrstvách; seznam kategorií a názvy
+  sdílejí jeden aplikační kontrakt připravený na další rozšíření.
+- Dokončeno: chráněné Mapbox Geocoding v6 vyhledávání adres a geografických
+  míst, kontext zemí cesty, providerová normalizace a uložení permanentních
+  výsledků do interního modelu.
+- Dokončeno: samostatná mapa celé cesty, číslované piny uložených míst,
+  automatické přiblížení na všechny body a přístupný seznam míst včetně
+  zřetelného přehledu záznamů bez souřadnic.
+- Dokončeno: mapa konkrétního dne používá pouze místa propojená s timeline,
+  zachovává jejich pořadí, zvýrazňuje vybraný bod a zobrazuje přímou spojnici
+  plánovaného pořadí bez předstírání vypočítané navigační trasy.
+- Dokončeno: mapa celé cesty nabízí přístupné vrstvy všech kategorií Nomadia,
+  jejich reálné počty a společné filtrování pinů, seznamu, výběru i mapového
+  výřezu.
+- Zbývá: POI katalog po vyjasnění práv k trvalému uložení Search Box výsledků.
 - Návrh světadílu s možností ručního přepsání.
-- Seznam míst jako první krok; interaktivní mapa až v navazujícím řezu.
+- Seznam míst, mapa celé cesty, její kategoriální vrstvy i mapa konkrétního dne
+  jsou hotové.
 
-### 5. Itinerář
+### 5. Itinerář — probíhá
 
-- Datované dny a nedatované plány.
-- Přesun nedatovaného plánu ke konkrétnímu dni.
-- Propojení položky s uloženým místem a základní časové řazení.
+- Dokončeno: datované dny a celé nedatované plány se stavem, oblastí a
+  rezervním příznakem.
+- Dokončeno: přiřazení plánu ke konkrétnímu datu i vrácení mezi plány bez data.
+- Dokončeno: ruční pořadí nedatovaných plánů, role owner/editor/viewer a režim
+  archivované cesty pouze pro čtení.
+- Dokončeno: detail dne a základní timeline aktivit, přesunů a poznámek s
+  volitelným časem, poznámkou a atomickým pořadím.
+- Dokončeno: volitelné propojení bodu timeline s interním místem stejné cesty.
+- Dokončeno: responzivní mapa dne s číslováním podle timeline, výřezem všech
+  míst, výběrem bodu a odkazem zpět na odpovídající položku programu.
+- Zbývá: přesun bodu mezi dny a rozšířené kontextové údaje.
 
 ### 6. Rezervace po typech
 

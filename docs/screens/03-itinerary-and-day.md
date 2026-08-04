@@ -137,3 +137,14 @@ Zvýrazňuje:
 - změna pořadí a přesun mezi dny,
 - uložená nezařazená místa,
 - základní mobilní Travel view.
+
+## Stav implementace
+
+Dokončené řezy pokrývají celé datované i nedatované dny, základní timeline
+aktivit, přesunů a poznámek a volitelné propojení bodu s interním místem.
+Body mají volitelný čas, textovou poznámku a ruční pořadí. Detail dne obsahuje
+responzivní Mapbox mapu: piny odpovídají pořadí propojených bodů timeline,
+vybraný bod odkazuje zpět na program a přímá spojnice znázorňuje pouze plánované
+pořadí, nikoliv vypočítanou trasu. Body bez místa nebo bez souřadnic jsou
+zřetelně uvedené. Zatím nejsou implementované kontextové údaje rezervací,
+drag-and-drop, přesun bodu mezi dny, navigační trasa ani Travel mode.

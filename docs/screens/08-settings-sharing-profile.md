@@ -18,7 +18,7 @@ Model má počítat s cestou přes více zemí a případně více světadílů.
 ### Archivace a odstranění
 
 - archivovat,
-- duplikovat,
+- duplikovat (mimo MVP; funkce byla vědomě odložena),
 - převést vlastnictví,
 - odstranit.
 
