@@ -5,6 +5,11 @@ ověřitelnou uživatelskou hodnotu včetně databázové migrace, RLS politik,
 rozhraní, chybových stavů a testů. Další celek nezačíná skrytým rozšiřováním
 předchozího.
 
+Konkrétní obsah obrazovek se neodvozuje jen z tohoto pořadí. Před každým řezem
+je nutné použít odpovídající specifikaci z
+[`docs/screens/`](./screens/README.md) a aktualizovat přehled rozdílů proti
+implementaci.
+
 ## Technická rozhodnutí
 
 1. **Feature-first modulární monolit.** Jedna Next.js aplikace s doménami v

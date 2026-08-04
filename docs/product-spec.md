@@ -1,5 +1,9 @@
 # Nomadio — produktová specifikace
 
+Detailní obsah, stavy a responzivní chování jednotlivých obrazovek popisuje
+[`docs/screens/README.md`](./screens/README.md). Při implementaci obrazovky je
+tato specifikace povinným doplněním obecného produktového popisu.
+
 ## 1. Vize a rozsah
 
 Nomadio je responzivní cestovatelská aplikace, ve které je každá cesta (trip)
@@ -71,18 +75,17 @@ Závazné tokeny, komponenty, responzivní pravidla a používání značky popi
 [`docs/design-system.md`](./design-system.md). Tento dokument je zdrojem pravdy
 pro všechny nové produktové obrazovky.
 
-## 9. Technologická omezení první fáze
+## 9. Technologický základ
 
 Základ používá Next.js App Router, React, strict TypeScript, Tailwind CSS,
-shadcn/ui, ESLint a Vitest. Supabase je budoucí provider databáze, autentizace a
-storage; Mapbox je budoucí mapový provider. V této fázi se nevytváří Supabase ani
-Vercel projekt, neprovádí se nasazení a nepoužívají se žádné skutečné klíče.
+shadcn/ui, ESLint, Vitest a Supabase. Mapbox je plánovaný mapový provider.
+Skutečné klíče smějí být pouze v ignorovaném lokálním prostředí; service-role
+klíč nesmí být součástí klienta.
 
-## 10. Kritéria přijetí základu
+## 10. Kritéria přijetí každého řezu
 
-- Projekt lze lokálně nainstalovat a spustit bez skutečných přístupových údajů.
+- Produktové chování odpovídá příslušné specifikaci v `docs/screens/`.
 - Strict TypeScript, lint, testy a produkční build procházejí.
-- Existují oddělené hranice doménových modulů a dokumentovaný implementační plán.
-- Existuje základ tmavého design systému a responzivní, nefunkční foundation UI.
-- App Router generuje PWA manifest a produkce registruje minimální service worker
-  bez předčasné strategie cachování aplikačních dat.
+- Databázové změny mají migraci, RLS a pozitivní i negativní testy.
+- Desktopové a mobilní zobrazení je vizuálně ověřené.
+- Dokumentace a přehled implementačních mezer odpovídají skutečnému stavu.
