@@ -67,6 +67,10 @@ silnou typografickou hierarchii a klidné plochy. Glow efekty jsou minimální a
 dashboard nesmí být přeplněný. Rozhraní musí být přístupné, ovladatelné
 klávesnicí a použitelné na dotykových zařízeních.
 
+Závazné tokeny, komponenty, responzivní pravidla a používání značky popisuje
+[`docs/design-system.md`](./design-system.md). Tento dokument je zdrojem pravdy
+pro všechny nové produktové obrazovky.
+
 ## 9. Technologická omezení první fáze
 
 Základ používá Next.js App Router, React, strict TypeScript, Tailwind CSS,

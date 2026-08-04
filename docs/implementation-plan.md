@@ -35,6 +35,8 @@ předchozího.
   callback, serverová session, lokální odhlášení a chráněná `/app` route.
 - Migrace je aplikovaná lokálně i ve vzdáleném projektu Nomadio; opakované
   přihlášení zachovává jediný profil a celý OAuth tok prošel v jednom prohlížeči.
+- Vizuální jazyk Nomadia je zdokumentovaný a převedený do globálních tokenů a
+  základních komponent, které jsou závazné pro nový aplikační shell.
 - Minimální navigační shell pro desktop a mobil zůstává samostatným malým řezem.
 - Chování po expiraci session ověřit integračně proti běžícímu Supabase stacku.
 

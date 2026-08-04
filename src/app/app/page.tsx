@@ -2,7 +2,10 @@ import { LogOut, MapPin, WalletCards } from "lucide-react";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 
+import { BrandMark } from "@/components/brand/brand-mark";
 import { Button } from "@/components/ui/button";
+import { StatusPill } from "@/components/ui/status-pill";
+import { Surface } from "@/components/ui/surface";
 import { signOut } from "@/features/auth/actions";
 import { getProfileViewModel } from "@/features/auth/profile";
 import { createClient } from "@/lib/supabase/server";
@@ -39,14 +42,12 @@ export default async function AppPage() {
     <main className="relative min-h-dvh overflow-x-clip px-4 py-4 sm:px-8 sm:py-8">
       <div className="nomadio-ambient" aria-hidden="true" />
 
-      <div className="relative mx-auto min-h-[calc(100dvh-2rem)] max-w-6xl rounded-[1.5rem] border border-border bg-card/75 p-5 shadow-2xl shadow-black/40 backdrop-blur-2xl sm:min-h-[calc(100dvh-4rem)] sm:rounded-[2rem] sm:p-8 lg:p-10">
+      <Surface
+        depth="panel"
+        className="relative mx-auto min-h-[calc(100dvh-2rem)] max-w-6xl overflow-hidden p-5 sm:min-h-[calc(100dvh-4rem)] sm:rounded-[2rem] sm:p-8 lg:p-10"
+      >
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
-          <div className="flex items-center gap-3" aria-label="Nomadio">
-            <span className="grid size-9 place-items-center rounded-xl bg-primary text-sm font-bold text-primary-foreground">
-              N
-            </span>
-            <span className="font-semibold tracking-[-0.02em]">Nomadio</span>
-          </div>
+          <BrandMark />
 
           <form action={signOut}>
             <Button type="submit" variant="outline" className="rounded-full">
@@ -60,6 +61,9 @@ export default async function AppPage() {
           <p className="text-xs font-medium tracking-[0.22em] text-primary uppercase">
             Váš profil
           </p>
+          <StatusPill tone="success" className="mt-4">
+            Účet je aktivní
+          </StatusPill>
           <div className="mt-5 flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
             <div className="relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-2xl border border-border bg-muted text-xl font-semibold text-primary">
               {viewModel.avatarUrl ? (
@@ -108,7 +112,7 @@ export default async function AppPage() {
             />
           </div>
         </section>
-      </div>
+      </Surface>
     </main>
   );
 }
@@ -121,8 +125,10 @@ type ProfileFactProps = {
 
 function ProfileFact({ icon: Icon, label, value }: ProfileFactProps) {
   return (
-    <article className="min-w-0 rounded-2xl border border-border bg-muted/35 p-5">
-      <Icon className="size-4 text-primary" aria-hidden="true" />
+    <article className="min-w-0 rounded-2xl border border-border bg-card/72 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)] transition-colors hover:border-primary/25 hover:bg-accent/35">
+      <span className="grid size-8 place-items-center rounded-lg border border-primary/20 bg-primary/10 text-[var(--brand-highlight)]">
+        <Icon className="size-4" aria-hidden="true" />
+      </span>
       <p className="mt-4 text-xs text-muted-foreground">{label}</p>
       <p className="mt-1 break-words text-sm font-medium">{value}</p>
     </article>

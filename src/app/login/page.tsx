@@ -1,7 +1,10 @@
 import { ArrowRight, Compass, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
 
+import { BrandMark } from "@/components/brand/brand-mark";
 import { Button } from "@/components/ui/button";
+import { StatusPill } from "@/components/ui/status-pill";
+import { Surface } from "@/components/ui/surface";
 import { signInWithGoogle } from "@/features/auth/actions";
 import { getSafeNextPath } from "@/features/auth/redirects";
 
@@ -25,14 +28,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <main className="relative grid min-h-dvh overflow-x-clip px-4 py-4 sm:px-8 sm:py-8">
       <div className="nomadio-ambient" aria-hidden="true" />
 
-      <section className="relative mx-auto grid w-full max-w-6xl overflow-hidden rounded-[1.5rem] border border-border bg-card/75 shadow-2xl shadow-black/40 backdrop-blur-2xl sm:rounded-[2rem] lg:grid-cols-[1.05fr_0.95fr]">
+      <Surface
+        depth="panel"
+        className="relative mx-auto grid w-full max-w-6xl overflow-hidden sm:rounded-[2rem] lg:grid-cols-[1.05fr_0.95fr]"
+      >
         <div className="flex min-w-0 flex-col p-5 sm:p-8 lg:p-12">
-          <div className="flex items-center gap-3" aria-label="Nomadio">
-            <span className="grid size-10 place-items-center rounded-xl bg-primary text-sm font-bold text-primary-foreground shadow-lg shadow-primary/10">
-              N
-            </span>
-            <span className="font-semibold tracking-[-0.02em]">Nomadio</span>
-          </div>
+          <BrandMark tagline />
 
           <div className="my-auto py-14 sm:py-20">
             <p className="mb-5 text-xs font-medium tracking-[0.22em] text-primary uppercase">
@@ -53,11 +54,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </div>
 
         <div className="flex min-w-0 items-center border-t border-border bg-muted/30 p-5 sm:p-8 lg:border-t-0 lg:border-l lg:p-12">
-          <div className="w-full rounded-2xl border border-border bg-background/55 p-5 shadow-xl shadow-black/10 sm:p-7">
-            <div className="grid size-11 place-items-center rounded-xl border border-border bg-muted text-primary">
+          <Surface depth="card" className="w-full p-5 sm:p-7">
+            <div className="grid size-11 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-[var(--brand-highlight)]">
               <Compass className="size-5" aria-hidden="true" />
             </div>
-            <h2 className="mt-6 text-xl font-semibold tracking-[-0.03em]">
+            <StatusPill tone="brand" className="mt-6">
+              Bezpečný vstup
+            </StatusPill>
+            <h2 className="mt-3 text-xl font-semibold tracking-[-0.03em]">
               Pokračujte do Nomadia
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -93,9 +97,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               />
               <span>Session je uložena v zabezpečených cookies spravovaných serverem.</span>
             </div>
-          </div>
+          </Surface>
         </div>
-      </section>
+      </Surface>
     </main>
   );
 }

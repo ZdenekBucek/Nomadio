@@ -1,7 +1,10 @@
 import { ArrowUpRight, CloudOff, Compass, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
+import { BrandMark } from "@/components/brand/brand-mark";
 import { buttonVariants } from "@/components/ui/button";
+import { StatusPill } from "@/components/ui/status-pill";
+import { Surface } from "@/components/ui/surface";
 import { cn } from "@/lib/utils";
 
 const foundations = [
@@ -27,20 +30,16 @@ export default function Home() {
     <main className="relative min-h-dvh overflow-x-clip px-4 py-4 sm:px-8 sm:py-8 lg:px-12">
       <div className="nomadio-ambient" aria-hidden="true" />
 
-      <div className="relative mx-auto flex min-h-[calc(100dvh-2rem)] max-w-6xl flex-col rounded-[1.5rem] border border-border bg-card/70 p-4 shadow-2xl shadow-black/10 backdrop-blur-2xl sm:min-h-[calc(100dvh-4rem)] sm:rounded-[2rem] sm:p-8 dark:shadow-black/40 lg:p-10">
+      <Surface
+        depth="panel"
+        className="relative mx-auto flex min-h-[calc(100dvh-2rem)] max-w-6xl flex-col overflow-hidden p-4 sm:min-h-[calc(100dvh-4rem)] sm:rounded-[2rem] sm:p-8 lg:p-10"
+      >
         <header className="flex items-center justify-between">
-          <div className="flex items-center gap-3" aria-label="Nomadio">
-            <span className="grid size-9 place-items-center rounded-xl bg-primary text-sm font-bold text-primary-foreground shadow-lg shadow-primary/10">
-              N
-            </span>
-            <span className="text-base font-semibold tracking-[-0.02em]">
-              Nomadio
-            </span>
-          </div>
+          <BrandMark tagline />
 
-          <span className="rounded-full border border-border bg-muted/60 px-3 py-1.5 text-xs text-muted-foreground">
+          <StatusPill tone="brand" className="hidden sm:inline-flex">
             Foundation · 01
-          </span>
+          </StatusPill>
         </header>
 
         <section className="my-auto grid gap-10 py-12 sm:py-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-end lg:gap-20">
@@ -60,7 +59,7 @@ export default function Home() {
               href="/login"
               className={cn(
                 buttonVariants({ size: "lg" }),
-                "mt-8 h-11 w-full max-w-full rounded-full px-4 sm:w-auto sm:px-5",
+                "mt-8 min-h-11 h-auto w-full max-w-full rounded-xl px-5 py-3 sm:w-auto",
               )}
             >
               Přihlásit se
@@ -72,10 +71,10 @@ export default function Home() {
             {foundations.map(({ icon: Icon, title, description }) => (
               <article
                 key={title}
-                className="group rounded-2xl border border-border bg-card/70 p-5 transition-colors hover:bg-accent/50"
+                className="group rounded-2xl border border-border bg-card/72 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)] transition-[border-color,background-color,transform] duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-accent/45"
               >
                 <div className="flex gap-4">
-                  <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-border bg-muted/70 text-primary">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-[var(--brand-highlight)] shadow-[0_10px_24px_-16px_var(--brand-glow)]">
                     <Icon className="size-4" aria-hidden="true" />
                   </span>
                   <div>
@@ -94,7 +93,7 @@ export default function Home() {
           <span>Desktop pro plánování. Mobil na cestu.</span>
           <span>Next.js · Supabase-ready · PWA-ready</span>
         </footer>
-      </div>
+      </Surface>
     </main>
   );
 }
