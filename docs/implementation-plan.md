@@ -64,7 +64,9 @@ implementaci.
   první přehled reálných destinací, cestovatelů a přístupu.
 - Dokončeno: chráněné nastavení základních údajů a rolově omezená správa více
   destinací včetně hlavní destinace, pořadí a databázových invariantů.
-- Zbývá: plné přehledové moduly a akce archivace, duplikace a odstranění.
+- Dokončeno: owner-only archivace, obnovení předchozího stavu a bezpečné
+  odstranění po přesném potvrzení názvu; archivovaný obsah je pouze pro čtení.
+- Zbývá: plné přehledové moduly a bezpečná duplikace cesty.
 
 ### 3. Sdílení — hotovo
 

@@ -48,6 +48,7 @@ type TripsPageProps = {
     created?: string;
     error?: string;
     filter?: string;
+    lifecycle?: string;
   }>;
 };
 
@@ -55,6 +56,13 @@ const errorMessages = {
   create: "Cestu se nepodařilo vytvořit. Zkuste to prosím znovu.",
   dates: "Datum návratu nesmí být před datem odjezdu.",
   invalid: "Zkontrolujte povinné údaje a zadaná data.",
+  lifecycle: "Akci se stavem cesty se nepodařilo provést.",
+} as const;
+
+const lifecycleMessages = {
+  archived: "Cesta byla archivována a její obsah je nyní pouze pro čtení.",
+  deleted: "Cesta byla trvale odstraněna.",
+  restored: "Cesta byla obnovena a lze ji znovu upravovat.",
 } as const;
 
 const filters: { label: string; value: TripFilter }[] = [
@@ -127,6 +135,9 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
   const message = params.error
     ? errorMessages[params.error as keyof typeof errorMessages] ?? errorMessages.create
     : null;
+  const lifecycleMessage = params.lifecycle
+    ? lifecycleMessages[params.lifecycle as keyof typeof lifecycleMessages] ?? null
+    : null;
   const loadError = tripsError ?? destinationsError ?? travelersError ?? membersError;
 
   return (
@@ -149,6 +160,11 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
       {params.created ? (
         <div className="mt-5 rounded-2xl border border-emerald-400/20 bg-emerald-400/8 px-4 py-3 text-sm text-emerald-300">
           Cesta byla vytvořena jako soukromá.
+        </div>
+      ) : null}
+      {lifecycleMessage ? (
+        <div role="status" className="mt-5 rounded-2xl border border-emerald-400/20 bg-emerald-400/8 px-4 py-3 text-sm text-emerald-300">
+          {lifecycleMessage}
         </div>
       ) : null}
       {message || loadError ? (

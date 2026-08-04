@@ -19,6 +19,9 @@ export type TripDestinationRemovalResult =
   | "removed"
   | "last_destination"
   | "primary_destination";
+export type TripArchiveResult = "archived" | "already_archived";
+export type TripRestoreResult = "restored" | "not_archived";
+export type TripDeletionResult = "deleted" | "name_mismatch";
 export type TripStatus =
   | "idea"
   | "planning"
@@ -56,6 +59,7 @@ export type TripRow = {
   name: string;
   start_date: string | null;
   status: TripStatus;
+  status_before_archive: TripStatus | null;
   timezone: string;
   updated_at: string;
 };
@@ -186,6 +190,7 @@ export type Database = {
           name: string;
           start_date?: string | null;
           status?: TripStatus;
+          status_before_archive?: TripStatus | null;
           timezone?: string;
           updated_at?: string;
         };
@@ -195,6 +200,10 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      archive_trip: {
+        Args: { target_trip_id: string };
+        Returns: TripArchiveResult;
+      };
       add_trip_member_by_email: {
         Args: {
           target_email: string;
@@ -233,6 +242,13 @@ export type Database = {
         };
         Returns: string;
       };
+      delete_trip: {
+        Args: {
+          confirmation_name: string;
+          target_trip_id: string;
+        };
+        Returns: TripDeletionResult;
+      };
       list_trip_members: {
         Args: { target_trip_id: string };
         Returns: TripMemberProfileRow[];
@@ -254,6 +270,10 @@ export type Database = {
           target_user_id: string;
         };
         Returns: TripMemberRemovalResult;
+      };
+      restore_trip: {
+        Args: { target_trip_id: string };
+        Returns: TripRestoreResult;
       };
       trip_role: {
         Args: { target_trip_id: string };

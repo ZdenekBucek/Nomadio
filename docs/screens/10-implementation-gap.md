@@ -37,12 +37,14 @@ technický základ omylem považoval za schválenou finální obrazovku.
 - Úpravy nastavení pro owner/editor a režim pouze pro čtení pro viewer.
 - Správa více destinací: přidání, úprava, změna hlavní destinace, pořadí a bezpečné odebrání.
 - Databázové invarianty jediné hlavní destinace, souvislého pořadí a zákazu odstranění poslední destinace.
+- Owner-only archivace, obnovení do předchozího stavu a potvrzené trvalé odstranění cesty.
+- Archivované cesty jsou v samostatném filtru a jejich obsah, členové i cestovatelé jsou pouze pro čtení.
 
 ## Moje cesty — chybějící potvrzený obsah
 
 - cover upload nebo licenčně bezpečný obrazový návrh,
 - progres příprav a důležitá upozornění,
-- archivace, odstranění, duplikace a menu karty,
+- duplikace a rozšířené menu karty,
 - plnohodnotné přehledové moduly, progres příprav a upozornění v detailu cesty.
 
 ## Datový model — známé mezery
@@ -58,7 +60,7 @@ se nesmí ztratit.
 
 ## Doporučené nejbližší pořadí
 
-1. Přidat akce archivace, duplikace a bezpečného odstranění cesty.
+1. Přidat bezpečnou duplikaci cesty bez automatického kopírování členů s přístupem.
 2. Postupně stavět skutečné přehledové moduly a další části cesty.
 
 ## Pravidlo aktualizace

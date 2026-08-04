@@ -55,6 +55,9 @@ export function TripSettingsForm({ canEdit, trip }: { canEdit: boolean; trip: Tr
           {timezoneOptions.map((timezone) => <option key={timezone} value={timezone}>{timezone}</option>)}
         </SelectField>
         <SelectField label="Fáze cesty" name="status" defaultValue={trip.status} disabled={!canEdit} className="sm:col-span-2">
+          {trip.status === "archived" ? <option value="archived">Archivováno</option> : null}
+          {trip.status === "active" ? <option value="active">Probíhá</option> : null}
+          {trip.status === "completed" ? <option value="completed">Dokončeno</option> : null}
           <option value="idea">Nápad</option>
           <option value="planning">Plánuji</option>
           <option value="ready">Připraveno</option>

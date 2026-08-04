@@ -23,6 +23,7 @@ const trip: TripRow = {
   name: "Japonsko",
   start_date: "2027-05-15",
   status: "planning",
+  status_before_archive: null,
   timezone: "Europe/Prague",
   updated_at: "2026-08-04T00:00:00Z",
 };

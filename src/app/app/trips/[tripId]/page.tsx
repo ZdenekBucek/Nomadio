@@ -75,6 +75,7 @@ export default async function TripOverviewPage({
     (member) => member.user_id === detail.currentUserId,
   );
   const isOwner = currentMembership?.role === "owner";
+  const canManageAccess = isOwner && trip.status !== "archived";
   const isShared = members.length > 1;
   const primaryDestination =
     destinations.find((destination) => destination.is_primary) ?? destinations[0];
@@ -298,12 +299,12 @@ export default async function TripOverviewPage({
 
           <TripMembers
             currentUserId={detail.currentUserId}
-            isOwner={isOwner}
+            isOwner={canManageAccess}
             members={members}
             tripId={trip.id}
           />
 
-          {isOwner ? (
+          {canManageAccess ? (
             <form action={shareTrip} className="mt-5 grid gap-3 border-t border-border pt-5">
               <input type="hidden" name="tripId" value={trip.id} />
               <label className="text-xs font-medium text-muted-foreground">
@@ -336,6 +337,11 @@ export default async function TripOverviewPage({
                 E-mail neposíláme. Uživatel musí mít existující účet v Nomadiu.
               </p>
             </form>
+          ) : trip.status === "archived" ? (
+            <p className="mt-5 flex items-start gap-2 border-t border-border pt-5 text-xs leading-5 text-muted-foreground">
+              <LockKeyhole className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+              Archivovaná cesta je pouze pro čtení. Přístupy lze spravovat po obnovení.
+            </p>
           ) : (
             <p className="mt-5 flex items-start gap-2 border-t border-border pt-5 text-xs leading-5 text-muted-foreground">
               <Users className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
