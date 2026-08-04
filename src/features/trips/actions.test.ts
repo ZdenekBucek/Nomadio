@@ -5,7 +5,6 @@ const {
   insertMock,
   redirectMock,
   revalidatePathMock,
-  singleMock,
 } = vi.hoisted(() => ({
   getUserMock: vi.fn(),
   insertMock: vi.fn(),
@@ -13,7 +12,6 @@ const {
     throw new Error(`REDIRECT:${path}`);
   }),
   revalidatePathMock: vi.fn(),
-  singleMock: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({ revalidatePath: revalidatePathMock }));
@@ -46,18 +44,14 @@ describe("createTrip", () => {
     insertMock.mockReset();
     redirectMock.mockClear();
     revalidatePathMock.mockReset();
-    singleMock.mockReset();
 
     getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
-    singleMock.mockResolvedValue({ data: { id: "trip-1" }, error: null });
-    insertMock.mockReturnValue({
-      select: () => ({ single: singleMock }),
-    });
+    insertMock.mockResolvedValue({ error: null });
   });
 
   it("creates a private trip for the authenticated user", async () => {
     await expect(createTrip(validForm())).rejects.toThrow(
-      "REDIRECT:/app/trips?created=trip-1",
+      /REDIRECT:\/app\/trips\?created=/,
     );
 
     expect(insertMock).toHaveBeenCalledWith({
@@ -66,6 +60,7 @@ describe("createTrip", () => {
       created_by: "user-1",
       currency: "JPY",
       end_date: "2027-05-30",
+      id: expect.any(String),
       name: "Japonsko 2027",
       start_date: "2027-05-15",
     });

@@ -21,7 +21,8 @@ export async function createTrip(formData: FormData) {
     redirect("/login?next=/app/trips");
   }
 
-  const { data, error } = await supabase
+  const tripId = crypto.randomUUID();
+  const { error } = await supabase
     .from("trips")
     .insert({
       cities: parsed.data.cities,
@@ -29,16 +30,15 @@ export async function createTrip(formData: FormData) {
       created_by: userData.user.id,
       currency: parsed.data.currency,
       end_date: parsed.data.endDate,
+      id: tripId,
       name: parsed.data.name,
       start_date: parsed.data.startDate,
-    })
-    .select("id")
-    .single();
+    });
 
-  if (error || !data) {
+  if (error) {
     redirect("/app/trips?error=create");
   }
 
   revalidatePath("/app/trips");
-  redirect(`/app/trips?created=${data.id}`);
+  redirect(`/app/trips?created=${tripId}`);
 }
