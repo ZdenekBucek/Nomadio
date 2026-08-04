@@ -8,14 +8,18 @@ vi.mock("next/navigation", () => ({
 import { AppNavigation } from "./app-navigation";
 
 describe("AppNavigation", () => {
-  it("marks the current route and keeps unfinished modules inactive", () => {
+  it("marks the current route and exposes trips while keeping later modules inactive", () => {
     render(<AppNavigation />);
 
     expect(screen.getByRole("link", { name: "Přehled" })).toHaveAttribute(
       "aria-current",
       "page",
     );
-    expect(screen.getByText("Moje cesty").closest("[aria-disabled='true']"))
+    expect(screen.getByRole("link", { name: "Moje cesty" })).toHaveAttribute(
+      "href",
+      "/app/trips",
+    );
+    expect(screen.getByText("Itinerář").closest("[aria-disabled='true']"))
       .toBeInTheDocument();
   });
 

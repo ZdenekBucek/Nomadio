@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 const navigationItems = [
   { href: "/app", icon: LayoutDashboard, label: "Přehled" },
-  { icon: Plane, label: "Moje cesty" },
+  { href: "/app/trips", icon: Plane, label: "Moje cesty" },
   { icon: CalendarDays, label: "Itinerář" },
   { icon: Map, label: "Mapa" },
   { icon: WalletCards, label: "Rozpočet" },
@@ -46,7 +46,7 @@ export function AppNavigation({ mobile = false }: AppNavigationProps) {
     >
       {items.map(({ icon: Icon, label, ...item }) => {
         const href = "href" in item ? item.href : undefined;
-        const isActive = href === pathname;
+        const isActive = href === "/app" ? pathname === href : pathname.startsWith(href ?? "");
         const sharedClassName = cn(
           "group relative flex items-center text-sm font-medium transition-colors",
           mobile
@@ -86,7 +86,7 @@ export function AppNavigation({ mobile = false }: AppNavigationProps) {
             aria-current={isActive ? "page" : undefined}
           >
             <Icon className={mobile ? "size-4" : "size-[1.05rem]"} aria-hidden="true" />
-            <span>{label}</span>
+            <span>{label === "Moje cesty" && mobile ? "Cesty" : label}</span>
             {isActive && !mobile ? (
               <span
                 className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-[var(--brand-highlight)] shadow-[0_0_12px_var(--brand-glow)]"

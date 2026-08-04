@@ -43,10 +43,12 @@ předchozího.
   běžící aplikaci: privátní route přesměruje na přihlášení, zachová návratovou
   adresu a odstraní neplatnou auth cookie. Stejný kontrakt kryje automatický test.
 
-### 2. Soukromý trip a „Moje cesty“
+### 2. Soukromý trip a „Moje cesty“ — probíhá
 
-- Schéma `trips`, `trip_members` a základní RLS.
-- Vytvoření soukromého tripu a společný seznam vlastních i sdílených tripů.
+- Lokálně dokončeno: schéma `trips`, `trip_members`, automatické vlastnické
+  členství a RLS pro owner/editor/viewer včetně negativních pgTAP scénářů.
+- Dokončeno: vytvoření soukromého tripu a společný seznam vlastních i sdílených
+  tripů v responzivní sekci „Moje cesty“.
 - Detail s názvem, termínem, destinacemi, měnou a coverem bez dalších modulů.
 
 ### 3. Sdílení a cestovatelé
