@@ -29,7 +29,7 @@ předchozího.
 - Tmavé design tokeny, základní responzivní foundation UI a PWA manifest.
 - Prázdné hranice domén, environment template a projektová dokumentace.
 
-### 1. Identita a aplikační shell — probíhá
+### 1. Identita a aplikační shell — hotovo
 
 - Dokončeno a integračně ověřeno: verzovaná migrace profilu, RLS, Google OAuth,
   callback, serverová session, lokální odhlášení a chráněná `/app` route.
@@ -39,7 +39,9 @@ předchozího.
   základních komponent, které jsou závazné pro nový aplikační shell.
 - Dokončeno: minimální navigační shell s desktopovým sidebarem, mobilní spodní
   navigací a zřetelně neaktivními odkazy na budoucí moduly.
-- Chování po expiraci session ověřit integračně proti běžícímu Supabase stacku.
+- Chování po expiraci session je ověřené syntetickou expirovanou session proti
+  běžící aplikaci: privátní route přesměruje na přihlášení, zachová návratovou
+  adresu a odstraní neplatnou auth cookie. Stejný kontrakt kryje automatický test.
 
 ### 2. Soukromý trip a „Moje cesty“
 
