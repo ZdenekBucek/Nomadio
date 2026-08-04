@@ -36,6 +36,8 @@ function validForm() {
   formData.set("endDate", "2027-05-30");
   formData.set("status", "planning");
   formData.set("coverVariant", "ocean");
+  formData.append("travelerName", "Anna");
+  formData.append("travelerName", "Petr");
   return formData;
 }
 
@@ -69,6 +71,7 @@ describe("createTrip", () => {
       trip_start_date: "2027-05-15",
       trip_status: "planning",
       trip_timezone: "Europe/Prague",
+      traveler_names: ["Anna", "Petr"],
     });
     expect(revalidatePathMock).toHaveBeenCalledWith("/app/trips");
   });

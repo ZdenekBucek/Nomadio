@@ -20,6 +20,7 @@ export type NewTripInput = {
   startDate: string | null;
   status: Extract<TripStatus, "idea" | "planning">;
   timezone: string;
+  travelerNames: string[];
 };
 
 export type TripInputResult =
@@ -57,6 +58,17 @@ export function parseNewTrip(formData: FormData): TripInputResult {
   const status = formData.get("status")?.toString() ?? "planning";
   const coverVariant = formData.get("coverVariant")?.toString() ?? "violet";
   const timezone = formData.get("timezone")?.toString().trim() ?? "Europe/Prague";
+  const rawTravelerNames = formData
+    .getAll("travelerName")
+    .map((value) => value.toString().trim())
+    .filter(Boolean);
+  const seenTravelerNames = new Set<string>();
+  const travelerNames = rawTravelerNames.filter((travelerName) => {
+    const normalizedName = travelerName.toLocaleLowerCase("cs-CZ");
+    if (seenTravelerNames.has(normalizedName)) return false;
+    seenTravelerNames.add(normalizedName);
+    return true;
+  });
 
   if (
     name.length < 1 ||
@@ -65,6 +77,8 @@ export function parseNewTrip(formData: FormData): TripInputResult {
     !country ||
     timezone.length < 1 ||
     timezone.length > 80 ||
+    travelerNames.length > 10 ||
+    travelerNames.some((travelerName) => travelerName.length > 120) ||
     !/^[A-Z]{3}$/.test(currency) ||
     !isIsoDate(startDate) ||
     !isIsoDate(endDate) ||
@@ -103,6 +117,7 @@ export function parseNewTrip(formData: FormData): TripInputResult {
       startDate,
       status: status as Extract<TripStatus, "idea" | "planning">,
       timezone,
+      travelerNames,
     },
     success: true,
   };

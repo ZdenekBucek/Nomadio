@@ -1,10 +1,16 @@
-import type { TripDestinationRow, TripRow, TripStatus } from "@/lib/supabase/database.types";
+import type {
+  TripDestinationRow,
+  TripRow,
+  TripStatus,
+  TripTravelerRow,
+} from "@/lib/supabase/database.types";
 
 export type TripFilter = "upcoming" | "active" | "completed" | "all" | "archive";
 
 export type TripListItem = {
   destinations: TripDestinationRow[];
   trip: TripRow;
+  travelers: TripTravelerRow[];
 };
 
 export const tripStatusLabels: Record<TripStatus, string> = {

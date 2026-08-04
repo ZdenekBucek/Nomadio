@@ -73,6 +73,19 @@ export type TripMemberRow = {
   user_id: string;
 };
 
+export type TripTravelerRow = {
+  avatar_url: string | null;
+  contact: string | null;
+  created_at: string;
+  created_by: string;
+  display_name: string;
+  id: string;
+  sort_order: number;
+  trip_id: string;
+  updated_at: string;
+  user_id: string | null;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -101,6 +114,23 @@ export type Database = {
           user_id: string;
         };
         Update: Partial<TripMemberRow>;
+        Relationships: [];
+      };
+      trip_travelers: {
+        Row: TripTravelerRow;
+        Insert: {
+          avatar_url?: string | null;
+          contact?: string | null;
+          created_at?: string;
+          created_by: string;
+          display_name: string;
+          id?: string;
+          sort_order?: number;
+          trip_id: string;
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Update: Partial<TripTravelerRow>;
         Relationships: [];
       };
       trip_destinations: {
@@ -166,6 +196,7 @@ export type Database = {
           trip_start_date?: string | null;
           trip_status?: TripStatus;
           trip_timezone?: string;
+          traveler_names?: string[];
         };
         Returns: string;
       };

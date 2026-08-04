@@ -98,10 +98,12 @@ počítat s více zeměmi a případně více světadíly.
 
 - jen já,
 - přidat cestovatele bez účtu,
-- pozvat registrovaného nebo budoucího uživatele e-mailem,
+- přidat existujícího uživatele Nomadia podle přesného e-mailu,
 - zvolit oprávnění.
 
 Nový trip zůstává soukromý, dokud uživatel výslovně nepřidá člena s přístupem.
+Nomadio neposílá e-mailové pozvánky ani nevytváří čekající pozvánky. Pokud účet
+s daným e-mailem neexistuje, nedojde k žádné změně.
 
 ## Mobil
 

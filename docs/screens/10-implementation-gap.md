@@ -19,13 +19,15 @@ technický základ omylem považoval za schválenou finální obrazovku.
 - Filtry Nadcházející/Probíhající/Dokončené/Všechny/Archiv.
 - Odvozený stav, odpočet, délka cesty, hlavní destinace a soukromí na kartě.
 - Bezeztrátová migrace starých polí `countries` a `cities` do destinací.
+- Samostatní cestovatelé bez účtu a automatický cestovatel-vlastník.
+- Přidání cestovatelů ve třetím kroku průvodce.
+- Počet cestovatelů, avatar nebo iniciály a souhrn na kartě cesty.
 
 ## Moje cesty — chybějící potvrzený obsah
 
 - správa více destinací v rozhraní (datový model ji již podporuje),
-- cestovatelé oddělení od členů,
 - cover upload nebo licenčně bezpečný obrazový návrh,
-- avatary cestovatelů a informace o sdílení,
+- informace o sdílení a roli uživatele,
 - progres příprav a důležitá upozornění,
 - archivace, odstranění, duplikace a menu karty,
 - plnohodnotný klikací detail cesty.
@@ -36,8 +38,7 @@ Původní `countries` a `cities` zůstávají dočasně pouze kvůli bezpečné 
 kompatibilitě. Autoritativní struktura `trip_destinations` už obsahuje pořadí,
 country code, světadíl, ruční přepsání i hlavní destinaci. Chybí ještě:
 
-- tabulka cestovatelů,
-- pozvánky a jejich stav,
+- přímé přidání existujícího člena podle přesného e-mailu,
 - následné entity itineráře, míst a modulů.
 
 Změna modelu musí proběhnout verzovanou migrací s RLS a testy; stávající data
@@ -45,11 +46,10 @@ se nesmí ztratit.
 
 ## Doporučené nejbližší pořadí
 
-1. Přidat cestovatele oddělené od členů.
-2. Doplnit pozvánky a informace o sdílení na kartách.
-3. Vytvořit routu a hlavičku detailu cesty.
-4. Přidat správu více destinací a akce archivace/duplikace.
-5. Teprve potom stavět dashboard přehledu a další moduly.
+1. Přidat existujícího uživatele podle přesného e-mailu a zobrazit sdílení.
+2. Vytvořit routu a hlavičku detailu cesty.
+3. Přidat správu více destinací a akce archivace/duplikace.
+4. Teprve potom stavět dashboard přehledu a další moduly.
 
 ## Pravidlo aktualizace
 

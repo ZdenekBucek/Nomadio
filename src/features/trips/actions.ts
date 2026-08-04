@@ -35,6 +35,7 @@ export async function createTrip(formData: FormData) {
     trip_start_date: parsed.data.startDate,
     trip_status: parsed.data.status,
     trip_timezone: parsed.data.timezone,
+    traveler_names: parsed.data.travelerNames,
   });
 
   if (error || !tripId) {

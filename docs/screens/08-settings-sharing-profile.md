@@ -27,7 +27,7 @@ odebrat vlastníka ani převést vlastnictví.
 
 ## Členové s přístupem
 
-Člen je registrovaný nebo pozvaný uživatel s oprávněním k datům cesty.
+Člen je již registrovaný uživatel Nomadia s oprávněním k datům cesty.
 
 Role:
 
@@ -35,11 +35,12 @@ Role:
 - `editor` — běžná práce s obsahem, ne vlastnictví a odstranění,
 - `viewer` — pouze čtení.
 
-U člena se zobrazuje jméno, e-mail, avatar, role a stav pozvánky. Pozvánka může
-čekat na první přihlášení přes stejný Google e-mail.
+Vlastník přidá člena podle přesné shody jeho ověřeného Google e-mailu. Členství
+vznikne okamžitě a cesta se uživateli zobrazí v běžném seznamu **Moje cesty**.
+Pokud účet ještě neexistuje, žádné čekající členství se nevytvoří. Nomadio
+neodesílá e-mailové pozvánky.
 
-Po přijetí se cesta zobrazí v běžném seznamu **Moje cesty**. Neexistuje
-samostatná hlavní sekce „Sdílené se mnou“.
+Neexistuje samostatná hlavní sekce „Sdílené se mnou“.
 
 ## Cestovatelé
 
@@ -88,7 +89,7 @@ databázi.
 
 - editace základních údajů cesty,
 - owner/editor/viewer,
-- pozvánka e-mailem a stav pozvánky,
+- přímé přidání existujícího uživatele podle přesného e-mailu,
 - oddělení členů a cestovatelů,
 - archivace a bezpečné odstranění,
 - profil s jazykem, časovým pásmem a výchozí měnou.

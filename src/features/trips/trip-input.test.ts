@@ -22,6 +22,7 @@ describe("parseNewTrip", () => {
         name: " Japonsko 2027 ",
         startDate: "2027-05-15",
         status: "planning",
+        travelerName: " Anna ",
       }),
     );
 
@@ -40,6 +41,7 @@ describe("parseNewTrip", () => {
         startDate: "2027-05-15",
         status: "planning",
         timezone: "Europe/Prague",
+        travelerNames: ["Anna"],
       },
       success: true,
     });
@@ -70,5 +72,20 @@ describe("parseNewTrip", () => {
         }),
       ),
     ).toEqual({ error: "invalid", success: false });
+  });
+
+  it("normalizes and deduplicates additional travelers", () => {
+    const formData = createForm({
+      countryCode: "CZ",
+      currency: "CZK",
+      name: "Výlet",
+    });
+    formData.append("travelerName", " Petr ");
+    formData.append("travelerName", "petr");
+    formData.append("travelerName", "");
+
+    const result = parseNewTrip(formData);
+
+    expect(result.success && result.data.travelerNames).toEqual(["Petr"]);
   });
 });

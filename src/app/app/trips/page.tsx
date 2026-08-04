@@ -6,13 +6,16 @@ import {
   MapPin,
   Plane,
   Plus,
+  Users,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { StatusPill } from "@/components/ui/status-pill";
 import { Surface } from "@/components/ui/surface";
 import { getAuthenticatedProfile } from "@/features/auth/session";
+import { getSafeGoogleAvatarUrl } from "@/features/auth/profile";
 import { continentLabels, countryFlag, countryOptions } from "@/features/trips/countries";
 import { TripForm } from "@/features/trips/trip-form";
 import {
@@ -28,6 +31,7 @@ import type {
   TripCoverVariant,
   TripDestinationRow,
   TripStatus,
+  TripTravelerRow,
 } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
@@ -80,30 +84,40 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
     .order("created_at", { ascending: false });
 
   let destinations: TripDestinationRow[] = [];
+  let travelers: TripTravelerRow[] = [];
   let destinationsError: { message: string } | null = null;
+  let travelersError: { message: string } | null = null;
 
   if (trips?.length) {
-    const result = await supabase
-      .from("trip_destinations")
-      .select("*")
-      .in(
-        "trip_id",
-        trips.map((trip) => trip.id),
-      )
-      .order("sort_order", { ascending: true });
-    destinations = result.data ?? [];
-    destinationsError = result.error;
+    const tripIds = trips.map((trip) => trip.id);
+    const [destinationResult, travelerResult] = await Promise.all([
+      supabase
+        .from("trip_destinations")
+        .select("*")
+        .in("trip_id", tripIds)
+        .order("sort_order", { ascending: true }),
+      supabase
+        .from("trip_travelers")
+        .select("*")
+        .in("trip_id", tripIds)
+        .order("sort_order", { ascending: true }),
+    ]);
+    destinations = destinationResult.data ?? [];
+    destinationsError = destinationResult.error;
+    travelers = travelerResult.data ?? [];
+    travelersError = travelerResult.error;
   }
 
   const items: TripListItem[] = (trips ?? []).map((trip) => ({
     destinations: destinations.filter((destination) => destination.trip_id === trip.id),
     trip,
+    travelers: travelers.filter((traveler) => traveler.trip_id === trip.id),
   }));
   const visibleItems = items.filter((item) => matchesTripFilter(item, activeFilter));
   const message = params.error
     ? errorMessages[params.error as keyof typeof errorMessages] ?? errorMessages.create
     : null;
-  const loadError = tripsError ?? destinationsError;
+  const loadError = tripsError ?? destinationsError ?? travelersError;
 
   return (
     <div>
@@ -241,6 +255,13 @@ function TripCard({ item }: { item: TripListItem }) {
             </p>
           ) : null}
         </div>
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <TravelerStack travelers={item.travelers} />
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Users className="size-3.5" aria-hidden="true" />
+            {travelerCountLabel(item.travelers.length)}
+          </span>
+        </div>
         <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <LockKeyhole className="size-3.5" aria-hidden="true" />
@@ -253,6 +274,59 @@ function TripCard({ item }: { item: TripListItem }) {
       </div>
     </Surface>
   );
+}
+
+function TravelerStack({ travelers }: { travelers: TripTravelerRow[] }) {
+  const visibleTravelers = travelers.slice(0, 3);
+  const remaining = travelers.length - visibleTravelers.length;
+
+  return (
+    <div className="flex -space-x-2" aria-label="Cestovatelé">
+      {visibleTravelers.map((traveler) => {
+        const avatarUrl = getSafeGoogleAvatarUrl(traveler.avatar_url);
+        return (
+          <span
+            key={traveler.id}
+            title={traveler.display_name}
+            className="relative grid size-7 place-items-center overflow-hidden rounded-full border-2 border-card bg-primary/16 text-[0.58rem] font-semibold text-[var(--brand-highlight)]"
+          >
+            {avatarUrl ? (
+              <Image
+                src={avatarUrl}
+                alt=""
+                fill
+                sizes="28px"
+                className="object-cover"
+              />
+            ) : (
+              travelerInitials(traveler.display_name)
+            )}
+            <span className="sr-only">{traveler.display_name}</span>
+          </span>
+        );
+      })}
+      {remaining > 0 ? (
+        <span className="grid size-7 place-items-center rounded-full border-2 border-card bg-muted text-[0.58rem] font-semibold text-muted-foreground">
+          +{remaining}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function travelerInitials(displayName: string) {
+  return displayName
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toLocaleUpperCase("cs-CZ"))
+    .join("") || "C";
+}
+
+function travelerCountLabel(count: number) {
+  if (count === 1) return "1 cestovatel";
+  if (count >= 2 && count <= 4) return `${count} cestovatelé`;
+  return `${count} cestovatelů`;
 }
 
 function EmptyTrips({ filter, hasTrips }: { filter: TripFilter; hasTrips: boolean }) {

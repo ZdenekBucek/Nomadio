@@ -58,13 +58,16 @@ implementaci.
   backfillem, RLS a pgTAP testy.
 - Dokončeno: tříkrokový průvodce, stavové filtry a karty s coverem, odpočtem,
   termínem, délkou, hlavní destinací, světadílem a soukromím.
+- Dokončeno: samostatní cestovatelé bez účtu, automatické přidání vlastníka,
+  zadání dalších cestovatelů v průvodci a jejich souhrn na kartách.
 - Zbývá: klikací detail, správa více destinací a akce archivace, duplikace a
   odstranění.
 
-### 3. Sdílení a cestovatelé
+### 3. Sdílení
 
-- Pozvánky registrovaných uživatelů a role owner/editor/viewer.
-- Samostatní cestovatelé, kteří nemusí mít účet.
+- Přímé přidání existujícího uživatele podle přesného ověřeného e-mailu jako
+  editor/viewer; vlastník zůstává jediný a nevznikají e-mailové ani čekající
+  pozvánky.
 - Testovací matice oprávnění pro čtení, zápis, sdílení a odebrání přístupu.
 
 ### 4. Destinace a místa

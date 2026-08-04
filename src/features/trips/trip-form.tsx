@@ -1,6 +1,16 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, CalendarDays, LockKeyhole, MapPin, Palette, Plus } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarDays,
+  LockKeyhole,
+  MapPin,
+  Palette,
+  UserPlus,
+  Users,
+  X,
+} from "lucide-react";
 import { useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -28,7 +38,19 @@ type TripFormProps = {
 
 export function TripForm({ countries, defaultCurrency, defaultTimezone }: TripFormProps) {
   const [step, setStep] = useState(1);
+  const [travelerFields, setTravelerFields] = useState<number[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
+  const nextTravelerId = useRef(0);
+
+  function addTraveler() {
+    setTravelerFields((current) =>
+      current.length >= 10 ? current : [...current, nextTravelerId.current++],
+    );
+  }
+
+  function removeTraveler(id: number) {
+    setTravelerFields((current) => current.filter((travelerId) => travelerId !== id));
+  }
 
   function nextStep() {
     const controls = formRef.current?.querySelectorAll<
@@ -50,16 +72,16 @@ export function TripForm({ countries, defaultCurrency, defaultTimezone }: TripFo
             Nová cesta
           </p>
           <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em]">
-            {step === 1 ? "Kam se vydáte?" : step === 2 ? "Dejte cestě charakter" : "Vše je připravené"}
+            {step === 1 ? "Kam se vydáte?" : step === 2 ? "Dejte cestě charakter" : "Kdo cestuje?"}
           </h2>
         </div>
         <span className="grid size-10 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-[var(--brand-highlight)]">
-          {step === 1 ? <MapPin className="size-5" aria-hidden="true" /> : step === 2 ? <Palette className="size-5" aria-hidden="true" /> : <Plus className="size-5" aria-hidden="true" />}
+          {step === 1 ? <MapPin className="size-5" aria-hidden="true" /> : step === 2 ? <Palette className="size-5" aria-hidden="true" /> : <Users className="size-5" aria-hidden="true" />}
         </span>
       </div>
 
       <ol className="mt-5 grid grid-cols-3 gap-2" aria-label="Průběh vytvoření cesty">
-        {["Základ", "Vzhled", "Soukromí"].map((label, index) => {
+        {["Základ", "Vzhled", "Cestovatelé"].map((label, index) => {
           const itemStep = index + 1;
           return (
             <li key={label} className="min-w-0">
@@ -115,14 +137,50 @@ export function TripForm({ countries, defaultCurrency, defaultTimezone }: TripFo
             <div className="flex items-center gap-3">
               <span className="grid size-10 place-items-center rounded-xl bg-primary/12 text-[var(--brand-highlight)]"><LockKeyhole className="size-4" aria-hidden="true" /></span>
               <div>
-                <p className="text-sm font-medium">Jen já</p>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">Cesta vznikne jako soukromá. Cestovatele a členy přidáte později vědomě.</p>
+                <p className="text-sm font-medium">Vy cestujete</p>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">Jako vlastník budete přidán automaticky. Cesta zůstane soukromá.</p>
               </div>
             </div>
           </div>
-          <div className="rounded-xl border border-border bg-muted/25 px-3 py-3 text-xs leading-5 text-muted-foreground">
-            Po vytvoření se cesta zobrazí v jednom společném přehledu s vašimi budoucími sdílenými cestami.
-          </div>
+
+          {travelerFields.length ? (
+            <div className="grid gap-3">
+              {travelerFields.map((id, index) => (
+                <div key={id} className="flex items-end gap-2">
+                  <div className="min-w-0 flex-1">
+                    <Field
+                      label={`Další cestovatel ${index + 1}`}
+                      name="travelerName"
+                      placeholder="Jméno cestovatele"
+                      maxLength={120}
+                      required
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    aria-label={`Odebrat cestovatele ${index + 1}`}
+                    onClick={() => removeTraveler(id)}
+                  >
+                    <X aria-hidden="true" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-border bg-muted/25 px-3 py-3 text-xs leading-5 text-muted-foreground">
+              Další cestovatelé nemusí mít účet ani přístup do Nomadia.
+            </div>
+          )}
+
+          {travelerFields.length < 10 ? (
+            <Button type="button" variant="outline" onClick={addTraveler}>
+              <UserPlus aria-hidden="true" /> Přidat cestovatele
+            </Button>
+          ) : (
+            <p className="text-xs text-muted-foreground">Pro jednu cestu lze nyní přidat nejvýše 10 dalších cestovatelů.</p>
+          )}
         </div>
 
         <div className="mt-6 flex gap-2">
