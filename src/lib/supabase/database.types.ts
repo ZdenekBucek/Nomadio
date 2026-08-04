@@ -12,6 +12,8 @@ export type ProfileRow = {
 
 export type TripMemberRole = "owner" | "editor" | "viewer";
 export type TripShareResult = "added" | "already_member" | "user_not_found";
+export type TripMemberRoleUpdateResult = "updated" | "no_change" | "member_not_found";
+export type TripMemberRemovalResult = "removed" | "member_not_found";
 export type TripStatus =
   | "idea"
   | "planning"
@@ -72,6 +74,12 @@ export type TripMemberRow = {
   role: TripMemberRole;
   trip_id: string;
   user_id: string;
+};
+
+export type TripMemberProfileRow = Omit<TripMemberRow, "trip_id"> & {
+  avatar_url: string | null;
+  display_name: string | null;
+  email: string | null;
 };
 
 export type TripTravelerRow = {
@@ -209,9 +217,28 @@ export type Database = {
         };
         Returns: string;
       };
+      list_trip_members: {
+        Args: { target_trip_id: string };
+        Returns: TripMemberProfileRow[];
+      };
+      remove_trip_member: {
+        Args: {
+          target_trip_id: string;
+          target_user_id: string;
+        };
+        Returns: TripMemberRemovalResult;
+      };
       trip_role: {
         Args: { target_trip_id: string };
         Returns: TripMemberRole | null;
+      };
+      update_trip_member_role: {
+        Args: {
+          target_role: TripMemberRole;
+          target_trip_id: string;
+          target_user_id: string;
+        };
+        Returns: TripMemberRoleUpdateResult;
       };
     };
     Enums: {

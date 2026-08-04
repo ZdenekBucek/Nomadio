@@ -17,6 +17,18 @@ function shareRedirect(status: string, tripId: string) {
     : `/app/trips?${params.toString()}`;
 }
 
+function memberRedirect(status: string, tripId: string) {
+  const params = new URLSearchParams({ member: status });
+  return uuidPattern.test(tripId)
+    ? `/app/trips/${tripId}?${params.toString()}`
+    : `/app/trips?${params.toString()}`;
+}
+
+function revalidateTripMembership(tripId: string) {
+  revalidatePath("/app/trips");
+  revalidatePath(`/app/trips/${tripId}`);
+}
+
 export async function createTrip(formData: FormData) {
   const parsed = parseNewTrip(formData);
 
@@ -88,9 +100,84 @@ export async function shareTrip(formData: FormData) {
   }
 
   if (result === "added") {
-    revalidatePath("/app/trips");
-    revalidatePath(`/app/trips/${tripId}`);
+    revalidateTripMembership(tripId);
   }
 
   redirect(shareRedirect(result.replaceAll("_", "-"), tripId));
+}
+
+export async function updateTripMemberRole(formData: FormData) {
+  const tripId = formData.get("tripId")?.toString().trim() ?? "";
+  const userId = formData.get("userId")?.toString().trim() ?? "";
+  const role = formData.get("role")?.toString() ?? "";
+
+  if (
+    !uuidPattern.test(tripId) ||
+    !uuidPattern.test(userId) ||
+    !["editor", "viewer"].includes(role)
+  ) {
+    redirect(memberRedirect("invalid", tripId));
+  }
+
+  const supabase = await createClient();
+  const { data: userData } = await supabase.auth.getUser();
+
+  if (!userData.user) {
+    redirect(`/login?next=/app/trips/${tripId}`);
+  }
+
+  const { data: result, error } = await supabase.rpc("update_trip_member_role", {
+    target_role: role as "editor" | "viewer",
+    target_trip_id: tripId,
+    target_user_id: userId,
+  });
+
+  if (error || !result) {
+    redirect(memberRedirect("error", tripId));
+  }
+
+  if (result === "updated") {
+    revalidateTripMembership(tripId);
+  }
+
+  const status =
+    result === "updated"
+      ? "role-updated"
+      : result === "no_change"
+        ? "role-unchanged"
+        : "member-not-found";
+  redirect(memberRedirect(status, tripId));
+}
+
+export async function removeTripMember(formData: FormData) {
+  const tripId = formData.get("tripId")?.toString().trim() ?? "";
+  const userId = formData.get("userId")?.toString().trim() ?? "";
+
+  if (!uuidPattern.test(tripId) || !uuidPattern.test(userId)) {
+    redirect(memberRedirect("invalid", tripId));
+  }
+
+  const supabase = await createClient();
+  const { data: userData } = await supabase.auth.getUser();
+
+  if (!userData.user) {
+    redirect(`/login?next=/app/trips/${tripId}`);
+  }
+
+  const { data: result, error } = await supabase.rpc("remove_trip_member", {
+    target_trip_id: tripId,
+    target_user_id: userId,
+  });
+
+  if (error || !result) {
+    redirect(memberRedirect("error", tripId));
+  }
+
+  if (result === "removed") {
+    revalidateTripMembership(tripId);
+  }
+
+  redirect(
+    memberRedirect(result === "removed" ? "removed" : "member-not-found", tripId),
+  );
 }

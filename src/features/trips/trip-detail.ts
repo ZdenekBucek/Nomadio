@@ -5,7 +5,7 @@ import { cache } from "react";
 import { getAuthenticatedProfile } from "@/features/auth/session";
 import type {
   TripDestinationRow,
-  TripMemberRow,
+  TripMemberProfileRow,
   TripRow,
   TripTravelerRow,
 } from "@/lib/supabase/database.types";
@@ -14,7 +14,7 @@ import { createClient } from "@/lib/supabase/server";
 export type TripDetail = {
   currentUserId: string;
   destinations: TripDestinationRow[];
-  members: TripMemberRow[];
+  members: TripMemberProfileRow[];
   travelers: TripTravelerRow[];
   trip: TripRow;
 };
@@ -44,11 +44,7 @@ export const getTripDetail = cache(async (tripId: string): Promise<TripDetail | 
       .select("*")
       .eq("trip_id", tripId)
       .order("sort_order", { ascending: true }),
-    supabase
-      .from("trip_members")
-      .select("*")
-      .eq("trip_id", tripId)
-      .order("created_at", { ascending: true }),
+    supabase.rpc("list_trip_members", { target_trip_id: tripId }),
   ]);
 
   const relatedError =

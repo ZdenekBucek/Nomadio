@@ -65,7 +65,7 @@ implementaci.
 - Zbývá: plné přehledové moduly, správa více destinací a akce archivace,
   duplikace a odstranění.
 
-### 3. Sdílení — probíhá
+### 3. Sdílení — hotovo
 
 - Dokončeno: přímé přidání existujícího uživatele podle přesného ověřeného e-mailu jako
   editor/viewer; vlastník zůstává jediný a nevznikají e-mailové ani čekající
@@ -75,7 +75,10 @@ implementaci.
   jen vlastníkovi.
 - Dokončeno: testovací matice pro přidání, čtení, jediného vlastníka a zákaz
   správy přístupu nevlastníkem.
-- Zbývá: seznam členů s profily, změna role a odebrání přístupu v rozhraní.
+- Dokončeno: členové vidí seznam přístupů s profily; vlastník může měnit role
+  editor/viewer a po potvrzení odebírat nevlastníky.
+- Dokončeno: databázové funkce a RLS testy chrání profilová data členů, jediného
+  vlastníka i okamžitou ztrátu přístupu po odebrání.
 
 ### 4. Destinace a místa
 

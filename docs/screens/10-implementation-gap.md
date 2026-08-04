@@ -30,13 +30,14 @@ technický základ omylem považoval za schválenou finální obrazovku.
 - Hlavička detailu s reálným stavem, termínem, odpočtem, destinací, cestovateli a přístupem.
 - Základní přehled reálných destinací a cestovatelů bez smyšlených rozpočtů nebo progresu.
 - Přesun přímého sdílení z karty do přehledu cesty.
+- Bezpečný seznam členů s profilem, e-mailem, rolí a označením aktuálního uživatele.
+- Změna editor/viewer role a potvrzené odebrání přístupu pouze vlastníkem.
+- Okamžitá ztráta přístupu odebraného člena a neměnnost jediného vlastníka.
 
 ## Moje cesty — chybějící potvrzený obsah
 
 - správa více destinací v rozhraní (datový model ji již podporuje),
 - cover upload nebo licenčně bezpečný obrazový návrh,
-- seznam členů se jmény a avatary,
-- změna role a odebrání přístupu v rozhraní,
 - progres příprav a důležitá upozornění,
 - archivace, odstranění, duplikace a menu karty,
 - plnohodnotné přehledové moduly, progres příprav a upozornění v detailu cesty.
@@ -54,9 +55,8 @@ se nesmí ztratit.
 
 ## Doporučené nejbližší pořadí
 
-1. Doplnit seznam členů, změnu role a odebrání přístupu.
-2. Přidat správu více destinací a akce archivace/duplikace.
-3. Postupně stavět skutečné přehledové moduly a další části cesty.
+1. Přidat správu více destinací a akce archivace/duplikace.
+2. Postupně stavět skutečné přehledové moduly a další části cesty.
 
 ## Pravidlo aktualizace
 

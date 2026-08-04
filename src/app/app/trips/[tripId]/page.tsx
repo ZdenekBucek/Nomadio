@@ -20,6 +20,7 @@ import { getSafeGoogleAvatarUrl } from "@/features/auth/profile";
 import { shareTrip } from "@/features/trips/actions";
 import { continentLabels, countryFlag } from "@/features/trips/countries";
 import { getTripDetail } from "@/features/trips/trip-detail";
+import { TripMembers } from "@/features/trips/trip-members";
 import {
   formatTripDates,
   memberCountLabel,
@@ -40,7 +41,7 @@ import { cn } from "@/lib/utils";
 
 type TripOverviewPageProps = {
   params: Promise<{ tripId: string }>;
-  searchParams: Promise<{ share?: string }>;
+  searchParams: Promise<{ member?: string; share?: string }>;
 };
 
 const shareMessages = {
@@ -49,6 +50,15 @@ const shareMessages = {
   error: "Přístup se nepodařilo přidat. Zkuste to prosím znovu.",
   invalid: "Zkontrolujte e-mail a zvolenou roli.",
   "user-not-found": "Účet s tímto e-mailem zatím v Nomadiu neexistuje.",
+} as const;
+
+const memberMessages = {
+  error: "Změnu přístupu se nepodařilo uložit. Zkuste to prosím znovu.",
+  invalid: "Požadovaná změna přístupu není platná.",
+  "member-not-found": "Tento uživatel už k cestě přístup nemá.",
+  removed: "Přístup uživatele byl odebrán.",
+  "role-unchanged": "Role uživatele už byla nastavená na tuto hodnotu.",
+  "role-updated": "Role uživatele byla změněna.",
 } as const;
 
 export default async function TripOverviewPage({
@@ -75,6 +85,9 @@ export default async function TripOverviewPage({
     : "Destinace bude doplněna";
   const shareMessage = query.share
     ? shareMessages[query.share as keyof typeof shareMessages] ?? shareMessages.error
+    : null;
+  const memberMessage = query.member
+    ? memberMessages[query.member as keyof typeof memberMessages] ?? memberMessages.error
     : null;
 
   return (
@@ -155,6 +168,19 @@ export default async function TripOverviewPage({
           )}
         >
           {shareMessage}
+        </div>
+      ) : null}
+      {memberMessage ? (
+        <div
+          role="status"
+          className={cn(
+            "mt-5 rounded-2xl border px-4 py-3 text-sm",
+            ["removed", "role-updated"].includes(query.member ?? "")
+              ? "border-emerald-400/20 bg-emerald-400/8 text-emerald-300"
+              : "border-amber-400/20 bg-amber-400/8 text-amber-200",
+          )}
+        >
+          {memberMessage}
         </div>
       ) : null}
 
@@ -238,7 +264,7 @@ export default async function TripOverviewPage({
           </Surface>
         </div>
 
-        <Surface depth="panel" className="p-5 sm:p-6">
+        <Surface depth="panel" className="min-w-0 overflow-hidden p-5 sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-xs font-medium tracking-[0.18em] text-primary uppercase">
@@ -269,6 +295,13 @@ export default async function TripOverviewPage({
               <dd className="font-medium">{trip.currency}</dd>
             </div>
           </dl>
+
+          <TripMembers
+            currentUserId={detail.currentUserId}
+            isOwner={isOwner}
+            members={members}
+            tripId={trip.id}
+          />
 
           {isOwner ? (
             <form action={shareTrip} className="mt-5 grid gap-3 border-t border-border pt-5">

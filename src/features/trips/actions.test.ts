@@ -23,7 +23,12 @@ vi.mock("@/lib/supabase/server", () => ({
   })),
 }));
 
-import { createTrip, shareTrip } from "./actions";
+import {
+  createTrip,
+  removeTripMember,
+  shareTrip,
+  updateTripMemberRole,
+} from "./actions";
 
 function validForm() {
   const formData = new FormData();
@@ -149,5 +154,85 @@ describe("shareTrip", () => {
     );
     expect(getUserMock).not.toHaveBeenCalled();
     expect(rpcMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("trip member management", () => {
+  beforeEach(() => {
+    getUserMock.mockReset();
+    rpcMock.mockReset();
+    redirectMock.mockClear();
+    revalidatePathMock.mockReset();
+
+    getUserMock.mockResolvedValue({ data: { user: { id: "owner-1" } } });
+  });
+
+  function memberForm() {
+    const formData = new FormData();
+    formData.set("tripId", "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
+    formData.set("userId", "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+    formData.set("role", "editor");
+    return formData;
+  }
+
+  it("changes a non-owner member role and refreshes trip views", async () => {
+    rpcMock.mockResolvedValue({ data: "updated", error: null });
+
+    await expect(updateTripMemberRole(memberForm())).rejects.toThrow(
+      "REDIRECT:/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa?member=role-updated",
+    );
+
+    expect(rpcMock).toHaveBeenCalledWith("update_trip_member_role", {
+      target_role: "editor",
+      target_trip_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      target_user_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    });
+    expect(revalidatePathMock).toHaveBeenCalledWith("/app/trips");
+    expect(revalidatePathMock).toHaveBeenCalledWith(
+      "/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    );
+  });
+
+  it("does not refresh data when the selected role is unchanged", async () => {
+    rpcMock.mockResolvedValue({ data: "no_change", error: null });
+
+    await expect(updateTripMemberRole(memberForm())).rejects.toThrow(
+      "REDIRECT:/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa?member=role-unchanged",
+    );
+    expect(revalidatePathMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects an owner role before contacting Supabase", async () => {
+    const formData = memberForm();
+    formData.set("role", "owner");
+
+    await expect(updateTripMemberRole(formData)).rejects.toThrow(
+      "REDIRECT:/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa?member=invalid",
+    );
+    expect(getUserMock).not.toHaveBeenCalled();
+    expect(rpcMock).not.toHaveBeenCalled();
+  });
+
+  it("removes a non-owner member and refreshes trip views", async () => {
+    rpcMock.mockResolvedValue({ data: "removed", error: null });
+
+    await expect(removeTripMember(memberForm())).rejects.toThrow(
+      "REDIRECT:/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa?member=removed",
+    );
+
+    expect(rpcMock).toHaveBeenCalledWith("remove_trip_member", {
+      target_trip_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      target_user_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    });
+    expect(revalidatePathMock).toHaveBeenCalledWith("/app/trips");
+  });
+
+  it("reports a member that is no longer present without refreshing", async () => {
+    rpcMock.mockResolvedValue({ data: "member_not_found", error: null });
+
+    await expect(removeTripMember(memberForm())).rejects.toThrow(
+      "REDIRECT:/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa?member=member-not-found",
+    );
+    expect(revalidatePathMock).not.toHaveBeenCalled();
   });
 });
