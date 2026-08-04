@@ -1,96 +1,57 @@
-import { LogOut, MapPin, WalletCards } from "lucide-react";
-import Image from "next/image";
+import { MapPin, WalletCards } from "lucide-react";
 import { redirect } from "next/navigation";
 
-import { BrandMark } from "@/components/brand/brand-mark";
-import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Surface } from "@/components/ui/surface";
-import { signOut } from "@/features/auth/actions";
-import { getProfileViewModel } from "@/features/auth/profile";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedProfile } from "@/features/auth/session";
+import { ProfileAvatar } from "@/features/navigation/app-shell";
 
 export default async function AppPage() {
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
+  const auth = await getAuthenticatedProfile();
 
-  if (!claimsData?.claims?.sub) {
+  if (!auth) {
     redirect("/login?next=/app");
   }
 
-  const { data: userData } = await supabase.auth.getUser();
-
-  if (!userData.user) {
-    redirect("/login?next=/app");
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userData.user.id)
-    .maybeSingle();
-  const viewModel = getProfileViewModel(profile, {
-    avatarUrl:
-      userData.user.user_metadata.avatar_url ??
-      userData.user.user_metadata.picture,
-    displayName:
-      userData.user.user_metadata.full_name ?? userData.user.user_metadata.name,
-    email: userData.user.email,
-  });
+  const { profile } = auth;
 
   return (
-    <main className="relative min-h-dvh overflow-x-clip px-4 py-4 sm:px-8 sm:py-8">
-      <div className="nomadio-ambient" aria-hidden="true" />
-
-      <Surface
-        depth="panel"
-        className="relative mx-auto min-h-[calc(100dvh-2rem)] max-w-6xl overflow-hidden p-5 sm:min-h-[calc(100dvh-4rem)] sm:rounded-[2rem] sm:p-8 lg:p-10"
-      >
-        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
-          <BrandMark />
-
-          <form action={signOut}>
-            <Button type="submit" variant="outline" className="rounded-full">
-              Odhlásit
-              <LogOut data-icon="inline-end" />
-            </Button>
-          </form>
-        </header>
-
-        <section className="py-10 sm:py-14">
+    <div>
+      <header className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
           <p className="text-xs font-medium tracking-[0.22em] text-primary uppercase">
+            Přehled
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">
+            Vítejte zpět, {profile.displayName.split(" ")[0]}
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+            Odtud budete spravovat své cesty, plány a dokumenty.
+          </p>
+        </div>
+        <StatusPill tone="success" className="self-start sm:self-auto">
+          Účet je aktivní
+        </StatusPill>
+      </header>
+
+      <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
+        <Surface depth="panel" className="p-5 sm:p-7">
+          <p className="text-xs font-medium tracking-[0.18em] text-primary uppercase">
             Váš profil
           </p>
-          <StatusPill tone="success" className="mt-4">
-            Účet je aktivní
-          </StatusPill>
           <div className="mt-5 flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
-            <div className="relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-2xl border border-border bg-muted text-xl font-semibold text-primary">
-              {viewModel.avatarUrl ? (
-                <Image
-                  src={viewModel.avatarUrl}
-                  alt={`Profilová fotografie: ${viewModel.displayName}`}
-                  fill
-                  sizes="80px"
-                  className="object-cover"
-                  priority
-                />
-              ) : (
-                viewModel.initials
-              )}
-            </div>
+            <ProfileAvatar profile={profile} size="large" />
             <div className="min-w-0">
-              <h1 className="break-words text-3xl font-semibold tracking-[-0.045em] sm:text-4xl">
-                {viewModel.displayName}
-              </h1>
-              <p className="mt-1 break-all text-sm text-muted-foreground sm:text-base">
-                {viewModel.email}
+              <h2 className="break-words text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">
+                {profile.displayName}
+              </h2>
+              <p className="mt-1 break-all text-sm text-muted-foreground">
+                {profile.email}
               </p>
             </div>
           </div>
-        </section>
 
-        <section aria-labelledby="preferences-title">
+          <section className="mt-8" aria-labelledby="preferences-title">
           <h2 id="preferences-title" className="text-sm font-medium">
             Výchozí nastavení
           </h2>
@@ -98,22 +59,39 @@ export default async function AppPage() {
             <ProfileFact
               icon={WalletCards}
               label="Hlavní měna"
-              value={viewModel.defaultCurrency}
+              value={profile.defaultCurrency}
             />
             <ProfileFact
               icon={MapPin}
               label="Jazyk a oblast"
-              value={viewModel.locale}
+              value={profile.locale}
             />
             <ProfileFact
               icon={MapPin}
               label="Časové pásmo"
-              value={viewModel.timezone}
+              value={profile.timezone}
             />
           </div>
-        </section>
-      </Surface>
-    </main>
+          </section>
+        </Surface>
+
+        <Surface depth="panel" className="flex min-h-56 flex-col p-5 sm:p-7">
+          <StatusPill tone="brand" className="self-start">
+            Další krok
+          </StatusPill>
+          <h2 className="mt-5 text-xl font-semibold tracking-[-0.03em]">
+            Vaše první cesta
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            V dalším řezu přidáme bezpečné vytvoření soukromé cesty a přehled
+            „Moje cesty“.
+          </p>
+          <div className="mt-auto pt-8 text-xs text-muted-foreground">
+            Funkce zatím není aktivní.
+          </div>
+        </Surface>
+      </div>
+    </div>
   );
 }
 
