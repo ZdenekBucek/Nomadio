@@ -63,12 +63,15 @@ implementaci.
 - Zbývá: klikací detail, správa více destinací a akce archivace, duplikace a
   odstranění.
 
-### 3. Sdílení
+### 3. Sdílení — probíhá
 
-- Přímé přidání existujícího uživatele podle přesného ověřeného e-mailu jako
+- Dokončeno: přímé přidání existujícího uživatele podle přesného ověřeného e-mailu jako
   editor/viewer; vlastník zůstává jediný a nevznikají e-mailové ani čekající
   pozvánky.
-- Testovací matice oprávnění pro čtení, zápis, sdílení a odebrání přístupu.
+- Dokončeno: stav soukromí/sdílení, počet členů a role na kartách.
+- Dokončeno: testovací matice pro přidání, čtení, jediného vlastníka a zákaz
+  správy přístupu nevlastníkem.
+- Zbývá: seznam členů s profily, změna role a odebrání přístupu v rozhraní.
 
 ### 4. Destinace a místa
 

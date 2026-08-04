@@ -6,17 +6,21 @@ import {
   MapPin,
   Plane,
   Plus,
+  Share2,
+  ShieldCheck,
   Users,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Surface } from "@/components/ui/surface";
 import { getAuthenticatedProfile } from "@/features/auth/session";
 import { getSafeGoogleAvatarUrl } from "@/features/auth/profile";
 import { continentLabels, countryFlag, countryOptions } from "@/features/trips/countries";
+import { shareTrip } from "@/features/trips/actions";
 import { TripForm } from "@/features/trips/trip-form";
 import {
   getEffectiveTripStatus,
@@ -30,6 +34,8 @@ import {
 import type {
   TripCoverVariant,
   TripDestinationRow,
+  TripMemberRow,
+  TripMemberRole,
   TripStatus,
   TripTravelerRow,
 } from "@/lib/supabase/database.types";
@@ -37,13 +43,26 @@ import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
 type TripsPageProps = {
-  searchParams: Promise<{ created?: string; error?: string; filter?: string }>;
+  searchParams: Promise<{
+    created?: string;
+    error?: string;
+    filter?: string;
+    share?: string;
+  }>;
 };
 
 const errorMessages = {
   create: "Cestu se nepodařilo vytvořit. Zkuste to prosím znovu.",
   dates: "Datum návratu nesmí být před datem odjezdu.",
   invalid: "Zkontrolujte povinné údaje a zadaná data.",
+} as const;
+
+const shareMessages = {
+  added: "Přístup byl přidán. Uživateli se cesta zobrazí v Moje cesty.",
+  "already-member": "Tento uživatel už má k cestě přístup.",
+  error: "Přístup se nepodařilo přidat. Zkuste to prosím znovu.",
+  invalid: "Zkontrolujte e-mail a zvolenou roli.",
+  "user-not-found": "Účet s tímto e-mailem zatím v Nomadiu neexistuje.",
 } as const;
 
 const filters: { label: string; value: TripFilter }[] = [
@@ -84,13 +103,15 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
     .order("created_at", { ascending: false });
 
   let destinations: TripDestinationRow[] = [];
+  let members: TripMemberRow[] = [];
   let travelers: TripTravelerRow[] = [];
   let destinationsError: { message: string } | null = null;
+  let membersError: { message: string } | null = null;
   let travelersError: { message: string } | null = null;
 
   if (trips?.length) {
     const tripIds = trips.map((trip) => trip.id);
-    const [destinationResult, travelerResult] = await Promise.all([
+    const [destinationResult, travelerResult, memberResult] = await Promise.all([
       supabase
         .from("trip_destinations")
         .select("*")
@@ -101,15 +122,23 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
         .select("*")
         .in("trip_id", tripIds)
         .order("sort_order", { ascending: true }),
+      supabase
+        .from("trip_members")
+        .select("*")
+        .in("trip_id", tripIds)
+        .order("created_at", { ascending: true }),
     ]);
     destinations = destinationResult.data ?? [];
     destinationsError = destinationResult.error;
     travelers = travelerResult.data ?? [];
     travelersError = travelerResult.error;
+    members = memberResult.data ?? [];
+    membersError = memberResult.error;
   }
 
   const items: TripListItem[] = (trips ?? []).map((trip) => ({
     destinations: destinations.filter((destination) => destination.trip_id === trip.id),
+    members: members.filter((member) => member.trip_id === trip.id),
     trip,
     travelers: travelers.filter((traveler) => traveler.trip_id === trip.id),
   }));
@@ -117,7 +146,10 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
   const message = params.error
     ? errorMessages[params.error as keyof typeof errorMessages] ?? errorMessages.create
     : null;
-  const loadError = tripsError ?? destinationsError ?? travelersError;
+  const shareMessage = params.share
+    ? shareMessages[params.share as keyof typeof shareMessages] ?? shareMessages.error
+    : null;
+  const loadError = tripsError ?? destinationsError ?? travelersError ?? membersError;
 
   return (
     <div>
@@ -139,6 +171,19 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
       {params.created ? (
         <div className="mt-5 rounded-2xl border border-emerald-400/20 bg-emerald-400/8 px-4 py-3 text-sm text-emerald-300">
           Cesta byla vytvořena jako soukromá.
+        </div>
+      ) : null}
+      {shareMessage ? (
+        <div
+          role="status"
+          className={cn(
+            "mt-5 rounded-2xl border px-4 py-3 text-sm",
+            params.share === "added"
+              ? "border-emerald-400/20 bg-emerald-400/8 text-emerald-300"
+              : "border-amber-400/20 bg-amber-400/8 text-amber-200",
+          )}
+        >
+          {shareMessage}
         </div>
       ) : null}
       {message || loadError ? (
@@ -177,7 +222,12 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
           {visibleItems.length ? (
             <div className="grid gap-4 sm:grid-cols-2">
               {visibleItems.map((item) => (
-                <TripCard key={item.trip.id} item={item} />
+                <TripCard
+                  key={item.trip.id}
+                  activeFilter={activeFilter}
+                  currentUserId={auth.id}
+                  item={item}
+                />
               ))}
             </div>
           ) : (
@@ -195,8 +245,19 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
   );
 }
 
-function TripCard({ item }: { item: TripListItem }) {
+function TripCard({
+  activeFilter,
+  currentUserId,
+  item,
+}: {
+  activeFilter: TripFilter;
+  currentUserId: string;
+  item: TripListItem;
+}) {
   const { trip } = item;
+  const currentMembership = item.members.find((member) => member.user_id === currentUserId);
+  const isOwner = currentMembership?.role === "owner";
+  const isShared = item.members.length > 1;
   const primaryDestination =
     item.destinations.find((destination) => destination.is_primary) ?? item.destinations[0];
   const status = getEffectiveTripStatus(trip);
@@ -264,13 +325,62 @@ function TripCard({ item }: { item: TripListItem }) {
         </div>
         <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5">
-            <LockKeyhole className="size-3.5" aria-hidden="true" />
-            Soukromá · {trip.currency}
+            {isShared ? (
+              <Share2 className="size-3.5" aria-hidden="true" />
+            ) : (
+              <LockKeyhole className="size-3.5" aria-hidden="true" />
+            )}
+            {isShared ? `Sdílená · ${memberCountLabel(item.members.length)}` : "Soukromá"}
+            {currentMembership && !isOwner ? ` · ${memberRoleLabel(currentMembership.role)}` : ""}
           </span>
           <span className="flex items-center gap-1 opacity-45">
-            Detail připravujeme <Plus className="size-3" aria-hidden="true" />
+            {trip.currency} <Plus className="size-3" aria-hidden="true" />
           </span>
         </div>
+        {isOwner ? (
+          <details className="mt-4 rounded-xl border border-border bg-muted/20 px-3 py-2.5">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-medium text-foreground marker:hidden">
+              <span className="flex items-center gap-2">
+                <Share2 className="size-3.5 text-[var(--brand-highlight)]" aria-hidden="true" />
+                Sdílet cestu
+              </span>
+              <span className="text-[0.65rem] font-normal text-muted-foreground">Existující účet</span>
+            </summary>
+            <form action={shareTrip} className="mt-3 grid gap-3 border-t border-border pt-3">
+              <input type="hidden" name="tripId" value={trip.id} />
+              <input type="hidden" name="filter" value={activeFilter} />
+              <label className="text-xs font-medium text-muted-foreground">
+                Přesný e-mail uživatele
+                <input
+                  className="mt-2 h-10 w-full rounded-xl border border-input bg-background/55 px-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/60 focus:border-primary/55 focus:ring-3 focus:ring-primary/15"
+                  type="email"
+                  name="email"
+                  placeholder="uzivatel@example.com"
+                  autoComplete="email"
+                  maxLength={320}
+                  required
+                />
+              </label>
+              <label className="text-xs font-medium text-muted-foreground">
+                Oprávnění
+                <select
+                  className="mt-2 h-10 w-full rounded-xl border border-input bg-background/55 px-3 text-sm text-foreground outline-none transition focus:border-primary/55 focus:ring-3 focus:ring-primary/15"
+                  name="role"
+                  defaultValue="viewer"
+                >
+                  <option value="viewer">Viewer · pouze čtení</option>
+                  <option value="editor">Editor · může upravovat</option>
+                </select>
+              </label>
+              <Button type="submit" size="lg" className="w-full">
+                <ShieldCheck aria-hidden="true" /> Přidat přístup
+              </Button>
+              <p className="text-[0.68rem] leading-5 text-muted-foreground">
+                E-mail neposíláme. Uživatel musí mít existující účet v Nomadiu.
+              </p>
+            </form>
+          </details>
+        ) : null}
       </div>
     </Surface>
   );
@@ -327,6 +437,18 @@ function travelerCountLabel(count: number) {
   if (count === 1) return "1 cestovatel";
   if (count >= 2 && count <= 4) return `${count} cestovatelé`;
   return `${count} cestovatelů`;
+}
+
+function memberCountLabel(count: number) {
+  if (count === 1) return "1 člen";
+  if (count >= 2 && count <= 4) return `${count} členové`;
+  return `${count} členů`;
+}
+
+function memberRoleLabel(role: TripMemberRole) {
+  if (role === "editor") return "Editor";
+  if (role === "viewer") return "Viewer";
+  return "Vlastník";
 }
 
 function EmptyTrips({ filter, hasTrips }: { filter: TripFilter; hasTrips: boolean }) {

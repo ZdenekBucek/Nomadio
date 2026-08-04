@@ -11,6 +11,7 @@ export type ProfileRow = {
 };
 
 export type TripMemberRole = "owner" | "editor" | "viewer";
+export type TripShareResult = "added" | "already_member" | "user_not_found";
 export type TripStatus =
   | "idea"
   | "planning"
@@ -181,6 +182,14 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      add_trip_member_by_email: {
+        Args: {
+          target_email: string;
+          target_role: TripMemberRole;
+          target_trip_id: string;
+        };
+        Returns: TripShareResult;
+      };
       create_private_trip: {
         Args: {
           destination_city?: string | null;

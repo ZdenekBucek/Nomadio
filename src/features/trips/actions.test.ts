@@ -23,7 +23,7 @@ vi.mock("@/lib/supabase/server", () => ({
   })),
 }));
 
-import { createTrip } from "./actions";
+import { createTrip, shareTrip } from "./actions";
 
 function validForm() {
   const formData = new FormData();
@@ -93,5 +93,59 @@ describe("createTrip", () => {
       "REDIRECT:/app/trips?error=dates",
     );
     expect(getUserMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("shareTrip", () => {
+  beforeEach(() => {
+    getUserMock.mockReset();
+    rpcMock.mockReset();
+    redirectMock.mockClear();
+    revalidatePathMock.mockReset();
+
+    getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
+    rpcMock.mockResolvedValue({ data: "added", error: null });
+  });
+
+  function shareForm() {
+    const formData = new FormData();
+    formData.set("tripId", "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
+    formData.set("email", " Editor@Example.com ");
+    formData.set("role", "editor");
+    formData.set("filter", "upcoming");
+    return formData;
+  }
+
+  it("adds an existing account by normalized email", async () => {
+    await expect(shareTrip(shareForm())).rejects.toThrow(
+      "REDIRECT:/app/trips?share=added&filter=upcoming",
+    );
+
+    expect(rpcMock).toHaveBeenCalledWith("add_trip_member_by_email", {
+      target_email: "editor@example.com",
+      target_role: "editor",
+      target_trip_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    });
+    expect(revalidatePathMock).toHaveBeenCalledWith("/app/trips");
+  });
+
+  it("reports an account that does not exist without revalidation", async () => {
+    rpcMock.mockResolvedValue({ data: "user_not_found", error: null });
+
+    await expect(shareTrip(shareForm())).rejects.toThrow(
+      "REDIRECT:/app/trips?share=user-not-found&filter=upcoming",
+    );
+    expect(revalidatePathMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects invalid input before contacting Supabase", async () => {
+    const formData = shareForm();
+    formData.set("email", "not-an-email");
+
+    await expect(shareTrip(formData)).rejects.toThrow(
+      "REDIRECT:/app/trips?share=invalid&filter=upcoming",
+    );
+    expect(getUserMock).not.toHaveBeenCalled();
+    expect(rpcMock).not.toHaveBeenCalled();
   });
 });

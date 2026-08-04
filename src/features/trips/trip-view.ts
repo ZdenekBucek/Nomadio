@@ -1,5 +1,6 @@
 import type {
   TripDestinationRow,
+  TripMemberRow,
   TripRow,
   TripStatus,
   TripTravelerRow,
@@ -9,6 +10,7 @@ export type TripFilter = "upcoming" | "active" | "completed" | "all" | "archive"
 
 export type TripListItem = {
   destinations: TripDestinationRow[];
+  members: TripMemberRow[];
   trip: TripRow;
   travelers: TripTravelerRow[];
 };
