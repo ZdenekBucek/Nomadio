@@ -8,13 +8,13 @@ import { createClient } from "@/lib/supabase/server";
 import { parseNewTrip } from "./trip-input";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-function shareRedirect(status: string, filter: string | null) {
+function shareRedirect(status: string, tripId: string) {
   const params = new URLSearchParams({ share: status });
-  if (["upcoming", "active", "completed", "all", "archive"].includes(filter ?? "")) {
-    params.set("filter", filter!);
-  }
-  return `/app/trips?${params.toString()}`;
+  return uuidPattern.test(tripId)
+    ? `/app/trips/${tripId}?${params.toString()}`
+    : `/app/trips?${params.toString()}`;
 }
 
 export async function createTrip(formData: FormData) {
@@ -60,22 +60,21 @@ export async function shareTrip(formData: FormData) {
   const tripId = formData.get("tripId")?.toString().trim() ?? "";
   const email = formData.get("email")?.toString().trim().toLowerCase() ?? "";
   const role = formData.get("role")?.toString() ?? "viewer";
-  const filter = formData.get("filter")?.toString() ?? null;
 
   if (
-    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tripId) ||
+    !uuidPattern.test(tripId) ||
     email.length > 320 ||
     !emailPattern.test(email) ||
     !["editor", "viewer"].includes(role)
   ) {
-    redirect(shareRedirect("invalid", filter));
+    redirect(shareRedirect("invalid", tripId));
   }
 
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
 
   if (!userData.user) {
-    redirect("/login?next=/app/trips");
+    redirect(`/login?next=/app/trips/${tripId}`);
   }
 
   const { data: result, error } = await supabase.rpc("add_trip_member_by_email", {
@@ -85,12 +84,13 @@ export async function shareTrip(formData: FormData) {
   });
 
   if (error || !result) {
-    redirect(shareRedirect("error", filter));
+    redirect(shareRedirect("error", tripId));
   }
 
   if (result === "added") {
     revalidatePath("/app/trips");
+    revalidatePath(`/app/trips/${tripId}`);
   }
 
-  redirect(shareRedirect(result.replaceAll("_", "-"), filter));
+  redirect(shareRedirect(result.replaceAll("_", "-"), tripId));
 }

@@ -60,8 +60,10 @@ implementaci.
   termínem, délkou, hlavní destinací, světadílem a soukromím.
 - Dokončeno: samostatní cestovatelé bez účtu, automatické přidání vlastníka,
   zadání dalších cestovatelů v průvodci a jejich souhrn na kartách.
-- Zbývá: klikací detail, správa více destinací a akce archivace, duplikace a
-  odstranění.
+- Dokončeno: klikací chráněný detail, kontextová navigace, datová hlavička a
+  první přehled reálných destinací, cestovatelů a přístupu.
+- Zbývá: plné přehledové moduly, správa více destinací a akce archivace,
+  duplikace a odstranění.
 
 ### 3. Sdílení — probíhá
 
@@ -69,6 +71,8 @@ implementaci.
   editor/viewer; vlastník zůstává jediný a nevznikají e-mailové ani čekající
   pozvánky.
 - Dokončeno: stav soukromí/sdílení, počet členů a role na kartách.
+- Dokončeno: formulář přímého sdílení je součástí detailu cesty a je dostupný
+  jen vlastníkovi.
 - Dokončeno: testovací matice pro přidání, čtení, jediného vlastníka a zákaz
   správy přístupu nevlastníkem.
 - Zbývá: seznam členů s profily, změna role a odebrání přístupu v rozhraní.

@@ -1,27 +1,31 @@
 import {
   Archive,
+  ArrowRight,
   CalendarDays,
   Clock3,
   LockKeyhole,
   MapPin,
   Plane,
-  Plus,
   Share2,
-  ShieldCheck,
   Users,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Surface } from "@/components/ui/surface";
 import { getAuthenticatedProfile } from "@/features/auth/session";
-import { getSafeGoogleAvatarUrl } from "@/features/auth/profile";
 import { continentLabels, countryFlag, countryOptions } from "@/features/trips/countries";
-import { shareTrip } from "@/features/trips/actions";
 import { TripForm } from "@/features/trips/trip-form";
+import {
+  formatTripDates,
+  memberCountLabel,
+  memberRoleLabel,
+  travelerCountLabel,
+  tripCoverClasses,
+  tripStatusTone,
+} from "@/features/trips/trip-presentation";
+import { TravelerStack } from "@/features/trips/traveler-stack";
 import {
   getEffectiveTripStatus,
   matchesTripFilter,
@@ -32,11 +36,8 @@ import {
   type TripListItem,
 } from "@/features/trips/trip-view";
 import type {
-  TripCoverVariant,
   TripDestinationRow,
   TripMemberRow,
-  TripMemberRole,
-  TripStatus,
   TripTravelerRow,
 } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
@@ -47,7 +48,6 @@ type TripsPageProps = {
     created?: string;
     error?: string;
     filter?: string;
-    share?: string;
   }>;
 };
 
@@ -57,14 +57,6 @@ const errorMessages = {
   invalid: "Zkontrolujte povinné údaje a zadaná data.",
 } as const;
 
-const shareMessages = {
-  added: "Přístup byl přidán. Uživateli se cesta zobrazí v Moje cesty.",
-  "already-member": "Tento uživatel už má k cestě přístup.",
-  error: "Přístup se nepodařilo přidat. Zkuste to prosím znovu.",
-  invalid: "Zkontrolujte e-mail a zvolenou roli.",
-  "user-not-found": "Účet s tímto e-mailem zatím v Nomadiu neexistuje.",
-} as const;
-
 const filters: { label: string; value: TripFilter }[] = [
   { label: "Nadcházející", value: "upcoming" },
   { label: "Probíhající", value: "active" },
@@ -72,17 +64,6 @@ const filters: { label: string; value: TripFilter }[] = [
   { label: "Všechny", value: "all" },
   { label: "Archiv", value: "archive" },
 ];
-
-const coverClasses: Record<TripCoverVariant, string> = {
-  forest:
-    "bg-[radial-gradient(circle_at_72%_16%,rgba(74,222,128,0.34),transparent_38%),radial-gradient(circle_at_20%_80%,rgba(14,116,144,0.38),transparent_44%),linear-gradient(135deg,#10251e,#080d18)]",
-  ocean:
-    "bg-[radial-gradient(circle_at_76%_18%,rgba(56,189,248,0.4),transparent_40%),radial-gradient(circle_at_18%_76%,rgba(99,102,241,0.4),transparent_44%),linear-gradient(135deg,#0d2138,#080d18)]",
-  sunset:
-    "bg-[radial-gradient(circle_at_78%_18%,rgba(251,146,60,0.46),transparent_38%),radial-gradient(circle_at_22%_80%,rgba(168,85,247,0.36),transparent_42%),linear-gradient(135deg,#23162a,#090d19)]",
-  violet:
-    "bg-[radial-gradient(circle_at_75%_20%,rgba(123,97,255,0.48),transparent_42%),radial-gradient(circle_at_18%_82%,rgba(168,85,247,0.24),transparent_44%),linear-gradient(135deg,#111a2c,#080d18)]",
-};
 
 export default async function TripsPage({ searchParams }: TripsPageProps) {
   const [auth, params, supabase] = await Promise.all([
@@ -146,9 +127,6 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
   const message = params.error
     ? errorMessages[params.error as keyof typeof errorMessages] ?? errorMessages.create
     : null;
-  const shareMessage = params.share
-    ? shareMessages[params.share as keyof typeof shareMessages] ?? shareMessages.error
-    : null;
   const loadError = tripsError ?? destinationsError ?? travelersError ?? membersError;
 
   return (
@@ -171,19 +149,6 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
       {params.created ? (
         <div className="mt-5 rounded-2xl border border-emerald-400/20 bg-emerald-400/8 px-4 py-3 text-sm text-emerald-300">
           Cesta byla vytvořena jako soukromá.
-        </div>
-      ) : null}
-      {shareMessage ? (
-        <div
-          role="status"
-          className={cn(
-            "mt-5 rounded-2xl border px-4 py-3 text-sm",
-            params.share === "added"
-              ? "border-emerald-400/20 bg-emerald-400/8 text-emerald-300"
-              : "border-amber-400/20 bg-amber-400/8 text-amber-200",
-          )}
-        >
-          {shareMessage}
         </div>
       ) : null}
       {message || loadError ? (
@@ -224,7 +189,6 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
               {visibleItems.map((item) => (
                 <TripCard
                   key={item.trip.id}
-                  activeFilter={activeFilter}
                   currentUserId={auth.id}
                   item={item}
                 />
@@ -246,11 +210,9 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
 }
 
 function TripCard({
-  activeFilter,
   currentUserId,
   item,
 }: {
-  activeFilter: TripFilter;
   currentUserId: string;
   item: TripListItem;
 }) {
@@ -265,20 +227,25 @@ function TripCard({
     ? [primaryDestination.city, primaryDestination.country_name].filter(Boolean).join(", ")
     : "Destinace bude doplněna";
   const additionalDestinations = Math.max(item.destinations.length - 1, 0);
-  const dates = formatDates(trip.start_date, trip.end_date);
+  const dates = formatTripDates(trip.start_date, trip.end_date);
   const duration = tripDurationLabel(trip);
   const flag = countryFlag(primaryDestination?.country_code ?? null);
-  const coverClass = coverClasses[trip.cover_variant] ?? coverClasses.violet;
+  const coverClass = tripCoverClasses[trip.cover_variant] ?? tripCoverClasses.violet;
 
   return (
     <Surface
       depth="panel"
       className="group overflow-hidden p-0 transition hover:-translate-y-0.5 hover:border-primary/30"
     >
-      <div className={cn("relative h-36 overflow-hidden border-b border-border", coverClass)}>
+      <Link
+        href={`/app/trips/${trip.id}`}
+        className="block rounded-[1.5rem] outline-none focus-visible:ring-3 focus-visible:ring-primary/45"
+        aria-label={`Otevřít cestu ${trip.name}`}
+      >
+        <div className={cn("relative h-36 overflow-hidden border-b border-border", coverClass)}>
         <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_35%,rgba(3,7,18,0.72))]" />
         <div className="absolute inset-x-4 top-4 flex items-start justify-between gap-3">
-          <StatusPill tone={statusTone(status)}>{tripStatusLabels[status]}</StatusPill>
+          <StatusPill tone={tripStatusTone(status)}>{tripStatusLabels[status]}</StatusPill>
           <StatusPill className="border-white/10 bg-black/25 text-white/85 backdrop-blur-md">
             <Clock3 className="size-3" aria-hidden="true" />
             {tripTimingLabel(trip)}
@@ -333,122 +300,14 @@ function TripCard({
             {isShared ? `Sdílená · ${memberCountLabel(item.members.length)}` : "Soukromá"}
             {currentMembership && !isOwner ? ` · ${memberRoleLabel(currentMembership.role)}` : ""}
           </span>
-          <span className="flex items-center gap-1 opacity-45">
-            {trip.currency} <Plus className="size-3" aria-hidden="true" />
+          <span className="flex items-center gap-1 text-[var(--brand-highlight)] transition group-hover:translate-x-0.5">
+            Otevřít cestu <ArrowRight className="size-3.5" aria-hidden="true" />
           </span>
         </div>
-        {isOwner ? (
-          <details className="mt-4 rounded-xl border border-border bg-muted/20 px-3 py-2.5">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-medium text-foreground marker:hidden">
-              <span className="flex items-center gap-2">
-                <Share2 className="size-3.5 text-[var(--brand-highlight)]" aria-hidden="true" />
-                Sdílet cestu
-              </span>
-              <span className="text-[0.65rem] font-normal text-muted-foreground">Existující účet</span>
-            </summary>
-            <form action={shareTrip} className="mt-3 grid gap-3 border-t border-border pt-3">
-              <input type="hidden" name="tripId" value={trip.id} />
-              <input type="hidden" name="filter" value={activeFilter} />
-              <label className="text-xs font-medium text-muted-foreground">
-                Přesný e-mail uživatele
-                <input
-                  className="mt-2 h-10 w-full rounded-xl border border-input bg-background/55 px-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/60 focus:border-primary/55 focus:ring-3 focus:ring-primary/15"
-                  type="email"
-                  name="email"
-                  placeholder="uzivatel@example.com"
-                  autoComplete="email"
-                  maxLength={320}
-                  required
-                />
-              </label>
-              <label className="text-xs font-medium text-muted-foreground">
-                Oprávnění
-                <select
-                  className="mt-2 h-10 w-full rounded-xl border border-input bg-background/55 px-3 text-sm text-foreground outline-none transition focus:border-primary/55 focus:ring-3 focus:ring-primary/15"
-                  name="role"
-                  defaultValue="viewer"
-                >
-                  <option value="viewer">Viewer · pouze čtení</option>
-                  <option value="editor">Editor · může upravovat</option>
-                </select>
-              </label>
-              <Button type="submit" size="lg" className="w-full">
-                <ShieldCheck aria-hidden="true" /> Přidat přístup
-              </Button>
-              <p className="text-[0.68rem] leading-5 text-muted-foreground">
-                E-mail neposíláme. Uživatel musí mít existující účet v Nomadiu.
-              </p>
-            </form>
-          </details>
-        ) : null}
-      </div>
+        </div>
+      </Link>
     </Surface>
   );
-}
-
-function TravelerStack({ travelers }: { travelers: TripTravelerRow[] }) {
-  const visibleTravelers = travelers.slice(0, 3);
-  const remaining = travelers.length - visibleTravelers.length;
-
-  return (
-    <div className="flex -space-x-2" aria-label="Cestovatelé">
-      {visibleTravelers.map((traveler) => {
-        const avatarUrl = getSafeGoogleAvatarUrl(traveler.avatar_url);
-        return (
-          <span
-            key={traveler.id}
-            title={traveler.display_name}
-            className="relative grid size-7 place-items-center overflow-hidden rounded-full border-2 border-card bg-primary/16 text-[0.58rem] font-semibold text-[var(--brand-highlight)]"
-          >
-            {avatarUrl ? (
-              <Image
-                src={avatarUrl}
-                alt=""
-                fill
-                sizes="28px"
-                className="object-cover"
-              />
-            ) : (
-              travelerInitials(traveler.display_name)
-            )}
-            <span className="sr-only">{traveler.display_name}</span>
-          </span>
-        );
-      })}
-      {remaining > 0 ? (
-        <span className="grid size-7 place-items-center rounded-full border-2 border-card bg-muted text-[0.58rem] font-semibold text-muted-foreground">
-          +{remaining}
-        </span>
-      ) : null}
-    </div>
-  );
-}
-
-function travelerInitials(displayName: string) {
-  return displayName
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toLocaleUpperCase("cs-CZ"))
-    .join("") || "C";
-}
-
-function travelerCountLabel(count: number) {
-  if (count === 1) return "1 cestovatel";
-  if (count >= 2 && count <= 4) return `${count} cestovatelé`;
-  return `${count} cestovatelů`;
-}
-
-function memberCountLabel(count: number) {
-  if (count === 1) return "1 člen";
-  if (count >= 2 && count <= 4) return `${count} členové`;
-  return `${count} členů`;
-}
-
-function memberRoleLabel(role: TripMemberRole) {
-  if (role === "editor") return "Editor";
-  if (role === "viewer") return "Viewer";
-  return "Vlastník";
 }
 
 function EmptyTrips({ filter, hasTrips }: { filter: TripFilter; hasTrips: boolean }) {
@@ -475,28 +334,6 @@ function EmptyTrips({ filter, hasTrips }: { filter: TripFilter; hasTrips: boolea
   );
 }
 
-function statusTone(status: TripStatus): "brand" | "neutral" | "success" | "warning" {
-  if (status === "active" || status === "ready") return "success";
-  if (status === "planning") return "brand";
-  if (status === "idea") return "warning";
-  return "neutral";
-}
-
 function isTripFilter(value: string | undefined): value is TripFilter {
   return filters.some((filter) => filter.value === value);
-}
-
-function formatDates(startDate: string | null, endDate: string | null) {
-  if (!startDate && !endDate) return "Termín bude doplněn";
-
-  const formatter = new Intl.DateTimeFormat("cs-CZ", {
-    day: "numeric",
-    month: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-  const format = (date: string) => formatter.format(new Date(`${date}T00:00:00Z`));
-
-  if (startDate && endDate) return `${format(startDate)} – ${format(endDate)}`;
-  return startDate ? `Od ${format(startDate)}` : `Do ${format(endDate!)}`;
 }

@@ -1,6 +1,6 @@
 # Rozdíl mezi specifikací a současnou implementací
 
-Aktualizováno po rozšíření základních údajů a karet „Moje cesty“. Tento dokument brání tomu, aby se
+Aktualizováno po přidání prvního řezu detailu cesty. Tento dokument brání tomu, aby se
 technický základ omylem považoval za schválenou finální obrazovku.
 
 ## Již implementováno
@@ -25,6 +25,11 @@ technický základ omylem považoval za schválenou finální obrazovku.
 - Přímé sdílení s existujícím účtem podle přesného e-mailu jako editor/viewer.
 - Ochrana jediného vlastníka a okamžité zobrazení sdílené cesty členovi.
 - Stav Soukromá/Sdílená, počet členů a role aktuálního uživatele na kartě.
+- Klikací karta a chráněná route detailu cesty s bezpečným stavem „nenalezeno“.
+- Kontextová desktopová a mobilní navigace uvnitř cesty; budoucí moduly jsou zřetelně neaktivní.
+- Hlavička detailu s reálným stavem, termínem, odpočtem, destinací, cestovateli a přístupem.
+- Základní přehled reálných destinací a cestovatelů bez smyšlených rozpočtů nebo progresu.
+- Přesun přímého sdílení z karty do přehledu cesty.
 
 ## Moje cesty — chybějící potvrzený obsah
 
@@ -34,7 +39,7 @@ technický základ omylem považoval za schválenou finální obrazovku.
 - změna role a odebrání přístupu v rozhraní,
 - progres příprav a důležitá upozornění,
 - archivace, odstranění, duplikace a menu karty,
-- plnohodnotný klikací detail cesty.
+- plnohodnotné přehledové moduly, progres příprav a upozornění v detailu cesty.
 
 ## Datový model — známé mezery
 
@@ -49,10 +54,9 @@ se nesmí ztratit.
 
 ## Doporučené nejbližší pořadí
 
-1. Vytvořit routu a hlavičku detailu cesty.
-2. Doplnit seznam členů, změnu role a odebrání přístupu.
-3. Přidat správu více destinací a akce archivace/duplikace.
-4. Teprve potom stavět dashboard přehledu a další moduly.
+1. Doplnit seznam členů, změnu role a odebrání přístupu.
+2. Přidat správu více destinací a akce archivace/duplikace.
+3. Postupně stavět skutečné přehledové moduly a další části cesty.
 
 ## Pravidlo aktualizace
 

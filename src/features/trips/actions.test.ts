@@ -112,13 +112,12 @@ describe("shareTrip", () => {
     formData.set("tripId", "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
     formData.set("email", " Editor@Example.com ");
     formData.set("role", "editor");
-    formData.set("filter", "upcoming");
     return formData;
   }
 
   it("adds an existing account by normalized email", async () => {
     await expect(shareTrip(shareForm())).rejects.toThrow(
-      "REDIRECT:/app/trips?share=added&filter=upcoming",
+      "REDIRECT:/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa?share=added",
     );
 
     expect(rpcMock).toHaveBeenCalledWith("add_trip_member_by_email", {
@@ -127,13 +126,16 @@ describe("shareTrip", () => {
       target_trip_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
     });
     expect(revalidatePathMock).toHaveBeenCalledWith("/app/trips");
+    expect(revalidatePathMock).toHaveBeenCalledWith(
+      "/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    );
   });
 
   it("reports an account that does not exist without revalidation", async () => {
     rpcMock.mockResolvedValue({ data: "user_not_found", error: null });
 
     await expect(shareTrip(shareForm())).rejects.toThrow(
-      "REDIRECT:/app/trips?share=user-not-found&filter=upcoming",
+      "REDIRECT:/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa?share=user-not-found",
     );
     expect(revalidatePathMock).not.toHaveBeenCalled();
   });
@@ -143,7 +145,7 @@ describe("shareTrip", () => {
     formData.set("email", "not-an-email");
 
     await expect(shareTrip(formData)).rejects.toThrow(
-      "REDIRECT:/app/trips?share=invalid&filter=upcoming",
+      "REDIRECT:/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa?share=invalid",
     );
     expect(getUserMock).not.toHaveBeenCalled();
     expect(rpcMock).not.toHaveBeenCalled();
