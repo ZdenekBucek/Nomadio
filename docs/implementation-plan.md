@@ -52,9 +52,14 @@ implementaci.
 
 - Lokálně dokončeno: schéma `trips`, `trip_members`, automatické vlastnické
   členství a RLS pro owner/editor/viewer včetně negativních pgTAP scénářů.
-- Dokončeno: vytvoření soukromého tripu a společný seznam vlastních i sdílených
-  tripů v responzivní sekci „Moje cesty“.
-- Detail s názvem, termínem, destinacemi, měnou a coverem bez dalších modulů.
+- Dokončeno: atomické vytvoření soukromého tripu a společný seznam vlastních i
+  sdílených tripů v responzivní sekci „Moje cesty“.
+- Dokončeno: rozšířené údaje tripu, normalizované destinace s bezpečným
+  backfillem, RLS a pgTAP testy.
+- Dokončeno: tříkrokový průvodce, stavové filtry a karty s coverem, odpočtem,
+  termínem, délkou, hlavní destinací, světadílem a soukromím.
+- Zbývá: klikací detail, správa více destinací a akce archivace, duplikace a
+  odstranění.
 
 ### 3. Sdílení a cestovatelé
 

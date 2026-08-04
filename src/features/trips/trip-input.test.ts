@@ -13,22 +13,33 @@ describe("parseNewTrip", () => {
     const result = parseNewTrip(
       createForm({
         city: " Tokio ",
-        country: " Japonsko ",
+        continentOverride: "",
+        countryCode: "JP",
+        coverVariant: "ocean",
         currency: "jpy",
+        description: " Jarní cesta ",
         endDate: "2027-05-30",
         name: " Japonsko 2027 ",
         startDate: "2027-05-15",
+        status: "planning",
       }),
     );
 
     expect(result).toEqual({
       data: {
-        cities: ["Tokio"],
-        countries: ["Japonsko"],
+        city: "Tokio",
+        continent: "asia",
+        continentOverridden: false,
+        countryCode: "JP",
+        countryName: "Japonsko",
+        coverVariant: "ocean",
         currency: "JPY",
+        description: "Jarní cesta",
         endDate: "2027-05-30",
         name: "Japonsko 2027",
         startDate: "2027-05-15",
+        status: "planning",
+        timezone: "Europe/Prague",
       },
       success: true,
     });
@@ -39,6 +50,7 @@ describe("parseNewTrip", () => {
       parseNewTrip(
         createForm({
           currency: "CZK",
+          countryCode: "CZ",
           endDate: "2027-05-14",
           name: "Cesta",
           startDate: "2027-05-15",
@@ -52,6 +64,7 @@ describe("parseNewTrip", () => {
       parseNewTrip(
         createForm({
           currency: "EURO",
+          countryCode: "XX",
           name: " ",
           startDate: "2027-02-30",
         }),

@@ -21,21 +21,23 @@ export async function createTrip(formData: FormData) {
     redirect("/login?next=/app/trips");
   }
 
-  const tripId = crypto.randomUUID();
-  const { error } = await supabase
-    .from("trips")
-    .insert({
-      cities: parsed.data.cities,
-      countries: parsed.data.countries,
-      created_by: userData.user.id,
-      currency: parsed.data.currency,
-      end_date: parsed.data.endDate,
-      id: tripId,
-      name: parsed.data.name,
-      start_date: parsed.data.startDate,
-    });
+  const { data: tripId, error } = await supabase.rpc("create_private_trip", {
+    destination_city: parsed.data.city,
+    destination_continent: parsed.data.continent,
+    destination_continent_overridden: parsed.data.continentOverridden,
+    destination_country_code: parsed.data.countryCode,
+    destination_country_name: parsed.data.countryName,
+    trip_cover_variant: parsed.data.coverVariant,
+    trip_currency: parsed.data.currency,
+    trip_description: parsed.data.description,
+    trip_end_date: parsed.data.endDate,
+    trip_name: parsed.data.name,
+    trip_start_date: parsed.data.startDate,
+    trip_status: parsed.data.status,
+    trip_timezone: parsed.data.timezone,
+  });
 
-  if (error) {
+  if (error || !tripId) {
     redirect("/app/trips?error=create");
   }
 
