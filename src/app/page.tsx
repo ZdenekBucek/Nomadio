@@ -1,6 +1,8 @@
 import { ArrowUpRight, CloudOff, Compass, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const foundations = [
   {
@@ -54,19 +56,16 @@ export default function Home() {
               plán, místa, rezervace i důležité věci pohromadě.
             </p>
 
-            <Button
-              className="mt-8 h-11 w-full max-w-full rounded-full px-3 sm:w-auto sm:px-5"
-              aria-label="Přihlášení přes Google přijde v další fázi"
-              disabled
+            <Link
+              href="/login"
+              className={cn(
+                buttonVariants({ size: "lg" }),
+                "mt-8 h-11 w-full max-w-full rounded-full px-4 sm:w-auto sm:px-5",
+              )}
             >
-              <span className="sm:hidden" aria-hidden="true">
-                Google přihlášení později
-              </span>
-              <span className="hidden sm:inline" aria-hidden="true">
-                Přihlášení přes Google přijde v další fázi
-              </span>
+              Přihlásit se
               <ArrowUpRight data-icon="inline-end" />
-            </Button>
+            </Link>
           </div>
 
           <div className="grid gap-3">

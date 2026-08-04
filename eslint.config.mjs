@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated local state from Supabase CLI and Docker.
+    "supabase/.temp/**",
+    "supabase/.branches/**",
   ]),
 ]);
 

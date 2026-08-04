@@ -29,12 +29,14 @@ předchozího.
 - Tmavé design tokeny, základní responzivní foundation UI a PWA manifest.
 - Prázdné hranice domén, environment template a projektová dokumentace.
 
-### 1. Identita a aplikační shell
+### 1. Identita a aplikační shell — probíhá
 
-- Založit Supabase až po samostatném schválení.
-- Google OAuth, callback, serverová session, odhlášení a chráněná route group.
-- Minimální navigační shell pro desktop a mobil.
-- Ověřit bezpečné redirecty, cookies a chování po expiraci session.
+- Dokončeno a integračně ověřeno: verzovaná migrace profilu, RLS, Google OAuth,
+  callback, serverová session, lokální odhlášení a chráněná `/app` route.
+- Migrace je aplikovaná lokálně i ve vzdáleném projektu Nomadio; opakované
+  přihlášení zachovává jediný profil a celý OAuth tok prošel v jednom prohlížeči.
+- Minimální navigační shell pro desktop a mobil zůstává samostatným malým řezem.
+- Chování po expiraci session ověřit integračně proti běžícímu Supabase stacku.
 
 ### 2. Soukromý trip a „Moje cesty“
 
