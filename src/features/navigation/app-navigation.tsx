@@ -44,7 +44,7 @@ const tripNavigationItems = [
   { icon: FileText, label: "Dokumenty" },
   { icon: CheckSquare2, label: "Checklist" },
   { icon: StickyNote, label: "Poznámky" },
-  { icon: Settings, label: "Nastavení cesty" },
+  { icon: Settings, label: "Nastavení cesty", section: "settings" },
 ] as const;
 
 const mobileTripNavigationItems = [
@@ -52,7 +52,7 @@ const mobileTripNavigationItems = [
   tripNavigationItems[1],
   tripNavigationItems[2],
   tripNavigationItems[5],
-  { icon: MoreHorizontal, label: "Více" },
+  { icon: MoreHorizontal, label: "Více", section: "settings" },
 ] as const;
 
 type AppNavigationProps = {
@@ -172,7 +172,13 @@ function TripNavigation({
       )}
 
       {items.map(({ icon: Icon, label, ...item }) => {
-        const href = "section" in item && item.section === "overview" ? overviewHref : undefined;
+        const href = "section" in item
+          ? item.section === "overview"
+            ? overviewHref
+            : item.section === "settings"
+              ? `${overviewHref}/settings`
+              : undefined
+          : undefined;
         const isActive = href === pathname;
         const sharedClassName = cn(
           "group relative flex items-center text-sm font-medium transition-colors",

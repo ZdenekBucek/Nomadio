@@ -1,6 +1,6 @@
 # Rozdíl mezi specifikací a současnou implementací
 
-Aktualizováno po přidání prvního řezu detailu cesty. Tento dokument brání tomu, aby se
+Aktualizováno po přidání nastavení cesty a správy destinací. Tento dokument brání tomu, aby se
 technický základ omylem považoval za schválenou finální obrazovku.
 
 ## Již implementováno
@@ -33,10 +33,13 @@ technický základ omylem považoval za schválenou finální obrazovku.
 - Bezpečný seznam členů s profilem, e-mailem, rolí a označením aktuálního uživatele.
 - Změna editor/viewer role a potvrzené odebrání přístupu pouze vlastníkem.
 - Okamžitá ztráta přístupu odebraného člena a neměnnost jediného vlastníka.
+- Chráněná stránka nastavení se základními údaji, termínem, měnou, stavem a barevným coverem.
+- Úpravy nastavení pro owner/editor a režim pouze pro čtení pro viewer.
+- Správa více destinací: přidání, úprava, změna hlavní destinace, pořadí a bezpečné odebrání.
+- Databázové invarianty jediné hlavní destinace, souvislého pořadí a zákazu odstranění poslední destinace.
 
 ## Moje cesty — chybějící potvrzený obsah
 
-- správa více destinací v rozhraní (datový model ji již podporuje),
 - cover upload nebo licenčně bezpečný obrazový návrh,
 - progres příprav a důležitá upozornění,
 - archivace, odstranění, duplikace a menu karty,
@@ -55,7 +58,7 @@ se nesmí ztratit.
 
 ## Doporučené nejbližší pořadí
 
-1. Přidat správu více destinací a akce archivace/duplikace.
+1. Přidat akce archivace, duplikace a bezpečného odstranění cesty.
 2. Postupně stavět skutečné přehledové moduly a další části cesty.
 
 ## Pravidlo aktualizace

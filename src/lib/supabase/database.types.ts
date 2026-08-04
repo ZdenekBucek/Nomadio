@@ -14,6 +14,11 @@ export type TripMemberRole = "owner" | "editor" | "viewer";
 export type TripShareResult = "added" | "already_member" | "user_not_found";
 export type TripMemberRoleUpdateResult = "updated" | "no_change" | "member_not_found";
 export type TripMemberRemovalResult = "removed" | "member_not_found";
+export type TripDestinationMoveResult = "moved" | "boundary";
+export type TripDestinationRemovalResult =
+  | "removed"
+  | "last_destination"
+  | "primary_destination";
 export type TripStatus =
   | "idea"
   | "planning"
@@ -198,6 +203,17 @@ export type Database = {
         };
         Returns: TripShareResult;
       };
+      add_trip_destination: {
+        Args: {
+          destination_city: string | null;
+          destination_continent: ContinentCode;
+          destination_continent_overridden: boolean;
+          destination_country_code: string;
+          destination_country_name: string;
+          target_trip_id: string;
+        };
+        Returns: string;
+      };
       create_private_trip: {
         Args: {
           destination_city?: string | null;
@@ -221,6 +237,17 @@ export type Database = {
         Args: { target_trip_id: string };
         Returns: TripMemberProfileRow[];
       };
+      move_trip_destination: {
+        Args: {
+          direction: number;
+          target_destination_id: string;
+        };
+        Returns: TripDestinationMoveResult;
+      };
+      remove_trip_destination: {
+        Args: { target_destination_id: string };
+        Returns: TripDestinationRemovalResult;
+      };
       remove_trip_member: {
         Args: {
           target_trip_id: string;
@@ -231,6 +258,35 @@ export type Database = {
       trip_role: {
         Args: { target_trip_id: string };
         Returns: TripMemberRole | null;
+      };
+      set_primary_trip_destination: {
+        Args: { target_destination_id: string };
+        Returns: "updated" | "no_change";
+      };
+      update_trip_destination: {
+        Args: {
+          destination_city: string | null;
+          destination_continent: ContinentCode;
+          destination_continent_overridden: boolean;
+          destination_country_code: string;
+          destination_country_name: string;
+          target_destination_id: string;
+        };
+        Returns: "updated";
+      };
+      update_trip_settings: {
+        Args: {
+          target_trip_id: string;
+          trip_cover_variant: string;
+          trip_currency: string;
+          trip_description: string | null;
+          trip_end_date: string | null;
+          trip_name: string;
+          trip_start_date: string | null;
+          trip_status: TripStatus;
+          trip_timezone: string;
+        };
+        Returns: "updated" | "not_found";
       };
       update_trip_member_role: {
         Args: {

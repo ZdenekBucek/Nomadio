@@ -62,8 +62,9 @@ implementaci.
   zadání dalších cestovatelů v průvodci a jejich souhrn na kartách.
 - Dokončeno: klikací chráněný detail, kontextová navigace, datová hlavička a
   první přehled reálných destinací, cestovatelů a přístupu.
-- Zbývá: plné přehledové moduly, správa více destinací a akce archivace,
-  duplikace a odstranění.
+- Dokončeno: chráněné nastavení základních údajů a rolově omezená správa více
+  destinací včetně hlavní destinace, pořadí a databázových invariantů.
+- Zbývá: plné přehledové moduly a akce archivace, duplikace a odstranění.
 
 ### 3. Sdílení — hotovo
 

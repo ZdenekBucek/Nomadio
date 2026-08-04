@@ -53,5 +53,26 @@ describe("AppNavigation", () => {
     );
     expect(screen.getByText("Ubytování").closest("[aria-disabled='true']"))
       .toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Nastavení cesty" })).toHaveAttribute(
+      "href",
+      "/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/settings",
+    );
+  });
+
+  it("marks settings active and links mobile More to it", () => {
+    pathnameState.value = "/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/settings";
+    const { unmount } = render(<AppNavigation />);
+
+    expect(screen.getByRole("link", { name: "Nastavení cesty" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+
+    unmount();
+    render(<AppNavigation mobile />);
+    expect(screen.getByRole("link", { name: "Více" })).toHaveAttribute(
+      "href",
+      "/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/settings",
+    );
   });
 });
