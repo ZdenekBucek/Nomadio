@@ -37,7 +37,8 @@ ke konkrétnímu tripu.
 
 - Itinerář podporuje konkrétní dny s datem i plány bez data.
 - Nedatovaný plán lze později přiřadit ke konkrétnímu dni.
-- Místa se vyhledávají přes katalog mapového providera.
+- Adresy, názvy míst a POI se vyhledávají přes Geoapify; Mapbox zůstává
+  rendererem mapy.
 - U místa se ukládá provider ID, název, adresa, souřadnice, původní kategorie a
   interní kategorie Nomadia. Provider data se nesmí stát doménovým modelem.
 - Ubytování, doprava, aktivity a další rezervace se propojují s itinerářem,
@@ -78,7 +79,8 @@ pro všechny nové produktové obrazovky.
 ## 9. Technologický základ
 
 Základ používá Next.js App Router, React, strict TypeScript, Tailwind CSS,
-shadcn/ui, ESLint, Vitest a Supabase. Mapbox je plánovaný mapový provider.
+shadcn/ui, ESLint, Vitest a Supabase. Mapbox vykresluje mapy a Geoapify
+poskytuje vyhledávání adres, názvů a POI.
 Skutečné klíče smějí být pouze v ignorovaném lokálním prostředí; service-role
 klíč nesmí být součástí klienta.
 

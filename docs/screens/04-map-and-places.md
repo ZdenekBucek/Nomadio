@@ -32,6 +32,7 @@ Minimálně:
 - původní kategorie providera,
 - interní kategorie Nomadia,
 - informace, zda kategorii přepsal uživatel,
+- atribuce zdroje,
 - volitelně telefon, web a providerem dovolená metadata.
 
 Provider data se při uložení mapují do interního modelu. Změna providera nesmí
@@ -53,8 +54,9 @@ Mapový provider může vrátit více technických kategorií. Nomadio navrhne j
 srozumitelnou kategorii, kterou lze ručně změnit.
 
 Seznam kategorií, české názvy a názvy mapových vrstev mají jeden společný
-aplikační zdroj. Validace formulářů, Mapbox normalizace i mapové filtry používají
-stejný kontrakt, aby další kategorie nebylo nutné udržovat na několika místech.
+aplikační zdroj. Validace formulářů, Mapbox a Geoapify normalizace i mapové
+filtry používají stejný kontrakt, aby další kategorie nebylo nutné udržovat na
+několika místech.
 
 ## Mapa dne
 
@@ -102,17 +104,23 @@ itineráře. Volitelné štítky:
 
 ## Provider a licence
 
-Preferovaný provider je Mapbox kvůli stylování, POI a návaznosti na interaktivní
-mapu. Před ukládáním fotografií, otevírací doby, tras nebo offline mapových dat
-je nutné ověřit licenční a cache podmínky konkrétního API. Aplikace nesmí
-předpokládat, že všechna vrácená data lze trvale uložit.
+Mapbox zůstává rendererem interaktivních map celé cesty, dne a náhledu vybraného
+místa. Geoapify poskytuje serverové vyhledávání adres, názvů míst a POI přes
+Address Autocomplete API. `GEOAPIFY_API_KEY` nesmí být veřejná proměnná ani
+součást klientského JavaScriptu.
 
-Pro ukládání adres a geografických míst používá současný řez Geocoding API v6
-s parametrem `permanent=true`. Mapbox účet proto musí mít povolené účtování.
-Search Box API s POI daty povoluje ve standardním režimu pouze dočasné použití;
-jeho výsledky Nomadio nebude ukládat bez odpovídající smlouvy. Viz
-[Geocoding API](https://docs.mapbox.com/api/search/geocoding/) a
-[Search Box API](https://docs.mapbox.com/api/search/search-box/).
+Do `trip_places` se z Geoapify ukládá jen normalizovaný výběr: provider a jeho
+`place_id`, název, formátovaná adresa, město, země, souřadnice, omezený seznam
+původních kategorií, kategorie Nomadia, příznak uživatelského přepsání a
+atribuce. Celá providerová odpověď se neukládá. Unikátní identita brání
+opakovanému uložení stejného externího místa v jedné cestě. Viditelné rozhraní
+zachovává `Powered by Geoapify` a `© OpenStreetMap contributors`; Mapbox
+atribuce mapy se nemění.
+
+Původní Mapbox Geocoding v6 route a uložené `mapbox` záznamy zůstávají kvůli
+zpětné kompatibilitě funkční, ale nový uživatelský našeptávač používá Geoapify.
+Před ukládáním fotografií, otevírací doby, tras nebo offline mapových dat je
+nutné znovu ověřit licenční a cache podmínky příslušného API.
 
 ## MVP
 
@@ -129,11 +137,14 @@ mapové balíky patří později.
 
 ## Stav implementace
 
-Dva dokončené řezy míst obsahují interní provider-neutrální model, kategorie
+Dokončené řezy míst obsahují interní provider-neutrální model, kategorie
 Nomadia, ruční vytvoření vlastního místa, propojení s body timeline a chráněné
-Mapbox Geocoding v6 vyhledávání. Výsledky se omezují zeměmi cesty, normalizují
-se na interní model a ukládají s provider ID, technickou kategorií a
-souřadnicemi. Bez serverového tokenu rozhraní bezpečně nabídne ruční zadání.
+Geoapify vyhledávání adres, názvů a POI. Výsledky se omezují zeměmi cesty,
+normalizují na společný `PlaceSearchResult` a ukládají s provider ID,
+technickými kategoriemi, atribucí a souřadnicemi. Uživatel před uložením vidí
+Mapbox pin a může změnit kategorii. Bez serverového klíče nebo bez výsledku
+rozhraní bezpečně nabídne vlastní místo bez souřadnic. Původní Mapbox hledání i
+záznamy zůstaly kompatibilní.
 Třetí řez přidává samostatnou mapu celé cesty s číslovanými piny, automatickým
 výřezem, výběrem bodu a přístupným seznamem. Záznamy bez souřadnic jsou viditelné
 odděleně. Čtvrtý řez přidává mapu konkrétního dne nad propojenými body timeline,
@@ -143,6 +154,6 @@ kategorií Nomadia s počty skutečných míst. Vypnutí vrstvy současně aktua
 piny, přístupný seznam, vybrané místo a mapový výřez; stav bez aktivní vrstvy je
 výslovný a snadno vratný volbou „Vše“. Bez veřejného mapového tokenu obě
 obrazovky zobrazí připravená data a plnohodnotný seznam místo nefunkční mapy.
-Kategorie nabíjecích míst je součástí interního modelu, ručních formulářů,
-Mapbox normalizace i vrstev obou map.
-POI katalog Search Box a skutečná navigační trasa zatím implementované nejsou.
+Kategorie nabíjecích míst je součástí interního modelu, Geoapify mapování,
+ručních formulářů, Mapbox normalizace i vrstev obou map.
+Hromadná POI vrstva výřezu a skutečná navigační trasa implementované nejsou.

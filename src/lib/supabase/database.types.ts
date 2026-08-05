@@ -74,6 +74,7 @@ export type ItineraryItemRow = {
 
 export type TripPlaceRow = {
   address: string | null;
+  attribution: string | null;
   category: PlaceCategory;
   category_overridden: boolean;
   city: string | null;
@@ -199,6 +200,7 @@ export type Database = {
         Row: TripPlaceRow;
         Insert: {
           address?: string | null;
+          attribution?: string | null;
           category: PlaceCategory;
           category_overridden?: boolean;
           city?: string | null;
@@ -311,6 +313,10 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      add_place_to_itinerary_day: {
+        Args: { item_end_time: string | null; item_notes: string | null; item_start_time: string | null; place_address: string | null; place_attribution: string | null; place_category: PlaceCategory; place_city: string | null; place_country_code: string | null; place_latitude: number | null; place_longitude: number | null; place_name: string; place_provider_category: string | null; source_provider: "geoapify" | "manual" | "mapbox"; source_provider_place_id: string | null; suggested_place_category: PlaceCategory; target_day_id: string; target_trip_id: string };
+        Returns: string;
+      };
       create_itinerary_day: {
         Args: { assigned_date: string | null; day_city: string | null; day_name: string; day_status: ItineraryDayStatus; reserve_day: boolean; target_trip_id: string };
         Returns: string;
@@ -325,6 +331,10 @@ export type Database = {
       };
       create_mapbox_trip_place: {
         Args: { place_address: string | null; place_category: PlaceCategory; place_city: string | null; place_country_code: string | null; place_latitude: number; place_longitude: number; place_name: string; place_provider_category: string; source_provider_place_id: string; target_trip_id: string };
+        Returns: string;
+      };
+      create_external_trip_place: {
+        Args: { place_address: string | null; place_attribution: string; place_category: PlaceCategory; place_city: string | null; place_country_code: string | null; place_latitude: number; place_longitude: number; place_name: string; place_provider_category: string; source_provider: "geoapify" | "mapbox"; source_provider_place_id: string; suggested_place_category: PlaceCategory; target_trip_id: string };
         Returns: string;
       };
       archive_trip: {

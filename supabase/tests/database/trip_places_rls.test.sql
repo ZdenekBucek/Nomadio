@@ -1,11 +1,13 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(44);
+select plan(57);
 
 select ok(not (select prosecdef from pg_proc where oid='public.create_manual_trip_place(uuid,text,text,text,text,double precision,double precision,public.place_category)'::regprocedure), 'place create uses caller permissions');
 select ok(not has_function_privilege('anon','public.create_manual_trip_place(uuid,text,text,text,text,double precision,double precision,public.place_category)','execute'), 'anon cannot create places');
 select ok(not (select prosecdef from pg_proc where oid='public.create_mapbox_trip_place(uuid,text,text,text,text,text,double precision,double precision,text,public.place_category)'::regprocedure), 'Mapbox place create uses caller permissions');
 select ok(not has_function_privilege('anon','public.create_mapbox_trip_place(uuid,text,text,text,text,text,double precision,double precision,text,public.place_category)','execute'), 'anon cannot create Mapbox places');
+select ok(not (select prosecdef from pg_proc where oid='public.create_external_trip_place(uuid,text,text,text,text,text,text,double precision,double precision,text,public.place_category,public.place_category,text)'::regprocedure), 'external place create uses caller permissions');
+select ok(not has_function_privilege('anon','public.create_external_trip_place(uuid,text,text,text,text,text,text,double precision,double precision,text,public.place_category,public.place_category,text)','execute'), 'anon cannot create external places');
 
 insert into auth.users(id,email) values
 ('61616161-6161-4161-8161-616161616161','places-owner@nomadio.test'),
@@ -33,6 +35,14 @@ select is((select provider_category from public.trip_places where provider_place
 select ok(not (select category_overridden from public.trip_places where provider_place_id='dXJuOm1ieGFkcjo1'),'provider category starts as suggested');
 select is(public.create_mapbox_trip_place((select id from public.trips where name='Místa cesta'),'dXJuOm1ieGFkcjo1','Saltstraumen 33','Saltstraumen 33','NO','Bodø',67.2301,14.6171,'address','custom'),(select id from public.trip_places where provider_place_id='dXJuOm1ieGFkcjo1'),'duplicate provider result returns existing place');
 select is((select count(*) from public.trip_places where provider='mapbox'),1::bigint,'duplicate provider result is not inserted twice');
+select isnt(public.create_external_trip_place((select id from public.trips where name='Místa cesta'),'geoapify','geo-place-1','Petřínské sady','Petřínské sady, Praha, Česko','CZ','Praha',50.0832,14.3959,'leisure.park','sight','nature','Powered by Geoapify · © OpenStreetMap contributors'),null::uuid,'owner stores Geoapify place');
+select is((select provider from public.trip_places where provider_place_id='geo-place-1'),'geoapify','Geoapify provider stored');
+select is((select attribution from public.trip_places where provider_place_id='geo-place-1'),'Powered by Geoapify · © OpenStreetMap contributors','Geoapify attribution stored');
+select is((select provider_category from public.trip_places where provider_place_id='geo-place-1'),'leisure.park','Geoapify category stored');
+select ok((select category_overridden from public.trip_places where provider_place_id='geo-place-1'),'manual category override recorded');
+select is(public.create_external_trip_place((select id from public.trips where name='Místa cesta'),'geoapify','geo-place-1','Petřínské sady','Petřínské sady, Praha, Česko','CZ','Praha',50.0832,14.3959,'leisure.park','nature','nature','Powered by Geoapify · © OpenStreetMap contributors'),(select id from public.trip_places where provider_place_id='geo-place-1'),'duplicate Geoapify result returns existing place');
+select is((select count(*) from public.trip_places where provider='geoapify'),1::bigint,'duplicate Geoapify result is not inserted twice');
+select is((select count(*) from public.trip_places where provider='mapbox'),1::bigint,'existing Mapbox place remains intact');
 select throws_ok($$ select public.create_manual_trip_place((select id from public.trips where name='Místa cesta'),'Neplatné',null,null,null,91,14,'custom') $$,'23514',null,'invalid latitude rejected');
 select throws_ok($$ select public.create_manual_trip_place((select id from public.trips where name='Místa cesta'),'Neúplné',null,null,null,67,null,'custom') $$,'23514',null,'incomplete coordinates rejected');
 
@@ -49,9 +59,10 @@ select isnt(public.create_manual_trip_place((select id from public.trips where n
 select is(public.update_manual_trip_place((select id from public.trip_places where name='Místo editora'),'Upravené místo',null,null,'Bodø',null,null,'sight'),'updated','editor updates place');
 
 set local "request.jwt.claim.sub"='63636363-6363-4363-8363-636363636363';
-select is((select count(*) from public.trip_places where trip_id=(select id from public.trips where name='Místa cesta')),4::bigint,'viewer reads places');
+select is((select count(*) from public.trip_places where trip_id=(select id from public.trips where name='Místa cesta')),5::bigint,'viewer reads places');
 select throws_ok($$ select public.create_manual_trip_place((select id from public.trips where name='Místa cesta'),'Zakázáno',null,null,null,null,null,'custom') $$,'42501',null,'viewer cannot create');
 select throws_ok($$ select public.create_mapbox_trip_place((select id from public.trips where name='Místa cesta'),'forbidden','Zakázáno',null,null,null,50,14,'address','custom') $$,'42501',null,'viewer cannot create Mapbox place');
+select throws_ok($$ select public.create_external_trip_place((select id from public.trips where name='Místa cesta'),'geoapify','forbidden-geo','Zakázáno','Zakázáno','CZ','Praha',50,14,'unknown','custom','custom','Powered by Geoapify · © OpenStreetMap contributors') $$,'42501',null,'viewer cannot create Geoapify place');
 select throws_ok($$ select public.remove_trip_place((select id from public.trip_places limit 1)) $$,'42501',null,'viewer cannot remove');
 
 set local "request.jwt.claim.sub"='64646464-6464-4464-8464-646464646464';
@@ -59,9 +70,11 @@ select is((select count(*) from public.trip_places),0::bigint,'unrelated user ca
 
 set local "request.jwt.claim.sub"='61616161-6161-4161-8161-616161616161';
 select throws_ok($$ update public.trip_places set provider='mapbox' where name='Kavárna v přístavu' $$,'42501',null,'provider fields protected');
+select throws_ok($$ update public.trip_places set attribution='changed' where provider_place_id='geo-place-1' $$,'42501',null,'attribution is protected');
 select is(public.archive_trip((select id from public.trips where name='Místa cesta')),'archived','trip archived');
 select throws_ok($$ select public.create_manual_trip_place((select id from public.trips where name='Místa cesta'),'Archiv',null,null,null,null,null,'custom') $$,'42501',null,'archived trip blocks place create');
 select throws_ok($$ select public.create_mapbox_trip_place((select id from public.trips where name='Místa cesta'),'archived','Archiv',null,null,null,50,14,'address','custom') $$,'42501',null,'archived trip blocks Mapbox place create');
-select is((select count(*) from public.trip_places where trip_id=(select id from public.trips where name='Místa cesta')),4::bigint,'archived places remain readable');
+select throws_ok($$ select public.create_external_trip_place((select id from public.trips where name='Místa cesta'),'geoapify','archived-geo','Archiv','Archiv','CZ','Praha',50,14,'unknown','custom','custom','Powered by Geoapify · © OpenStreetMap contributors') $$,'42501',null,'archived trip blocks Geoapify place create');
+select is((select count(*) from public.trip_places where trip_id=(select id from public.trips where name='Místa cesta')),5::bigint,'archived places remain readable');
 
 select * from finish(); rollback;

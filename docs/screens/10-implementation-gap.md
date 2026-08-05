@@ -47,8 +47,15 @@ technický základ omylem považoval za schválenou finální obrazovku.
 - Volitelný čas od/do, textová poznámka, úprava, odstranění a atomické pořadí bodů.
 - Provider-neutrální model uložených míst s kategorií Nomadia, adresou a souřadnicemi.
 - Ruční správa vlastních míst a bezpečné propojení bodu timeline s místem stejné cesty.
-- Chráněné Mapbox Geocoding v6 vyhledávání adres a geografických míst s
-  kontextem zemí cesty a bezpečným mapováním permanentních výsledků.
+- Přímé přidání výsledku Geoapify z detailu dne: externí místo se v rámci
+  cesty znovu použije podle providera a jeho ID a v jedné databázové transakci
+  se připojí nový bod na konec timeline. Owner/editor mohou upravit kategorii,
+  čas a poznámku; viewer zůstává pouze ve čtení.
+- Chráněné Geoapify vyhledávání adres, názvů a POI s kontextem zemí cesty,
+  společným provider-neutrálním modelem, přístupným našeptávačem a bezpečným
+  uložením včetně atribuce a deduplikace.
+- Zpětně kompatibilní Mapbox Geocoding v6 route a existující uložená Mapbox
+  místa; Mapbox nadále vykresluje mapy a náhled vybraného pinu.
 - Samostatná mapa celé cesty s číslovanými piny, automatickým výřezem,
   přístupným seznamem a stavem pro místa bez souřadnic nebo chybějící token.
 - Mapa konkrétního dne s pořadím propojených bodů timeline, zvýrazněním výběru,
@@ -71,7 +78,7 @@ Původní `countries` a `cities` zůstávají dočasně pouze kvůli bezpečné 
 kompatibilitě. Autoritativní struktura `trip_destinations` už obsahuje pořadí,
 country code, světadíl, ruční přepsání i hlavní destinaci. Chybí ještě:
 
-- POI vyhledávání po vyjasnění licenčních práv.
+- hromadná POI vrstva mapového výřezu a POI podél trasy.
 
 Změna modelu musí proběhnout verzovanou migrací s RLS a testy; stávající data
 se nesmí ztratit.
@@ -79,7 +86,7 @@ se nesmí ztratit.
 ## Doporučené nejbližší pořadí
 
 1. Doplnit přesun bodů mezi dny a následně kontextové údaje rezervací.
-2. Rozhodnout licenční režim POI katalogu a teprve potom připojit Search Box.
+2. Navrhnout až samostatně hromadnou POI vrstvu a hledání podél trasy.
 3. Postupně stavět skutečné přehledové moduly a další části cesty.
 
 Duplikace cesty byla produktovým rozhodnutím vyřazena z MVP; současný model ani

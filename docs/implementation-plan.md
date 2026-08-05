@@ -18,7 +18,8 @@ implementaci.
 2. **Supabase jako autoritativní backend.** PostgreSQL drží relační data,
    Supabase Auth identitu a privátní Storage soubory. RLS je povinná součást
    každé migrace.
-3. **Provider adaptéry.** Mapbox výsledky se při uložení mapují na interní model.
+3. **Provider adaptéry.** Geoapify i Mapbox výsledky se mapují na společný
+   `PlaceSearchResult`; doménový model nezávisí na odpovědi konkrétního API.
    OAuth, storage a mapové API se nepoužívají přímo z doménových komponent.
 4. **Offline až po stabilizaci modelu.** IndexedDB a synchronizační fronta se
    přidají po základních CRUD tocích, aby se předčasně nezafixoval chybný model.
@@ -96,6 +97,11 @@ implementaci.
 - Dokončeno: chráněné Mapbox Geocoding v6 vyhledávání adres a geografických
   míst, kontext zemí cesty, providerová normalizace a uložení permanentních
   výsledků do interního modelu.
+- Dokončeno: serverové Geoapify hledání adres, názvů a POI s českými výsledky,
+  kontextem zemí cesty, debounce/abort našeptávačem, klávesnicovým výběrem,
+  Mapbox náhledem pinu, změnou navržené kategorie a normalizovaným uložením.
+- Dokončeno: obecná RPC pro externí providery, uložení atribuce a původních
+  kategorií, deduplikace v rámci cesty a zachování staré Mapbox RPC.
 - Dokončeno: samostatná mapa celé cesty, číslované piny uložených míst,
   automatické přiblížení na všechny body a přístupný seznam míst včetně
   zřetelného přehledu záznamů bez souřadnic.
@@ -105,7 +111,8 @@ implementaci.
 - Dokončeno: mapa celé cesty nabízí přístupné vrstvy všech kategorií Nomadia,
   jejich reálné počty a společné filtrování pinů, seznamu, výběru i mapového
   výřezu.
-- Zbývá: POI katalog po vyjasnění práv k trvalému uložení Search Box výsledků.
+- Zbývá: hromadná POI vrstva mapového výřezu a hledání podél trasy; nejsou
+  součástí prvního Geoapify řezu.
 - Návrh světadílu s možností ručního přepsání.
 - Seznam míst, mapa celé cesty, její kategoriální vrstvy i mapa konkrétního dne
   jsou hotové.
@@ -120,6 +127,10 @@ implementaci.
 - Dokončeno: detail dne a základní timeline aktivit, přesunů a poznámek s
   volitelným časem, poznámkou a atomickým pořadím.
 - Dokončeno: volitelné propojení bodu timeline s interním místem stejné cesty.
+- Dokončeno: přímé vyhledání Geoapify místa z detailu dne a jeho atomické
+  uložení nebo opětovné použití spolu s novým propojeným bodem na konci
+  timeline. Formulář sdílí našeptávač s uloženými místy, dovoluje změnit
+  kategorii a doplnit čas i poznámku; původní výběr uloženého místa zůstává.
 - Dokončeno: responzivní mapa dne s číslováním podle timeline, výřezem všech
   míst, výběrem bodu a odkazem zpět na odpovídající položku programu.
 - Zbývá: přesun bodu mezi dny a rozšířené kontextové údaje.

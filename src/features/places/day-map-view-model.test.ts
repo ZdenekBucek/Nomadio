@@ -37,6 +37,7 @@ function place(
 ): TripPlaceRow {
   return {
     address: null,
+    attribution: null,
     category: "custom",
     category_overridden: true,
     city: null,

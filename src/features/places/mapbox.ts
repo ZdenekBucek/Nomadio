@@ -1,16 +1,7 @@
 import type { PlaceCategory } from "@/lib/supabase/database.types";
+import type { PlaceSearchResult } from "./place-search-result";
 
-export type MapboxPlaceResult = {
-  address: string | null;
-  category: PlaceCategory;
-  city: string | null;
-  countryCode: string | null;
-  latitude: number;
-  longitude: number;
-  name: string;
-  providerCategory: string;
-  providerPlaceId: string;
-};
+export type MapboxPlaceResult = PlaceSearchResult;
 
 type SearchOptions = {
   accessToken: string;
@@ -103,18 +94,27 @@ export function normalizeMapboxResponse(payload: unknown): MapboxPlaceResult[] {
     }
 
     const rawCountryCode = text(record(context?.country)?.country_code)?.toUpperCase() ?? null;
+    const providerCategories = [providerCategory, ...(
+      Array.isArray(properties.poi_category_ids)
+        ? properties.poi_category_ids.filter((value): value is string => typeof value === "string")
+        : []
+    )];
     return [{
-      address: limitedText(properties?.full_address, 300) ?? limitedText(properties?.place_formatted, 300),
+      attribution: "© Mapbox",
       category: categoryFor(properties, providerCategory),
       city:
         contextName(context, "place") ??
         contextName(context, "locality") ??
         contextName(context, "district")?.slice(0, 120) ?? null,
       countryCode: rawCountryCode && /^[A-Z]{2}$/.test(rawCountryCode) ? rawCountryCode : null,
+      formattedAddress: limitedText(properties?.full_address, 300)
+        ?? limitedText(properties?.place_formatted, 300)
+        ?? name,
       latitude,
       longitude,
       name,
-      providerCategory,
+      provider: "mapbox" as const,
+      providerCategories,
       providerPlaceId,
     }];
   });

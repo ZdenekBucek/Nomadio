@@ -41,3 +41,21 @@ const categorySet = new Set<string>(placeCategories);
 export function isPlaceCategory(value: string): value is PlaceCategory {
   return categorySet.has(value);
 }
+
+function matches(categories: string[], prefixes: string[]) {
+  return categories.some((category) =>
+    prefixes.some((prefix) => category === prefix || category.startsWith(`${prefix}.`)),
+  );
+}
+
+export function categoryForGeoapify(providerCategories: string[]): PlaceCategory {
+  const categories = providerCategories.map((category) => category.trim().toLowerCase()).filter(Boolean);
+  if (matches(categories, ["service.vehicle.charging_station"])) return "charging";
+  if (matches(categories, ["accommodation"])) return "accommodation";
+  if (matches(categories, ["catering.restaurant", "catering.cafe", "catering.fast_food"])) return "food";
+  if (matches(categories, ["tourism.attraction", "entertainment.museum", "entertainment.culture", "heritage", "building.historic"])) return "sight";
+  if (matches(categories, ["leisure.park", "natural", "beach", "national_park"])) return "nature";
+  if (matches(categories, ["commercial"])) return "shopping";
+  if (matches(categories, ["public_transport", "airport", "parking", "railway", "transportation"])) return "transport";
+  return "custom";
+}

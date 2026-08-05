@@ -4,7 +4,7 @@ import { createTripMapModel } from "./map-view-model";
 
 function place(overrides: Partial<TripPlaceRow> = {}): TripPlaceRow {
   return {
-    address: null, category: "custom", category_overridden: true, city: null,
+    address: null, attribution: null, category: "custom", category_overridden: true, city: null,
     country_code: null, created_at: "2026-08-04T00:00:00Z", created_by: "user",
     id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", latitude: 67.23, longitude: 14.61,
     name: "Saltstraumen", provider: "manual", provider_category: null,

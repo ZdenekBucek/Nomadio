@@ -19,14 +19,16 @@ const payload = {
 describe("Mapbox place adapter", () => {
   it("normalizes a Geocoding v6 feature", () => {
     expect(normalizeMapboxResponse(payload)).toEqual([{
-      address: "Saltstraumen 33, 8056 Saltstraumen, Norsko",
+      attribution: "© Mapbox",
       category: "custom",
       city: "Bodø",
       countryCode: "NO",
+      formattedAddress: "Saltstraumen 33, 8056 Saltstraumen, Norsko",
       latitude: 67.2301,
       longitude: 14.6171,
       name: "Saltstraumen 33",
-      providerCategory: "address",
+      provider: "mapbox",
+      providerCategories: ["address"],
       providerPlaceId: "dXJuOm1ieGFkcjo1",
     }]);
   });
