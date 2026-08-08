@@ -65,6 +65,27 @@ množství, zavazadlo a stav sbaleno.
 
 Na přehledu cesty se ukazuje pouze progres a několik nejdůležitějších úkolů.
 
+### Implementovaný první řez
+
+Route `/app/trips/{tripId}/checklist` odděluje Úkoly a Balení. Každá část má
+vlastní kompaktní souhrn s poměrem dokončených položek a progressem, dokončený
+stav i filtry. Úkoly podporují Vše, Aktivní, Hotové a Moje; Balení podporuje
+Vše, Nesbaleno, Sbaleno a Moje. Pod breakpointem `md` segmented control vždy
+zobrazí jen aktivní část a hlavní akce se přepne podle ní; na desktopu jsou oba
+sloupce vedle sebe. Owner a editor mohou úkoly i balicí položky vytvářet, upravovat, rychle
+odškrtávat a mazat. Viewer a archivovaný trip mají pouze čtení.
+
+Přiřazení používá výhradně `trip_travelers` aktuální cesty. Databáze odmítne
+traveler i linked entity z jiného tripu. Úkol může uchovat vazbu na ubytování,
+dopravu, dokument nebo itinerary item, ale žádný úkol se zatím nevytváří
+automaticky. Packing list je oddělený model s kategorií, množstvím, osobou,
+zavazadlem a stavem sbaleno.
+
+Budoucí fáze mohou přidat automatické úkoly typu doplatit hotel nebo provést
+check-in, relativní termíny, push notifikace, šablony checklistů a cestovní
+šablony. Připomínky na pozadí, kalendářová synchronizace a AI doporučení nejsou
+součástí tohoto řezu.
+
 ## Poznámky
 
 Poznámky slouží pro volný obsah k celé cestě nebo konkrétní entitě:

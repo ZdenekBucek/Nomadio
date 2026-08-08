@@ -1,0 +1,2 @@
+import { Surface } from "@/components/ui/surface";
+export default function ChecklistLoading() { return <div className="animate-pulse"><div className="h-5 w-32 rounded bg-muted" /><div className="mt-5 h-10 w-56 rounded bg-muted" /><div className="mt-8 grid grid-cols-3 gap-2">{Array.from({ length: 3 }, (_, index) => <Surface key={index} className="h-24" />)}</div><Surface className="mt-6 h-80" /></div>; }

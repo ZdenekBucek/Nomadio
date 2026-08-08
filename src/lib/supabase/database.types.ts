@@ -53,6 +53,43 @@ export type BudgetSubcategory = "hotel" | "apartment" | "hostel" | "guesthouse" 
 export type BudgetPaymentStatus = "unknown" | "unpaid" | "partially_paid" | "paid" | "pay_on_site";
 export type DocumentCategory = "transport" | "accommodation" | "activity" | "insurance" | "visa" | "ticket" | "receipt" | "other";
 export type DocumentLinkedEntityType = "trip" | "accommodation" | "transport" | "itinerary_item";
+export type TaskCategory = "preparation" | "booking" | "payment" | "document" | "packing" | "during_trip" | "after_trip" | "other";
+export type TaskStatus = "todo" | "in_progress" | "completed" | "cancelled";
+export type TaskPriority = "low" | "normal" | "high";
+export type TaskLinkedEntityType = "accommodation" | "transport" | "document" | "itinerary_item";
+export type PackingCategory = "documents" | "electronics" | "clothing" | "hygiene" | "medicine" | "flight" | "other";
+export type PackingBagType = "cabin" | "checked" | "personal" | "shared";
+
+export type TaskRow = {
+  assigned_traveler_id: string | null;
+  category: TaskCategory;
+  created_at: string;
+  created_by: string;
+  description: string | null;
+  due_date: string | null;
+  id: string;
+  linked_entity_id: string | null;
+  linked_entity_type: TaskLinkedEntityType | null;
+  priority: TaskPriority;
+  status: TaskStatus;
+  title: string;
+  trip_id: string;
+  updated_at: string;
+};
+
+export type PackingItemRow = {
+  bag_type: PackingBagType | null;
+  category: PackingCategory;
+  created_at: string;
+  created_by: string;
+  id: string;
+  is_packed: boolean;
+  name: string;
+  quantity: number | null;
+  traveler_id: string | null;
+  trip_id: string;
+  updated_at: string;
+};
 
 export type DocumentRow = {
   category: DocumentCategory;
@@ -271,6 +308,45 @@ export type TripTravelerRow = {
 export type Database = {
   public: {
     Tables: {
+      tasks: {
+        Row: TaskRow;
+        Insert: {
+          assigned_traveler_id?: string | null;
+          category?: TaskCategory;
+          created_at?: string;
+          created_by: string;
+          description?: string | null;
+          due_date?: string | null;
+          id?: string;
+          linked_entity_id?: string | null;
+          linked_entity_type?: TaskLinkedEntityType | null;
+          priority?: TaskPriority;
+          status?: TaskStatus;
+          title: string;
+          trip_id: string;
+          updated_at?: string;
+        };
+        Update: Partial<TaskRow>;
+        Relationships: [];
+      };
+      packing_items: {
+        Row: PackingItemRow;
+        Insert: {
+          bag_type?: PackingBagType | null;
+          category?: PackingCategory;
+          created_at?: string;
+          created_by: string;
+          id?: string;
+          is_packed?: boolean;
+          name: string;
+          quantity?: number | null;
+          traveler_id?: string | null;
+          trip_id: string;
+          updated_at?: string;
+        };
+        Update: Partial<PackingItemRow>;
+        Relationships: [];
+      };
       documents: {
         Row: DocumentRow;
         Insert: {
@@ -764,6 +840,12 @@ export type Database = {
       budget_source_type: BudgetSourceType;
       document_category: DocumentCategory;
       document_linked_entity_type: DocumentLinkedEntityType;
+      packing_bag_type: PackingBagType;
+      packing_category: PackingCategory;
+      task_category: TaskCategory;
+      task_linked_entity_type: TaskLinkedEntityType;
+      task_priority: TaskPriority;
+      task_status: TaskStatus;
       transport_booking_status: TransportBookingStatus;
       transport_payment_status: TransportPaymentStatus;
       transport_type: TransportType;

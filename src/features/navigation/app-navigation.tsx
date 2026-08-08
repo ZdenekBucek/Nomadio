@@ -42,7 +42,7 @@ const tripNavigationItems = [
   { icon: BusFront, label: "Doprava", section: "transport" },
   { icon: WalletCards, label: "Rozpočet", section: "budget" },
   { icon: FileText, label: "Dokumenty", section: "documents" },
-  { icon: CheckSquare2, label: "Checklist" },
+  { icon: CheckSquare2, label: "Checklist", section: "checklist" },
   { icon: StickyNote, label: "Poznámky" },
   { icon: Settings, label: "Nastavení cesty", section: "settings" },
 ] as const;
@@ -55,6 +55,7 @@ const mobileTripNavigationItems = [
   tripNavigationItems[4],
   tripNavigationItems[5],
   tripNavigationItems[6],
+  tripNavigationItems[7],
   { icon: MoreHorizontal, label: "Více", section: "settings" },
 ] as const;
 
@@ -66,6 +67,7 @@ function tripHref(section: string | undefined, overviewHref: string) {
   if (section === "transport") return `${overviewHref}/transport`;
   if (section === "budget") return `${overviewHref}/budget`;
   if (section === "documents") return `${overviewHref}/documents`;
+  if (section === "checklist") return `${overviewHref}/checklist`;
   if (section === "settings") return `${overviewHref}/settings`;
   return undefined;
 }
@@ -174,7 +176,7 @@ function TripNavigation({
   return (
     <nav
       aria-label={mobile ? "Mobilní navigace cesty" : "Navigace cesty"}
-      className={mobile ? "grid grid-cols-8 gap-0.5" : "flex min-h-0 flex-1 flex-col gap-1.5"}
+      className={mobile ? "grid grid-cols-9 gap-0.5" : "flex min-h-0 flex-1 flex-col gap-1.5"}
     >
       {mobile ? null : (
         <Link
@@ -192,7 +194,7 @@ function TripNavigation({
         const sharedClassName = cn(
           "group relative flex items-center text-sm font-medium transition-colors",
           mobile
-            ? "min-h-14 min-w-0 flex-col justify-center gap-1 rounded-xl px-0.5 text-[0.48rem]"
+            ? "min-h-14 min-w-0 flex-col justify-center gap-1 rounded-xl px-0.5 text-[0.44rem]"
             : "min-h-11 gap-3 rounded-xl px-3",
           isActive
             ? "border border-primary/25 bg-primary/14 text-[var(--brand-highlight)] shadow-[0_12px_30px_-22px_var(--brand-glow)]"

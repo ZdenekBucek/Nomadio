@@ -214,8 +214,17 @@ implementaci.
 
 ### 9. Checklist
 
-- Jednoduché položky na úrovni tripu, řazení a dokončení.
-- Teprve poté přiřazení cestovateli, šablony nebo opakování.
+- Lokálně dokončen první vertikální řez na `/app/trips/{tripId}/checklist`:
+  obecné `tasks` a samostatné `packing_items`, obojí trip-scoped a chráněné
+  owner/editor/viewer RLS.
+- Úkol podporuje kategorii, stav, prioritu, termín, přiřazení na existujícího
+  trip travelera a volitelnou vazbu na accommodation, transport, document nebo
+  itinerary item. Vazby i traveler jsou databázově ověřené proti stejnému tripu.
+- Packing list ukládá kategorii, množství, osobu, zavazadlo a stav sbaleno;
+  mobilní flow upřednostňuje velké rychlé checkboxy.
+- Další fáze: automatické úkoly z linked entit, relativní termíny, notifikace,
+  šablony checklistů a opakování. První řez nic negeneruje ani neplánuje na
+  pozadí.
 
 ### 10. Offline trip
 
