@@ -7,11 +7,15 @@ snažit zobrazit oba kontexty současně v plném rozsahu.
 
 ### Globální desktopová navigace
 
+- Přehled
 - Moje cesty
-- Kalendář cest
-- Archiv
-- Profil
-- Nastavení
+- Kalendář
+- Mapa
+- Finance
+- Dokumenty
+
+Položky mimo konkrétní trip vedou na globální route. Neimplementované moduly
+jsou klikací placeholdery s badge **Brzy**, nikoli utlumené trip funkce.
 
 Dole je profil uživatele, stav úložiště nebo offline dat a případně volba
 vzhledu. Samostatná položka „Sdílené se mnou“ se nepoužívá.
@@ -31,10 +35,11 @@ vzhledu. Samostatná položka „Sdílené se mnou“ se nepoužívá.
 
 ### Globální mobilní navigace
 
+- Přehled
 - Cesty
 - Kalendář
-- Dokumenty
-- Profil
+- Mapa
+- Více (Finance, Dokumenty a profilové akce)
 
 ### Navigace uvnitř cesty na mobilu
 

@@ -43,8 +43,11 @@ implementaci.
   přihlášení zachovává jediný profil a celý OAuth tok prošel v jednom prohlížeči.
 - Vizuální jazyk Nomadia je zdokumentovaný a převedený do globálních tokenů a
   základních komponent, které jsou závazné pro nový aplikační shell.
-- Dokončeno: minimální navigační shell s desktopovým sidebarem, mobilní spodní
-  navigací a zřetelně neaktivními odkazy na budoucí moduly.
+- Dokončeno: navigační shell rozlišuje globální a trip kontext podle route.
+  Globální sidebar má Přehled, Moje cesty, Kalendář, Mapu, Finance a Dokumenty;
+  trip sidebar používá moduly konkrétní cesty a jasný návrat na Moje cesty.
+  Neimplementované globální moduly mají klikací placeholdery místo falešně
+  deaktivovaných trip položek.
 - Chování po expiraci session je ověřené syntetickou expirovanou session proti
   běžící aplikaci: privátní route přesměruje na přihlášení, zachová návratovou
   adresu a odstraní neplatnou auth cookie. Stejný kontrakt kryje automatický test.

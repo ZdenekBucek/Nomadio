@@ -1,252 +1,46 @@
 "use client";
 
-import {
-  ArrowLeft,
-  BedDouble,
-  BusFront,
-  CalendarDays,
-  CheckSquare2,
-  FileText,
-  LayoutDashboard,
-  Map,
-  MoreHorizontal,
-  Plane,
-  Route,
-  Settings,
-  StickyNote,
-  WalletCards,
-} from "lucide-react";
+import { ArrowLeft, BedDouble, BusFront, CalendarDays, CheckSquare2, FileText, LayoutDashboard, Map, MoreHorizontal, Plane, Route, Settings, StickyNote, WalletCards } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
 import { cn } from "@/lib/utils";
 
-const navigationItems = [
-  { href: "/app", icon: LayoutDashboard, label: "Přehled" },
+type NavigationItem = { href: string; icon: typeof Map; label: string; soon?: boolean };
+const globalNavigation: NavigationItem[] = [
+  { href: "/app", icon: LayoutDashboard, label: "Přehled", soon: true },
   { href: "/app/trips", icon: Plane, label: "Moje cesty" },
-  { icon: CalendarDays, label: "Itinerář" },
-  { icon: Map, label: "Mapa" },
-  { icon: WalletCards, label: "Rozpočet" },
-  { icon: FileText, label: "Dokumenty" },
+  { href: "/app/calendar", icon: CalendarDays, label: "Kalendář", soon: true },
+  { href: "/app/map", icon: Map, label: "Mapa", soon: true },
+  { href: "/app/finance", icon: WalletCards, label: "Finance", soon: true },
+  { href: "/app/documents", icon: FileText, label: "Dokumenty", soon: true },
+];
+const mobileGlobalNavigation: NavigationItem[] = [
+  globalNavigation[0]!, { ...globalNavigation[1]!, label: "Cesty" }, globalNavigation[2]!, globalNavigation[3]!, { href: "/app/more", icon: MoreHorizontal, label: "Více" },
+];
+const tripNavigation = [
+  { icon: LayoutDashboard, label: "Přehled", section: "overview" }, { icon: CalendarDays, label: "Itinerář", section: "itinerary" }, { icon: Map, label: "Mapa", section: "map" }, { icon: BedDouble, label: "Ubytování", section: "accommodation" }, { icon: BusFront, label: "Doprava", section: "transport" }, { icon: WalletCards, label: "Rozpočet", section: "budget" }, { icon: FileText, label: "Dokumenty", section: "documents" }, { icon: CheckSquare2, label: "Checklist", section: "checklist" }, { icon: StickyNote, label: "Poznámky", section: "notes" }, { icon: Settings, label: "Nastavení cesty", section: "settings" },
 ] as const;
+const mobileTripNavigation = [tripNavigation[0], tripNavigation[1], tripNavigation[2], tripNavigation[5], { icon: MoreHorizontal, label: "Více", section: "settings" }] as const;
 
-const mobileItems = navigationItems.filter(({ label }) =>
-  ["Přehled", "Moje cesty", "Itinerář", "Mapa", "Dokumenty"].includes(label),
-);
+function tripHref(section: string, tripHref: string) { return section === "overview" ? tripHref : `${tripHref}/${section}`; }
+function globalActive(pathname: string, href: string) { return href === "/app" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`); }
+function itemClass(active: boolean, mobile: boolean) { return cn("group relative flex min-w-0 items-center text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary", mobile ? "min-h-14 flex-col justify-center gap-1 rounded-xl px-1 text-[0.58rem]" : "min-h-11 gap-3 rounded-xl px-3", active ? "border border-primary/25 bg-primary/14 text-[var(--brand-highlight)] shadow-[0_12px_30px_-22px_var(--brand-glow)]" : "text-muted-foreground hover:bg-muted/55 hover:text-foreground"); }
 
-const tripNavigationItems = [
-  { icon: LayoutDashboard, label: "Přehled", section: "overview" },
-  { icon: CalendarDays, label: "Itinerář", section: "itinerary" },
-  { icon: Map, label: "Mapa", section: "map" },
-  { icon: BedDouble, label: "Ubytování", section: "accommodation" },
-  { icon: BusFront, label: "Doprava", section: "transport" },
-  { icon: WalletCards, label: "Rozpočet", section: "budget" },
-  { icon: FileText, label: "Dokumenty", section: "documents" },
-  { icon: CheckSquare2, label: "Checklist", section: "checklist" },
-  { icon: StickyNote, label: "Poznámky" },
-  { icon: Settings, label: "Nastavení cesty", section: "settings" },
-] as const;
-
-const mobileTripNavigationItems = [
-  tripNavigationItems[0],
-  tripNavigationItems[1],
-  tripNavigationItems[2],
-  tripNavigationItems[3],
-  tripNavigationItems[4],
-  tripNavigationItems[5],
-  tripNavigationItems[6],
-  tripNavigationItems[7],
-  { icon: MoreHorizontal, label: "Více", section: "settings" },
-] as const;
-
-function tripHref(section: string | undefined, overviewHref: string) {
-  if (section === "overview") return overviewHref;
-  if (section === "itinerary") return `${overviewHref}/itinerary`;
-  if (section === "map") return `${overviewHref}/map`;
-  if (section === "accommodation") return `${overviewHref}/accommodation`;
-  if (section === "transport") return `${overviewHref}/transport`;
-  if (section === "budget") return `${overviewHref}/budget`;
-  if (section === "documents") return `${overviewHref}/documents`;
-  if (section === "checklist") return `${overviewHref}/checklist`;
-  if (section === "settings") return `${overviewHref}/settings`;
-  return undefined;
-}
-
-type AppNavigationProps = {
-  mobile?: boolean;
-};
-
-export function AppNavigation({ mobile = false }: AppNavigationProps) {
+export function AppNavigation({ mobile = false }: { mobile?: boolean }) {
   const pathname = usePathname();
   const tripMatch = pathname.match(/^\/app\/trips\/([^/]+)/);
-
-  if (tripMatch) {
-    return (
-      <TripNavigation
-        mobile={mobile}
-        pathname={pathname}
-        tripId={tripMatch[1]!}
-      />
-    );
-  }
-
-  const items = mobile ? mobileItems : navigationItems;
-
-  return (
-    <nav
-      aria-label={mobile ? "Hlavní mobilní navigace" : "Hlavní navigace"}
-      className={
-        mobile
-          ? "grid grid-cols-5 gap-1"
-          : "flex min-h-0 flex-1 flex-col gap-1.5"
-      }
-    >
-      {items.map(({ icon: Icon, label, ...item }) => {
-        const href = "href" in item ? item.href : undefined;
-        const isActive = href
-          ? href === "/app"
-            ? pathname === href
-            : pathname.startsWith(href)
-          : false;
-        const sharedClassName = cn(
-          "group relative flex items-center text-sm font-medium transition-colors",
-          mobile
-            ? "min-h-14 flex-col justify-center gap-1 rounded-xl px-1 text-[0.62rem]"
-            : "min-h-11 gap-3 rounded-xl px-3",
-          isActive
-            ? "border border-primary/25 bg-primary/14 text-[var(--brand-highlight)] shadow-[0_12px_30px_-22px_var(--brand-glow)]"
-            : href
-              ? "text-muted-foreground hover:bg-muted/55 hover:text-foreground"
-              : "cursor-not-allowed text-muted-foreground/45",
-        );
-
-        if (!href) {
-          return (
-            <span
-              key={label}
-              aria-disabled="true"
-              className={sharedClassName}
-              title={`${label} — připravujeme`}
-            >
-              <Icon className={mobile ? "size-4" : "size-[1.05rem]"} aria-hidden="true" />
-              <span>{label === "Moje cesty" && mobile ? "Cesty" : label}</span>
-              {mobile ? null : (
-                <span className="ml-auto text-[0.58rem] tracking-[0.12em] uppercase">
-                  Brzy
-                </span>
-              )}
-            </span>
-          );
-        }
-
-        return (
-          <Link
-            key={label}
-            href={href}
-            className={sharedClassName}
-            aria-current={isActive ? "page" : undefined}
-          >
-            <Icon className={mobile ? "size-4" : "size-[1.05rem]"} aria-hidden="true" />
-            <span>{label === "Moje cesty" && mobile ? "Cesty" : label}</span>
-            {isActive && !mobile ? (
-              <span
-                className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-[var(--brand-highlight)] shadow-[0_0_12px_var(--brand-glow)]"
-                aria-hidden="true"
-              />
-            ) : null}
-          </Link>
-        );
-      })}
-    </nav>
-  );
+  return tripMatch ? <TripNavigation mobile={mobile} pathname={pathname} tripId={tripMatch[1]!} /> : <GlobalNavigation mobile={mobile} pathname={pathname} />;
 }
 
-function TripNavigation({
-  mobile,
-  pathname,
-  tripId,
-}: {
-  mobile: boolean;
-  pathname: string;
-  tripId: string;
-}) {
-  const items = mobile ? mobileTripNavigationItems : tripNavigationItems;
+function GlobalNavigation({ mobile, pathname }: { mobile: boolean; pathname: string }) {
+  const items = mobile ? mobileGlobalNavigation : globalNavigation;
+  return <nav aria-label={mobile ? "Globální mobilní navigace" : "Globální navigace"} className={mobile ? "grid grid-cols-5 gap-1" : "flex min-h-0 flex-1 flex-col gap-1.5"}>{items.map((item) => { const Icon = item.icon; const active = globalActive(pathname, item.href); return <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={itemClass(active, mobile)}><Icon className={mobile ? "size-4" : "size-[1.05rem]"} aria-hidden="true" /><span>{item.label}</span>{item.soon && !mobile ? <span aria-hidden="true" className="ml-auto rounded-full border border-border px-1.5 py-0.5 text-[0.55rem] tracking-[0.1em] uppercase">Brzy</span> : null}{active && !mobile ? <ActiveRail /> : null}</Link>; })}</nav>;
+}
+
+function TripNavigation({ mobile, pathname, tripId }: { mobile: boolean; pathname: string; tripId: string }) {
   const overviewHref = `/app/trips/${tripId}`;
-
-  return (
-    <nav
-      aria-label={mobile ? "Mobilní navigace cesty" : "Navigace cesty"}
-      className={mobile ? "grid grid-cols-9 gap-0.5" : "flex min-h-0 flex-1 flex-col gap-1.5"}
-    >
-      {mobile ? null : (
-        <Link
-          href="/app/trips"
-          className="mb-3 flex min-h-10 items-center gap-2 rounded-xl px-3 text-xs font-medium text-muted-foreground transition hover:bg-muted/55 hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" aria-hidden="true" />
-          Moje cesty
-        </Link>
-      )}
-
-      {items.map(({ icon: Icon, label, ...item }) => {
-        const href = tripHref("section" in item ? item.section : undefined, overviewHref);
-        const isActive = href === pathname;
-        const sharedClassName = cn(
-          "group relative flex items-center text-sm font-medium transition-colors",
-          mobile
-            ? "min-h-14 min-w-0 flex-col justify-center gap-1 rounded-xl px-0.5 text-[0.44rem]"
-            : "min-h-11 gap-3 rounded-xl px-3",
-          isActive
-            ? "border border-primary/25 bg-primary/14 text-[var(--brand-highlight)] shadow-[0_12px_30px_-22px_var(--brand-glow)]"
-            : href
-              ? "text-muted-foreground hover:bg-muted/55 hover:text-foreground"
-              : "cursor-not-allowed text-muted-foreground/45",
-        );
-
-        if (!href) {
-          return (
-            <span
-              key={label}
-              aria-disabled="true"
-              className={sharedClassName}
-              title={`${label} — připravujeme`}
-            >
-              <Icon className={mobile ? "size-4" : "size-[1.05rem]"} aria-hidden="true" />
-              <span>{label}</span>
-              {mobile ? null : (
-                <span className="ml-auto text-[0.58rem] tracking-[0.12em] uppercase">Brzy</span>
-              )}
-            </span>
-          );
-        }
-
-        return (
-          <Link
-            key={label}
-            href={href}
-            className={sharedClassName}
-            aria-current={isActive ? "page" : undefined}
-          >
-            <Icon className={mobile ? "size-4" : "size-[1.05rem]"} aria-hidden="true" />
-            <span>{label}</span>
-            {isActive && !mobile ? (
-              <span
-                className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-[var(--brand-highlight)] shadow-[0_0_12px_var(--brand-glow)]"
-                aria-hidden="true"
-              />
-            ) : null}
-          </Link>
-        );
-      })}
-    </nav>
-  );
+  const items = mobile ? mobileTripNavigation : tripNavigation;
+  return <nav aria-label={mobile ? "Mobilní navigace cesty" : "Navigace cesty"} className={mobile ? "grid grid-cols-5 gap-1" : "flex min-h-0 flex-1 flex-col gap-1.5"}>{mobile ? null : <><Link href="/app/trips" className="mb-3 flex min-h-10 items-center gap-2 rounded-xl px-3 text-xs font-medium text-muted-foreground transition hover:bg-muted/55 hover:text-foreground"><ArrowLeft className="size-4" aria-hidden="true" /> Moje cesty</Link><Link href={overviewHref} className="mb-3 rounded-xl border border-primary/15 bg-primary/7 px-3 py-2 text-xs font-medium text-[var(--brand-highlight)]">Aktuální cesta</Link></>}{items.map((item) => { const Icon = item.icon; const href = tripHref(item.section, overviewHref); const active = item.label === "Více" ? !tripNavigation.slice(0, 6).some((primary) => tripHref(primary.section, overviewHref) === pathname) : href === pathname; return <Link key={item.label} href={href} aria-current={active ? "page" : undefined} className={itemClass(active, mobile)}><Icon className={mobile ? "size-4" : "size-[1.05rem]"} aria-hidden="true" /><span>{item.label}</span>{active && !mobile ? <ActiveRail /> : null}</Link>; })}</nav>;
 }
-
-export function JourneyPlaceholder() {
-  return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      <Route className="size-3.5 text-primary" aria-hidden="true" />
-      <span>Další moduly přidáme po malých řezech.</span>
-    </div>
-  );
-}
+function ActiveRail() { return <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-[var(--brand-highlight)] shadow-[0_0_12px_var(--brand-glow)]" aria-hidden="true" />; }
+export function JourneyPlaceholder() { return <div className="flex items-center gap-2 text-xs text-muted-foreground"><Route className="size-3.5 text-primary" aria-hidden="true" /><span>Další moduly přidáme po malých řezech.</span></div>; }
