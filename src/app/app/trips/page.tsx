@@ -16,7 +16,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { Surface } from "@/components/ui/surface";
 import { getAuthenticatedProfile } from "@/features/auth/session";
 import { continentLabels, countryFlag, countryOptions } from "@/features/trips/countries";
-import { TripForm } from "@/features/trips/trip-form";
+import { TripCreateDialog } from "@/features/trips/trip-create-dialog";
 import {
   formatTripDates,
   memberCountLabel,
@@ -154,7 +154,11 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
             Vlastní i sdílené cesty najdete bezpečně na jednom místě.
           </p>
         </div>
-        <StatusPill tone="brand">{items.length} cest</StatusPill>
+        <TripCreateDialog
+          countries={countryOptions}
+          defaultCurrency={auth.profile.defaultCurrency}
+          defaultTimezone={auth.profile.timezone}
+        />
       </header>
 
       {params.created ? (
@@ -195,13 +199,13 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
         ))}
       </nav>
 
-      <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(20rem,0.6fr)]">
+      <div className="mt-5">
         <section aria-labelledby="trip-list-title">
           <h2 id="trip-list-title" className="sr-only">
             Seznam cest
           </h2>
           {visibleItems.length ? (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {visibleItems.map((item) => (
                 <TripCard
                   key={item.trip.id}
@@ -214,12 +218,6 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
             <EmptyTrips hasTrips={items.length > 0} filter={activeFilter} />
           )}
         </section>
-
-        <TripForm
-          countries={countryOptions}
-          defaultCurrency={auth.profile.defaultCurrency}
-          defaultTimezone={auth.profile.timezone}
-        />
       </div>
     </div>
   );

@@ -34,9 +34,10 @@ type TripFormProps = {
   countries: CountryOption[];
   defaultCurrency: string;
   defaultTimezone: string;
+  showHeaderIcon?: boolean;
 };
 
-export function TripForm({ countries, defaultCurrency, defaultTimezone }: TripFormProps) {
+export function TripForm({ countries, defaultCurrency, defaultTimezone, showHeaderIcon = true }: TripFormProps) {
   const [step, setStep] = useState(1);
   const [travelerFields, setTravelerFields] = useState<number[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
@@ -75,9 +76,9 @@ export function TripForm({ countries, defaultCurrency, defaultTimezone }: TripFo
             {step === 1 ? "Kam se vydáte?" : step === 2 ? "Dejte cestě charakter" : "Kdo cestuje?"}
           </h2>
         </div>
-        <span className="grid size-10 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-[var(--brand-highlight)]">
+        {showHeaderIcon ? <span data-testid="trip-form-step-icon" className="grid size-10 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-[var(--brand-highlight)]">
           {step === 1 ? <MapPin className="size-5" aria-hidden="true" /> : step === 2 ? <Palette className="size-5" aria-hidden="true" /> : <Users className="size-5" aria-hidden="true" />}
-        </span>
+        </span> : null}
       </div>
 
       <ol className="mt-5 grid grid-cols-3 gap-2" aria-label="Průběh vytvoření cesty">

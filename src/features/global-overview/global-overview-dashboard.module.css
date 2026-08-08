@@ -1,0 +1,29 @@
+.commandGrid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-areas:
+    "next"
+    "finance"
+    "upcoming"
+    "tasks"
+    "documents";
+  min-width: 0;
+}
+
+.next { grid-area: next; min-width: 0; }
+.upcoming { grid-area: upcoming; min-width: 0; }
+.finance { grid-area: finance; min-width: 0; }
+.tasks { grid-area: tasks; min-width: 0; }
+.documents { grid-area: documents; min-width: 0; }
+
+@media (min-width: 80rem) {
+  .commandGrid {
+    align-items: start;
+    grid-template-areas:
+      "next finance"
+      "upcoming finance"
+      "upcoming tasks"
+      "upcoming documents";
+    grid-template-columns: minmax(0, 1.45fr) minmax(19rem, 0.75fr);
+  }
+}

@@ -43,7 +43,7 @@ export function documentTypeLabel(mimeType: string) {
   return mimeType;
 }
 
-export function documentSummary(items: DocumentRow[]) {
+export function documentSummary(items: Pick<DocumentRow, "is_important" | "offline_enabled">[]) {
   return {
     important: items.filter((item) => item.is_important).length,
     offline: items.filter((item) => item.offline_enabled).length,

@@ -250,6 +250,23 @@ implementaci.
 - Telemetrie bez citlivých cestovních dat, zálohy a incidentní postupy.
 - Až po samostatném rozhodnutí nasazení; Capacitor zůstává volitelná další fáze.
 
+### 12. Globální Přehled
+
+- Route `/app` je globální řídicí obrazovka napříč všemi přístupnými,
+  nearchivovanými cestami; `/app/trips` nadále slouží výhradně jako seznam a
+  správa cest.
+- Dominantní blok prioritizuje právě probíhající cestu, jinak nejbližší budoucí
+  cestu. Attention používá jen odvoditelné stavy: prošlé platby, mezery či
+  překryvy ubytování, prošlé úkoly a důležité dokumenty bez offline příznaku.
+- Nadcházející události používají stejný normalizátor jako globální Kalendář.
+  Různé měny se nikdy nesčítají; platby jsou proto zobrazené jako jednotlivé
+  položky podle splatnosti.
+- Budoucí Travel Mode může změnit pořadí bloků, ale nebude vytvářet druhý
+  dashboardový model ani falešný offline stav.
+- UX je postavené jako Travel Command Center: dominantní cover hero, jeden
+  kompaktní pás připravenosti, krátké Attention a prioritní další událost.
+  Finance zůstávají oddělené po měnách a mobil má vlastní informační pořadí.
+
 ## Definition of Done každého řezu
 
 - Akceptační scénář funguje na desktopu i mobilním viewportu.
