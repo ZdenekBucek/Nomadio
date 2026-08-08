@@ -9,7 +9,7 @@ type NavigationItem = { href: string; icon: typeof Map; label: string; soon?: bo
 const globalNavigation: NavigationItem[] = [
   { href: "/app", icon: LayoutDashboard, label: "Přehled", soon: true },
   { href: "/app/trips", icon: Plane, label: "Moje cesty" },
-  { href: "/app/calendar", icon: CalendarDays, label: "Kalendář", soon: true },
+  { href: "/app/calendar", icon: CalendarDays, label: "Kalendář" },
   { href: "/app/map", icon: Map, label: "Mapa", soon: true },
   { href: "/app/finance", icon: WalletCards, label: "Finance", soon: true },
   { href: "/app/documents", icon: FileText, label: "Dokumenty", soon: true },

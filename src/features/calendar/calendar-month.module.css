@@ -1,0 +1,279 @@
+.calendarMonth {
+  min-width: 0;
+}
+
+.toolbar {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.title {
+  font-size: clamp(1.3rem, 2vw, 1.75rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  text-transform: capitalize;
+}
+
+.emptyState {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  margin-top: 0.15rem;
+}
+
+.controls {
+  align-items: center;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.surface {
+  background: var(--card);
+  background: color-mix(in oklab, var(--card) 74%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 1.35rem;
+  box-shadow: 0 24px 80px -44px rgb(0 0 0 / 95%);
+  overflow: hidden;
+}
+
+.weekdayHeader,
+.dayGrid,
+.eventGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.weekdayHeader {
+  background: var(--card);
+  background: color-mix(in oklab, var(--muted) 18%, transparent);
+  border-bottom: 1px solid var(--border);
+}
+
+.weekday {
+  color: var(--muted-foreground);
+  font-size: 0.7rem;
+  font-weight: 500;
+  min-width: 0;
+  padding: 0.5rem 0;
+  text-align: center;
+}
+
+.weekendHeader,
+.weekendCell {
+  background: rgb(255 255 255 / 2%);
+  background: color-mix(in oklab, var(--muted) 5%, transparent);
+}
+
+.monthGrid {
+  display: grid;
+  grid-template-rows: repeat(var(--week-count), minmax(110px, 1fr));
+  min-height: clamp(550px, calc(100dvh - 20rem), 850px);
+}
+
+.weekRow {
+  border-bottom: 1px solid var(--border);
+  min-height: 110px;
+  position: relative;
+}
+
+.weekRow:last-child {
+  border-bottom: 0;
+}
+
+.dayGrid {
+  inset: 0;
+  position: absolute;
+}
+
+.dayCell {
+  border-right: 1px solid var(--border);
+  border-right: 1px solid color-mix(in oklab, var(--border) 78%, transparent);
+  min-height: 100%;
+  min-width: 0;
+  padding: 0.45rem 0.5rem;
+  text-align: right;
+}
+
+.dayCell:last-child {
+  border-right: 0;
+}
+
+.dayNumber {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.75rem;
+  height: 1.5rem;
+  justify-content: center;
+  width: 1.5rem;
+}
+
+.outsideMonth {
+  color: var(--muted-foreground);
+  opacity: 0.42;
+}
+
+.today {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-weight: 600;
+}
+
+.eventGrid {
+  gap: 0.2rem 0;
+  grid-auto-flow: row;
+  grid-template-rows: repeat(4, 1.65rem);
+  inset: 2.25rem 0.3rem auto;
+  pointer-events: none;
+  position: absolute;
+}
+
+.tripBar {
+  align-items: center;
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
+  border-top: 1px solid rgb(255 255 255 / 10%);
+  display: flex;
+  font-size: 0.7rem;
+  font-weight: 500;
+  height: 1.55rem;
+  line-height: 1;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 0.45rem;
+  pointer-events: auto;
+  position: relative;
+  text-overflow: ellipsis;
+  transition: filter 150ms ease, border-color 150ms ease;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.tripBar:hover {
+  filter: brightness(1.14);
+}
+
+.tripBar:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+  z-index: 5;
+}
+
+.startsHere {
+  border-left: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 0.4rem 0 0 0.4rem;
+}
+
+.endsHere {
+  border-radius: 0 0.4rem 0.4rem 0;
+  border-right: 1px solid rgb(255 255 255 / 12%);
+}
+
+.startsHere.endsHere {
+  border-radius: 0.4rem;
+}
+
+.violet { background: rgb(124 92 220 / 78%); color: #f5f1ff; }
+.blue { background: rgb(54 116 171 / 78%); color: #eff8ff; }
+.teal { background: rgb(38 129 122 / 78%); color: #edfffc; }
+.rose { background: rgb(157 72 103 / 78%); color: #fff1f6; }
+.amber { background: rgb(151 111 39 / 80%); color: #fff8e8; }
+
+.overflowDetails {
+  align-self: start;
+  color: var(--brand-highlight);
+  font-size: 0.67rem;
+  pointer-events: auto;
+  position: relative;
+  text-align: right;
+  z-index: 6;
+}
+
+.overflowSummary {
+  align-items: center;
+  border-radius: 0.35rem;
+  cursor: pointer;
+  display: inline-flex;
+  min-height: 1.55rem;
+  padding: 0 0.35rem;
+}
+
+.overflowSummary:hover {
+  background: rgb(123 97 255 / 10%);
+  background: color-mix(in oklab, var(--primary) 10%, transparent);
+}
+
+.overflowPopover {
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  box-shadow: 0 18px 50px -18px rgb(0 0 0 / 90%);
+  margin-top: 0.25rem;
+  padding: 0.35rem;
+  position: absolute;
+  right: 0;
+  text-align: left;
+  width: 14rem;
+  z-index: 10;
+}
+
+.overflowLink {
+  border-radius: 0.5rem;
+  display: block;
+  overflow: hidden;
+  padding: 0.4rem 0.5rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.overflowLink:hover {
+  background: var(--muted);
+}
+
+@media (max-width: 639px) {
+  .toolbar {
+    align-items: flex-start;
+  }
+
+  .title {
+    font-size: 1.1rem;
+  }
+
+  .monthGrid {
+    grid-template-rows: repeat(var(--week-count), minmax(76px, 1fr));
+    min-height: 380px;
+  }
+
+  .weekRow {
+    min-height: 76px;
+  }
+
+  .dayCell {
+    padding: 0.25rem;
+  }
+
+  .dayNumber {
+    font-size: 0.62rem;
+    height: 1.2rem;
+    width: 1.2rem;
+  }
+
+  .eventGrid {
+    gap: 0.1rem 0;
+    grid-template-rows: repeat(4, 1rem);
+    inset: 1.65rem 0.15rem auto;
+  }
+
+  .tripBar {
+    font-size: 0.55rem;
+    height: 0.95rem;
+    padding: 0 0.2rem;
+  }
+
+  .overflowDetails,
+  .overflowSummary {
+    font-size: 0.55rem;
+    min-height: 0.95rem;
+  }
+}

@@ -48,6 +48,9 @@ implementaci.
   trip sidebar používá moduly konkrétní cesty a jasný návrat na Moje cesty.
   Neimplementované globální moduly mají klikací placeholdery místo falešně
   deaktivovaných trip položek.
+- Dokončeno: globální Kalendář kombinuje měsíční zobrazení datovaných cest a
+  odvozenou Agendu termínů z cest, ubytování, dopravy, rozpočtu a checklistu.
+  Nevytváří vlastní databázové události ani nemění RLS.
 - Chování po expiraci session je ověřené syntetickou expirovanou session proti
   běžící aplikaci: privátní route přesměruje na přihlášení, zachová návratovou
   adresu a odstraní neplatnou auth cookie. Stejný kontrakt kryje automatický test.
