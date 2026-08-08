@@ -145,6 +145,11 @@ aktivit, přesunů a poznámek, volitelné propojení bodu s interním místem a
 atomický přesun existujícího bodu na konec jiného dne. Přesun zachovává obsah,
 čas, poznámku i vazbu na místo a je dostupný pouze ownerovi/editorovi aktivní
 cesty.
+Owner/editor může také aktivovat výběr vlastního místa na mapě dne, kliknutím
+umístit nebo přesunout preview pin a místo uložit samostatně nebo atomicky s
+novým propojeným bodem na konci timeline. Geoapify na serveru zkusí doplnit
+editovatelnou adresu; nedostupná adresa uložení neblokuje. Viewer a archivovaná cesta zůstávají
+bez editační akce.
 Body mají volitelný čas, textovou poznámku a ruční pořadí. Detail dne obsahuje
 responzivní Mapbox mapu: piny odpovídají pořadí propojených bodů timeline,
 vybraný bod odkazuje zpět na program a přímá spojnice znázorňuje pouze plánované

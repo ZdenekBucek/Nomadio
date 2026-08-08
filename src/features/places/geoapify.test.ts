@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { GeoapifySearchError, normalizeGeoapifyResponse, searchGeoapifyPlaces } from "./geoapify";
+import { GeoapifySearchError, normalizeGeoapifyResponse, normalizeGeoapifyReverseResponse, reverseGeocodeGeoapify, searchGeoapifyPlaces } from "./geoapify";
 
 const payload = {
   features: [{
@@ -20,6 +20,19 @@ const payload = {
 const feature = payload.features[0]!;
 
 describe("Geoapify place adapter", () => {
+  it("normalizes a reverse-geocoded address", () => {
+    expect(normalizeGeoapifyReverseResponse({ results: [{ formatted:"Karlův most, Praha, Česko" }] })).toBe("Karlův most, Praha, Česko");
+    expect(normalizeGeoapifyReverseResponse({ results: [] })).toBeNull();
+  });
+
+  it("calls reverse geocoding in Czech with one result", async () => {
+    const fetcher = vi.fn().mockResolvedValue({ ok:true, json:async()=>({results:[{formatted:"Praha"}]}) });
+    await expect(reverseGeocodeGeoapify({apiKey:"not-a-secret",fetcher,latitude:50,longitude:14})).resolves.toBe("Praha");
+    const url=fetcher.mock.calls[0]?.[0] as URL;
+    expect(url.pathname).toBe("/v1/geocode/reverse");
+    expect(url.searchParams.get("lang")).toBe("cs");
+    expect(url.searchParams.get("limit")).toBe("1");
+  });
   it("normalizes a provider-neutral result", () => {
     expect(normalizeGeoapifyResponse(payload)).toEqual([expect.objectContaining({
       category: "accommodation",

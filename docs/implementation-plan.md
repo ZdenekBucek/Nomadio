@@ -136,6 +136,11 @@ implementaci.
 - Dokončeno: atomický přesun existujícího bodu na konec jiného datovaného nebo
   nedatovaného dne se zachováním místa, obsahu a metadat a s bezpečným
   přepočtem pořadí obou timeline.
+- Dokončeno: owner/editor může na Mapbox mapě celé cesty nebo dne kliknutím
+  vytvořit vlastní manual místo; před uložením vidí odlišený preview pin a z
+  detailu dne může stejným atomickým RPC vytvořit i propojený bod timeline.
+  Serverový Geoapify reverse geocoding předvyplní editovatelnou adresu, ale
+  jeho selhání neblokuje uložení místa pouze se souřadnicemi.
 - Zbývá: rozšířené kontextové údaje.
 
 ### 6. Rezervace po typech

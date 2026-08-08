@@ -48,6 +48,7 @@ function place(
     latitude: 49.2,
     longitude: 16.6,
     name: `Místo ${id}`,
+    notes: null,
     provider: "manual",
     provider_category: null,
     provider_place_id: null,

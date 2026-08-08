@@ -7,7 +7,7 @@ function place(overrides: Partial<TripPlaceRow> = {}): TripPlaceRow {
     address: null, attribution: null, category: "custom", category_overridden: true, city: null,
     country_code: null, created_at: "2026-08-04T00:00:00Z", created_by: "user",
     id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", latitude: 67.23, longitude: 14.61,
-    name: "Saltstraumen", provider: "manual", provider_category: null,
+    name: "Saltstraumen", notes: null, provider: "manual", provider_category: null,
     provider_place_id: null, trip_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
     updated_at: "2026-08-04T00:00:00Z", ...overrides,
   };

@@ -47,6 +47,9 @@ technický základ omylem považoval za schválenou finální obrazovku.
 - Volitelný čas od/do, textová poznámka, úprava, odstranění a atomické pořadí bodů.
 - Atomický přesun existujícího bodu mezi datovanými i nedatovanými dny se
   zachováním propojeného místa a ostatních metadat a vložením na konec cíle.
+- Vytvoření vlastního manual místa kliknutím do Mapbox mapy celé cesty i dne,
+  včetně odlišeného preview pinu, editovatelné adresy doplněné serverovým
+  Geoapify reverse geocodingem a volitelného atomického přidání do timeline.
 - Provider-neutrální model uložených míst s kategorií Nomadia, adresou a souřadnicemi.
 - Ruční správa vlastních míst a bezpečné propojení bodu timeline s místem stejné cesty.
 - Přímé přidání výsledku Geoapify z detailu dne: externí místo se v rámci

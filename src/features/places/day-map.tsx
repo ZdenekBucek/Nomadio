@@ -1,15 +1,18 @@
 "use client";
 
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Crosshair, MapPinned, MapPinOff, Route } from "lucide-react";
+import { Crosshair, MapPinned, MapPinOff, Plus, Route, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type {
   Map as MapboxMap,
   Marker as MapboxMarker,
 } from "mapbox-gl";
 import { StatusPill } from "@/components/ui/status-pill";
+import { Button } from "@/components/ui/button";
 import { placeCategoryLabels } from "./categories";
 import type { DayMapModel, DayMapPoint } from "./day-map-view-model";
+import { MapPlaceForm, type DraftCoordinates } from "./map-place-form";
+import { removePreviewMarker, updatePreviewMarker } from "./map-preview-marker";
 
 const itemTypeLabels = {
   activity: "Aktivita",
@@ -19,25 +22,35 @@ const itemTypeLabels = {
 
 export function DayMap({
   accessToken,
+  canEdit,
+  dayId,
   model,
+  tripId,
 }: {
   accessToken: string | null;
+  canEdit: boolean;
+  dayId: string;
   model: DayMapModel;
+  tripId: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapboxMap | null>(null);
+  const previewMarkerRef = useRef<MapboxMarker | null>(null);
+  const pickingRef = useRef(false);
   const markerElementsRef = useRef(new Map<string, HTMLButtonElement>());
   const [selectedItemId, setSelectedItemId] = useState<string | null>(
     () => model.points[0]?.itemId ?? null,
   );
+  const [draft, setDraft] = useState<DraftCoordinates | null>(null);
+  const [picking, setPicking] = useState(false);
   const selected =
     model.points.find((point) => point.itemId === selectedItemId) ??
     model.points[0] ??
     null;
-  const canRenderMap = Boolean(accessToken && model.points.length);
+  const canRenderMap = Boolean(accessToken);
 
   useEffect(() => {
-    if (!accessToken || !containerRef.current || model.points.length === 0) {
+    if (!accessToken || !containerRef.current) {
       return;
     }
 
@@ -53,17 +66,32 @@ export function DayMap({
 
       map = new mapboxgl.Map({
         accessToken,
-        center: [model.points[0]!.longitude, model.points[0]!.latitude],
+        center: model.points[0]
+          ? [model.points[0].longitude, model.points[0].latitude]
+          : [14.42, 50.08],
         container,
         cooperativeGestures: true,
         style: "mapbox://styles/mapbox/dark-v11",
-        zoom: 12,
+        zoom: model.points.length ? 12 : 4,
       });
       mapRef.current = map;
       map.addControl(
         new mapboxgl.NavigationControl({ showCompass: true }),
         "top-right",
       );
+      map.on("click", (event) => {
+        if (!pickingRef.current || !map) return;
+        const next = { latitude: event.lngLat.lat, longitude: event.lngLat.lng };
+        if (!Number.isFinite(next.latitude) || !Number.isFinite(next.longitude)) return;
+        setDraft(next);
+        previewMarkerRef.current = updatePreviewMarker({
+          current: previewMarkerRef.current,
+          latitude: next.latitude,
+          longitude: next.longitude,
+          map,
+          mapboxgl,
+        });
+      });
 
       const bounds = new mapboxgl.LngLatBounds();
       for (const point of model.points) {
@@ -129,6 +157,7 @@ export function DayMap({
       if (markerElementsRef.current === markerElements) {
         markerElementsRef.current = new Map();
       }
+      removePreviewMarker(previewMarkerRef);
       map?.remove();
       container.replaceChildren();
       mapRef.current = null;
@@ -145,6 +174,26 @@ export function DayMap({
     });
   }
 
+  function togglePicking() {
+    if (picking) {
+      cancelPicking();
+      return;
+    }
+    pickingRef.current = true;
+    setPicking(true);
+  }
+
+  function cancelPicking() {
+    pickingRef.current = false;
+    setPicking(false);
+    setDraft(null);
+    removePreviewMarker(previewMarkerRef);
+  }
+
+  function removePreviewAfterSubmit() {
+    removePreviewMarker(previewMarkerRef);
+  }
+
   return (
     <section className="overflow-hidden rounded-[1.5rem] border border-border bg-card/70 shadow-[0_24px_80px_-48px_rgba(0,0,0,0.9)]">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border p-4 sm:p-5">
@@ -157,20 +206,22 @@ export function DayMap({
             Čísla odpovídají pořadí míst v timeline.
           </p>
         </div>
-        <StatusPill>{model.points.length} na mapě</StatusPill>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {canEdit ? <Button type="button" size="sm" variant={picking ? "secondary" : "outline"} disabled={!accessToken} aria-pressed={picking} onClick={togglePicking}>{picking ? <X /> : <Plus />}{picking ? "Ukončit výběr" : "Přidat vlastní místo"}</Button> : null}
+          <StatusPill>{model.points.length} na mapě</StatusPill>
+        </div>
       </div>
 
       {canRenderMap ? (
-        <div
-          ref={containerRef}
-          aria-label="Interaktivní mapa bodů dne"
-          className="h-[22rem] w-full bg-muted/25 sm:h-[30rem] xl:h-[34rem]"
-        />
+        <div className="relative">
+          <div ref={containerRef} aria-label="Interaktivní mapa bodů dne" data-picking={picking} className="h-[22rem] w-full bg-muted/25 data-[picking=true]:cursor-crosshair sm:h-[30rem] xl:h-[34rem]" />
+          {picking && !draft ? <div className="pointer-events-none absolute bottom-3 left-3 right-3 rounded-xl border border-primary/30 bg-background/90 px-3 py-2 text-center text-xs font-medium text-[var(--brand-highlight)] shadow-lg sm:left-1/2 sm:right-auto sm:-translate-x-1/2">Klikněte do mapy a umístěte nový pin</div> : null}
+        </div>
       ) : (
         <DayMapFallback hasPoints={model.points.length > 0} />
       )}
 
-      {selected ? (
+      {draft ? <MapPlaceForm key={`${draft.latitude}:${draft.longitude}`} dayId={dayId} draft={draft} onCancel={cancelPicking} onSubmit={removePreviewAfterSubmit} tripId={tripId} /> : selected ? (
         <div className="border-t border-border bg-background/35 p-4 sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs font-medium tracking-[0.16em] text-primary uppercase">

@@ -1,10 +1,11 @@
 "use client";
 
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Crosshair, Layers3, MapPinned, MapPinOff } from "lucide-react";
+import { Crosshair, Layers3, MapPinned, MapPinOff, Plus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import { StatusPill } from "@/components/ui/status-pill";
+import { Button } from "@/components/ui/button";
 import type { PlaceCategory } from "@/lib/supabase/database.types";
 import {
   placeCategories,
@@ -12,19 +13,27 @@ import {
   placeCategoryLayerLabels,
 } from "./categories";
 import type { MapPlace, TripMapModel } from "./map-view-model";
+import { MapPlaceForm, type DraftCoordinates } from "./map-place-form";
+import { removePreviewMarker, updatePreviewMarker } from "./map-preview-marker";
 
 export function TripMap({
   accessToken,
+  canEdit,
   model,
+  tripId,
 }: {
   accessToken: string | null;
+  canEdit: boolean;
   model: TripMapModel;
+  tripId: string;
 }) {
   const availableCategories = placeCategories.filter((category) =>
     model.mapped.some((place) => place.category === category),
   );
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapboxMap | null>(null);
+  const previewMarkerRef = useRef<MapboxMarker | null>(null);
+  const pickingRef = useRef(false);
   const markerElementsRef = useRef(new Map<string, HTMLButtonElement>());
   const activeCategoriesRef = useRef(new Set(availableCategories));
   const [activeCategories, setActiveCategories] = useState<PlaceCategory[]>(
@@ -33,6 +42,8 @@ export function TripMap({
   const [selectedId, setSelectedId] = useState<string | null>(
     () => model.mapped[0]?.id ?? null,
   );
+  const [draft, setDraft] = useState<DraftCoordinates | null>(null);
+  const [picking, setPicking] = useState(false);
   const activeCategorySet = new Set(activeCategories);
   const visiblePlaces = model.mapped.filter((place) =>
     activeCategorySet.has(place.category),
@@ -41,10 +52,10 @@ export function TripMap({
     visiblePlaces.find((place) => place.id === selectedId) ??
     visiblePlaces[0] ??
     null;
-  const canRenderMap = Boolean(accessToken && model.mapped.length);
+  const canRenderMap = Boolean(accessToken);
 
   useEffect(() => {
-    if (!accessToken || !containerRef.current || model.mapped.length === 0) return;
+    if (!accessToken || !containerRef.current) return;
 
     const container = containerRef.current;
     container.replaceChildren();
@@ -58,17 +69,32 @@ export function TripMap({
 
       map = new mapboxgl.Map({
         accessToken,
-        center: [model.mapped[0]!.longitude, model.mapped[0]!.latitude],
+        center: model.mapped[0]
+          ? [model.mapped[0].longitude, model.mapped[0].latitude]
+          : [14.42, 50.08],
         container,
         cooperativeGestures: true,
         style: "mapbox://styles/mapbox/dark-v11",
-        zoom: 11,
+        zoom: model.mapped.length ? 11 : 4,
       });
       mapRef.current = map;
       map.addControl(
         new mapboxgl.NavigationControl({ showCompass: true }),
         "top-right",
       );
+      map.on("click", (event) => {
+        if (!pickingRef.current || !map) return;
+        const next = { latitude: event.lngLat.lat, longitude: event.lngLat.lng };
+        if (!Number.isFinite(next.latitude) || !Number.isFinite(next.longitude)) return;
+        setDraft(next);
+        previewMarkerRef.current = updatePreviewMarker({
+          current: previewMarkerRef.current,
+          latitude: next.latitude,
+          longitude: next.longitude,
+          map,
+          mapboxgl,
+        });
+      });
 
       model.mapped.forEach((place, index) => {
         const element = document.createElement("button");
@@ -111,6 +137,7 @@ export function TripMap({
       if (markerElementsRef.current === markerElements) {
         markerElementsRef.current = new Map();
       }
+      removePreviewMarker(previewMarkerRef);
       map?.remove();
       container.replaceChildren();
       mapRef.current = null;
@@ -147,6 +174,24 @@ export function TripMap({
     });
   }
 
+  function togglePicking() {
+    const next = !picking;
+    pickingRef.current = next;
+    setPicking(next);
+    if (!next) cancelPicking();
+  }
+
+  function cancelPicking() {
+    pickingRef.current = false;
+    setPicking(false);
+    setDraft(null);
+    removePreviewMarker(previewMarkerRef);
+  }
+
+  function removePreviewAfterSubmit() {
+    removePreviewMarker(previewMarkerRef);
+  }
+
   return (
     <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
       <section className="overflow-hidden rounded-[1.5rem] border border-border bg-card/70 shadow-[0_24px_80px_-48px_rgba(0,0,0,0.9)]">
@@ -160,9 +205,11 @@ export function TripMap({
               Piny vycházejí ze souřadnic uložených u míst.
             </p>
           </div>
-          <StatusPill>
-            {visiblePlaces.length} z {model.mapped.length} na mapě
-          </StatusPill>
+          <div className="flex w-full min-w-0 flex-col-reverse items-stretch gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+            {canEdit && accessToken ? <Button className="w-full sm:w-auto" type="button" size="lg" variant={picking ? "secondary" : "default"} aria-pressed={picking} onClick={togglePicking}>{picking ? <X /> : <Plus />}{picking ? "Ukončit výběr" : "Přidat vlastní místo"}</Button> : null}
+            {canEdit && !accessToken ? <p role="status" className="max-w-xs rounded-xl border border-amber-400/20 bg-amber-400/8 px-3 py-2 text-xs leading-5 text-amber-200">Přidání vlastního místa vyžaduje nakonfigurovanou Mapbox mapu.</p> : null}
+            <StatusPill className="self-start sm:self-auto">{visiblePlaces.length} z {model.mapped.length} na mapě</StatusPill>
+          </div>
         </div>
 
         <MapLayers
@@ -177,9 +224,11 @@ export function TripMap({
             <div
               ref={containerRef}
               aria-label="Interaktivní mapa uložených míst"
-              className="h-[28rem] w-full bg-muted/25 sm:h-[36rem]"
+              data-picking={picking}
+              className="h-[28rem] w-full bg-muted/25 data-[picking=true]:cursor-crosshair sm:h-[36rem]"
             />
-            {visiblePlaces.length === 0 ? (
+            {picking && !draft ? <div className="pointer-events-none absolute bottom-3 left-3 right-3 rounded-xl border border-primary/30 bg-background/90 px-3 py-2 text-center text-xs font-medium text-[var(--brand-highlight)] shadow-lg sm:left-1/2 sm:right-auto sm:-translate-x-1/2">Klikněte do mapy a umístěte nový pin</div> : null}
+            {visiblePlaces.length === 0 && !picking ? (
               <div className="pointer-events-none absolute inset-0 grid place-items-center bg-background/72 p-6 text-center backdrop-blur-[2px]">
                 <div>
                   <Layers3 className="mx-auto size-8 text-primary" />
@@ -195,7 +244,7 @@ export function TripMap({
           <MapFallback hasPlaces={model.mapped.length > 0} />
         )}
 
-        {selected ? (
+        {draft ? <MapPlaceForm key={`${draft.latitude}:${draft.longitude}`} draft={draft} onCancel={cancelPicking} onSubmit={removePreviewAfterSubmit} tripId={tripId} /> : selected ? (
           <div className="border-t border-border bg-background/35 p-4 sm:p-5">
             <p className="text-xs font-medium tracking-[0.16em] text-primary uppercase">
               Vybrané místo

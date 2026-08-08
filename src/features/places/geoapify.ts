@@ -11,6 +11,14 @@ type SearchOptions = {
   timeoutMs?: number;
 };
 
+type ReverseOptions = {
+  apiKey: string;
+  fetcher?: typeof fetch;
+  latitude: number;
+  longitude: number;
+  timeoutMs?: number;
+};
+
 export const GEOAPIFY_ATTRIBUTION = "Powered by Geoapify · © OpenStreetMap contributors";
 
 export class GeoapifySearchError extends Error {
@@ -93,6 +101,58 @@ export function normalizeGeoapifyResponse(payload: unknown): PlaceSearchResult[]
       providerPlaceId,
     }];
   });
+}
+
+export function normalizeGeoapifyReverseResponse(payload: unknown): string | null {
+  const root = record(payload);
+  const candidates = Array.isArray(root?.results)
+    ? root.results
+    : Array.isArray(root?.features)
+      ? root.features
+      : [];
+  const properties = candidateProperties(candidates[0]);
+  return limitedText(properties?.formatted, 300);
+}
+
+export async function reverseGeocodeGeoapify({
+  apiKey,
+  fetcher = fetch,
+  latitude,
+  longitude,
+  timeoutMs = 6_000,
+}: ReverseOptions): Promise<string | null> {
+  const url = new URL("https://api.geoapify.com/v1/geocode/reverse");
+  url.searchParams.set("lat", latitude.toString());
+  url.searchParams.set("lon", longitude.toString());
+  url.searchParams.set("format", "json");
+  url.searchParams.set("lang", "cs");
+  url.searchParams.set("limit", "1");
+  url.searchParams.set("apiKey", apiKey);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetcher(url, {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+      signal: controller.signal,
+    });
+    if (!response.ok) throw new GeoapifySearchError("provider", response.status);
+    let payload: unknown;
+    try {
+      payload = await response.json();
+    } catch {
+      throw new GeoapifySearchError("provider");
+    }
+    return normalizeGeoapifyReverseResponse(payload);
+  } catch (error) {
+    if (error instanceof GeoapifySearchError) throw error;
+    if (controller.signal.aborted || (error instanceof DOMException && error.name === "AbortError")) {
+      throw new GeoapifySearchError("timeout");
+    }
+    throw new GeoapifySearchError("provider");
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export async function searchGeoapifyPlaces({

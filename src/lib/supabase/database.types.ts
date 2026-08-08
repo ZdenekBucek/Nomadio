@@ -85,6 +85,7 @@ export type TripPlaceRow = {
   latitude: number | null;
   longitude: number | null;
   name: string;
+  notes?: string | null;
   provider: string;
   provider_category: string | null;
   provider_place_id: string | null;
@@ -211,6 +212,7 @@ export type Database = {
           latitude?: number | null;
           longitude?: number | null;
           name: string;
+          notes?: string | null;
           provider?: string;
           provider_category?: string | null;
           provider_place_id?: string | null;
@@ -327,6 +329,10 @@ export type Database = {
       };
       create_manual_trip_place: {
         Args: { place_address: string | null; place_category: PlaceCategory; place_city: string | null; place_country_code: string | null; place_latitude: number | null; place_longitude: number | null; place_name: string; target_trip_id: string };
+        Returns: string;
+      };
+      create_map_selected_manual_place: {
+        Args: { add_to_day: boolean; place_address: string | null; place_category: PlaceCategory; place_latitude: number; place_longitude: number; place_name: string; place_notes: string | null; target_day_id: string | null; target_trip_id: string };
         Returns: string;
       };
       create_mapbox_trip_place: {
