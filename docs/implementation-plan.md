@@ -143,9 +143,24 @@ implementaci.
   jeho selhání neblokuje uložení místa pouze se souřadnicemi.
 - Zbývá: rozšířené kontextové údaje.
 
-### 6. Rezervace po typech
+### 6. Rezervace po typech — probíhá
 
-- Nejprve ubytování jako celý vertikální řez.
+- Lokálně dokončen první vertikální řez ubytování: trip-scoped rezervace,
+  chronologický přehled, souhrn nocí a plateb, přidání, detail, editace a
+  bezpečné smazání bez odstranění uloženého místa.
+- Owner/editor mohou propojit již uložené `trip_place` nebo použít stávající
+  serverové Geoapify vyhledávání; normalizované externí místo se vytvoří nebo
+  znovu použije a Mapbox zůstává rendererem náhledu.
+- RLS zachovává owner/editor zápis, viewer čtení a read-only archiv. Přehled
+  informativně hlásí mezery a překryvy v rámci termínu cesty.
+- Platební údaje ubytování evidují celkovou cenu, již zaplacenou částku a
+  volitelné datum splatnosti zbývající částky — stejné pole pokrývá celou
+  plánovanou platbu i doplatek. Zbývající částka se neukládá duplicitně, ale počítá
+  se jako `total_price - paid_amount`. Tyto hodnoty budou v samostatném řezu
+  vstupem pro Budget; automatická synchronizace zatím neexistuje.
+- Zbývá propojení ubytování s rozpočtem, dokumenty, body check-in/check-out v
+  itineráři a checklistem; platební plán ani automatické úkoly nejsou součástí
+  tohoto řezu.
 - Poté doprava, aktivity a obecná rezervace se sdíleným kontraktem.
 - Vazby na itinerář, místo a dokument se přidávají vždy v malém řezu.
 

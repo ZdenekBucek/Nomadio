@@ -38,7 +38,7 @@ const tripNavigationItems = [
   { icon: LayoutDashboard, label: "Přehled", section: "overview" },
   { icon: CalendarDays, label: "Itinerář", section: "itinerary" },
   { icon: Map, label: "Mapa", section: "map" },
-  { icon: BedDouble, label: "Ubytování" },
+  { icon: BedDouble, label: "Ubytování", section: "accommodation" },
   { icon: BusFront, label: "Doprava" },
   { icon: WalletCards, label: "Rozpočet" },
   { icon: FileText, label: "Dokumenty" },
@@ -51,7 +51,7 @@ const mobileTripNavigationItems = [
   tripNavigationItems[0],
   tripNavigationItems[1],
   tripNavigationItems[2],
-  tripNavigationItems[5],
+  tripNavigationItems[3],
   { icon: MoreHorizontal, label: "Více", section: "settings" },
 ] as const;
 
@@ -59,6 +59,7 @@ function tripHref(section: string | undefined, overviewHref: string) {
   if (section === "overview") return overviewHref;
   if (section === "itinerary") return `${overviewHref}/itinerary`;
   if (section === "map") return `${overviewHref}/map`;
+  if (section === "accommodation") return `${overviewHref}/accommodation`;
   if (section === "settings") return `${overviewHref}/settings`;
   return undefined;
 }

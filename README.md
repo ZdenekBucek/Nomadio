@@ -1,12 +1,12 @@
 # Nomadio
 
-Bezpečný technický základ responzivní cestovatelské aplikace. Každý trip bude
+Bezpečná responzivní cestovatelská aplikace ve vertikálním vývoji. Každý trip je
 samostatným kontextem pro itinerář, místa, rezervace, rozpočet, dokumenty,
 checklist a offline data.
 
-Aktuální fáze obsahuje pouze foundation UI, architektonické hranice a lokální
-vývojové prostředí. Supabase, Google OAuth, Mapbox ani produkční nasazení nejsou
-aktivované.
+Aktuální lokální stav obsahuje autentizaci, soukromé a sdílené cesty, itinerář,
+uložená místa, Mapbox mapy, serverové Geoapify vyhledávání a první CRUD řez
+ubytování. Přesný stav a čekající práce jsou v implementačním plánu.
 
 ## Lokální spuštění
 

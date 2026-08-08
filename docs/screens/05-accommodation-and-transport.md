@@ -58,6 +58,37 @@ nesynchronizované kopie.
 
 Více splátek a automatické storno notifikace mohou přijít později.
 
+## Aktuálně implementovaný první řez
+
+Route `/app/trips/{tripId}/accommodation` používá společný Nomadio App Shell a
+zobrazuje rezervace chronologicky. Souhrn uvádí počet rezervací, součet nocí a
+počet nezaplacených nebo částečně zaplacených pobytů. Informativní kontrola
+termínu cesty hlásí nepokryté noci a překrývající se rezervace, ale uložení
+neblokuje.
+
+Owner a editor mohou rezervaci přidat, upravit a po potvrzení odstranit. Viewer
+a člen archivované cesty mají read-only detail. Místo lze vybrat z existujících
+`trip_places` nebo vyhledat přes serverovou Geoapify integraci. Výsledek se
+normalizuje do interního místa a náhled renderuje Mapbox. Smazání rezervace
+nikdy automaticky nemaže propojené místo.
+
+Sekce Cena a platba ukládá `total_price`, `paid_amount`, měnu, explicitní
+`payment_status` a volitelné `balance_due_date`. Toto datum obecně znamená
+splatnost celé zbývající částky: při nulové platbě jde o plánovanou platbu celé
+ceny, při částečné platbě o termín doplatku. Zbývající doplatek je vždy
+dopočítaný jako rozdíl celkové a zaplacené částky a v databázi nemá vlastní
+sloupec. Formulář při změně částek odvodí `unpaid`, `partially_paid` nebo `paid`;
+explicitní `pay_on_site` nikdy automaticky nepřepíše a datum u něj může zůstat
+prázdné. Databáze současně odmítá zjevné rozpory.
+
+V budoucím Budget řezu bude ubytování zdrojem celkového nákladu, zaplacené a
+zbývající částky, splatnosti, měny a platebního stavu. `budget_items` ani
+automatická synchronizace se nyní nevytvářejí.
+
+Tento řez zatím neobsahuje dokumenty, vícestupňový platební kalendář,
+automatické check-in/check-out položky itineráře, úkoly, citlivé přístupové kódy,
+storno pravidla ani automatické připomínky.
+
 ---
 
 ## Doprava — účel

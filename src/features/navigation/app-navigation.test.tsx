@@ -51,8 +51,10 @@ describe("AppNavigation", () => {
       "aria-current",
       "page",
     );
-    expect(screen.getByText("Ubytování").closest("[aria-disabled='true']"))
-      .toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Ubytování" })).toHaveAttribute(
+      "href",
+      "/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/accommodation",
+    );
     expect(screen.getByRole("link", { name: "Itinerář" })).toHaveAttribute(
       "href",
       "/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/itinerary",
@@ -83,6 +85,15 @@ describe("AppNavigation", () => {
     unmount();
     render(<AppNavigation mobile />);
     expect(screen.getByRole("link", { name: "Mapa" })).toHaveAttribute("aria-current", "page");
+  });
+
+  it("marks accommodation active on desktop and mobile", () => {
+    pathnameState.value = "/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/accommodation";
+    const { unmount } = render(<AppNavigation />);
+    expect(screen.getByRole("link", { name: "Ubytování" })).toHaveAttribute("aria-current", "page");
+    unmount();
+    render(<AppNavigation mobile />);
+    expect(screen.getByRole("link", { name: "Ubytování" })).toHaveAttribute("aria-current", "page");
   });
 
   it("marks settings active and links mobile More to it", () => {

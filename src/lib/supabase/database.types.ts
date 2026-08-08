@@ -42,6 +42,34 @@ export type TripCoverVariant = "violet" | "ocean" | "sunset" | "forest";
 export type ItineraryDayStatus = "plan" | "confirmed" | "completed";
 export type ItineraryItemType = "activity" | "transport" | "note";
 export type PlaceCategory = "accommodation" | "sight" | "activity" | "food" | "transport" | "shopping" | "nature" | "charging" | "custom";
+export type AccommodationType = "hotel" | "apartment" | "hostel" | "guesthouse" | "camping" | "friends_family" | "other";
+export type AccommodationPaymentStatus = "unknown" | "unpaid" | "partially_paid" | "paid" | "pay_on_site";
+
+export type AccommodationRow = {
+  accommodation_type: AccommodationType;
+  balance_due_date: string | null;
+  booking_reference: string | null;
+  booking_url: string | null;
+  breakfast_included: boolean | null;
+  check_in_date: string;
+  check_in_time: string | null;
+  check_out_date: string;
+  check_out_time: string | null;
+  created_at: string;
+  created_by: string;
+  currency: string | null;
+  guest_count: number | null;
+  id: string;
+  name: string;
+  notes: string | null;
+  paid_amount: number | null;
+  payment_status: AccommodationPaymentStatus;
+  place_id: string | null;
+  room_type: string | null;
+  total_price: number | null;
+  trip_id: string;
+  updated_at: string;
+};
 
 export type ItineraryDayRow = {
   city: string | null;
@@ -160,6 +188,36 @@ export type TripTravelerRow = {
 export type Database = {
   public: {
     Tables: {
+      accommodations: {
+        Row: AccommodationRow;
+        Insert: {
+          accommodation_type?: AccommodationType;
+          balance_due_date?: string | null;
+          booking_reference?: string | null;
+          booking_url?: string | null;
+          breakfast_included?: boolean | null;
+          check_in_date: string;
+          check_in_time?: string | null;
+          check_out_date: string;
+          check_out_time?: string | null;
+          created_at?: string;
+          created_by: string;
+          currency?: string | null;
+          guest_count?: number | null;
+          id?: string;
+          name: string;
+          notes?: string | null;
+          paid_amount?: number | null;
+          payment_status?: AccommodationPaymentStatus;
+          place_id?: string | null;
+          room_type?: string | null;
+          total_price?: number | null;
+          trip_id: string;
+          updated_at?: string;
+        };
+        Update: Partial<AccommodationRow>;
+        Relationships: [];
+      };
       itinerary_days: {
         Row: ItineraryDayRow;
         Insert: {
@@ -497,6 +555,8 @@ export type Database = {
       };
     };
     Enums: {
+      accommodation_payment_status: AccommodationPaymentStatus;
+      accommodation_type: AccommodationType;
       itinerary_day_status: ItineraryDayStatus;
       itinerary_item_type: ItineraryItemType;
       place_category: PlaceCategory;
