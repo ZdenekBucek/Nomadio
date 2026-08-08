@@ -51,6 +51,25 @@ export type BudgetSourceType = "manual" | "accommodation" | "transport";
 export type BudgetCategory = "accommodation" | "transport" | "food" | "activities" | "car" | "shopping" | "travel_services" | "health" | "fees" | "other";
 export type BudgetSubcategory = "hotel" | "apartment" | "hostel" | "guesthouse" | "camping" | "other_accommodation" | "flights" | "train" | "bus" | "ferry" | "local_transport" | "taxi_transfer" | "other_transport" | "restaurants" | "groceries" | "cafes" | "drinks" | "other_food" | "entrance_fees" | "tours" | "wellness_spa" | "entertainment" | "nature" | "other_activity" | "rental_car" | "fuel" | "ev_charging" | "parking" | "tolls" | "road_vignettes" | "car_other" | "souvenirs" | "cosmetics" | "clothing" | "electronics" | "gifts" | "other_shopping" | "insurance" | "visa_entry_fees" | "esim_internet" | "luggage" | "travel_service_other" | "pharmacy" | "medical" | "hygiene" | "health_other" | "bank_fees" | "exchange_fees" | "tips" | "city_tax" | "booking_fees" | "fee_other" | "emergency" | "unexpected" | "miscellaneous";
 export type BudgetPaymentStatus = "unknown" | "unpaid" | "partially_paid" | "paid" | "pay_on_site";
+export type DocumentCategory = "transport" | "accommodation" | "activity" | "insurance" | "visa" | "ticket" | "receipt" | "other";
+export type DocumentLinkedEntityType = "trip" | "accommodation" | "transport" | "itinerary_item";
+
+export type DocumentRow = {
+  category: DocumentCategory;
+  created_at: string;
+  id: string;
+  is_important: boolean;
+  linked_entity_id: string | null;
+  linked_entity_type: DocumentLinkedEntityType | null;
+  mime_type: string;
+  name: string;
+  offline_enabled: boolean;
+  size_bytes: number;
+  storage_path: string;
+  trip_id: string;
+  updated_at: string;
+  uploaded_by: string;
+};
 
 export type BudgetItemRow = {
   actual_amount: number | null;
@@ -252,6 +271,27 @@ export type TripTravelerRow = {
 export type Database = {
   public: {
     Tables: {
+      documents: {
+        Row: DocumentRow;
+        Insert: {
+          category?: DocumentCategory;
+          created_at?: string;
+          id?: string;
+          is_important?: boolean;
+          linked_entity_id?: string | null;
+          linked_entity_type?: DocumentLinkedEntityType | null;
+          mime_type: string;
+          name: string;
+          offline_enabled?: boolean;
+          size_bytes: number;
+          storage_path: string;
+          trip_id: string;
+          updated_at?: string;
+          uploaded_by: string;
+        };
+        Update: Partial<DocumentRow>;
+        Relationships: [];
+      };
       budget_items: {
         Row: BudgetItemRow;
         Insert: {
@@ -722,6 +762,8 @@ export type Database = {
       budget_category: BudgetCategory;
       budget_payment_status: BudgetPaymentStatus;
       budget_source_type: BudgetSourceType;
+      document_category: DocumentCategory;
+      document_linked_entity_type: DocumentLinkedEntityType;
       transport_booking_status: TransportBookingStatus;
       transport_payment_status: TransportPaymentStatus;
       transport_type: TransportType;

@@ -3,7 +3,8 @@
 ## Dokumenty
 
 Dokument je soukromý a patří konkrétní cestě. Může být navázaný na ubytování,
-dopravu, aktivitu, rozpočtovou položku nebo celý trip.
+dopravu, aktivitu nebo celý trip. První řez záměrně nepřidává vazbu na
+rozpočtovou položku.
 
 Typický obsah:
 
@@ -16,18 +17,37 @@ Typický obsah:
 - fotografie nebo screenshot důležité informace.
 
 Zobrazení obsahuje kategorie, důležitost, zdrojovou entitu a offline stav.
-Dokument může být soubor, fotografie, odkaz nebo textová poznámka podle
-konkrétního použití. Citlivý obsah nesmí být veřejně dostupný přes trvalou URL.
+První řez přijímá PDF, JPG a PNG do 10 MB. Citlivý obsah není dostupný přes
+veřejnou nebo trvalou URL.
+
+### Implementovaný první řez
+
+Route `/app/trips/{tripId}/documents` nabízí souhrn všech, důležitých a pro
+offline vybraných dokumentů, filtrování podle kategorie a karty s typem,
+velikostí a vazbou. Detail `/documents/{documentId}` vytváří přes přihlášenou
+session krátkodobý podepsaný odkaz pro náhled a stažení.
+
+Soubor je uložen v privátním bucketu `trip-documents` pod cestou
+`trips/{trip_id}/documents/{document_id}/{safe_filename}`. Bucket i server
+omezují MIME a velikost; server navíc kontroluje signaturu obsahu. Metadata v
+`documents` ukládají původní typ, velikost, kategorii, důležitost, offline
+záměr a volitelnou polymorfní vazbu. Trigger ověřuje, že ubytování, doprava nebo
+activity itinerary item patří stejnému tripu.
+
+Owner/editor mohou uploadovat, upravovat metadata a mazat. Viewer může pouze
+číst, zobrazit a stáhnout. Archivovaná cesta je read-only. Stejná membership
+pravidla chrání `storage.objects`; bucket není veřejný.
 
 ### Offline
 
-Uživatel volí, které velké soubory stáhnout. Důležité dokumenty navázané na
-ubytování a dopravu se navrhují k automatickému zahrnutí do offline balíku.
+Uživatel zatím pouze označí `offline_enabled`. Skutečné stažení, šifrovaná
+lokální cache, verze balíku a odvolání přístupu patří do samostatné offline fáze.
 
 ### Později
 
-Import PDF nebo obrázku může navrhnout data rezervace, ale nic nesmí uložit bez
-kontroly uživatele. OCR není součást prvního řezu.
+Import PDF nebo obrázku může později navrhnout data rezervace, ale nic nesmí
+uložit bez kontroly uživatele. OCR, AI čtení, import z e-mailu a automatické
+párování nejsou součástí prvního řezu. Veřejné sdílení se neimplementuje.
 
 ## Checklist
 

@@ -197,9 +197,20 @@ implementaci.
 
 ### 8. Dokumenty
 
-- Privátní bucket a RLS/signed URL tok.
-- Upload k tripu, následně vazby na rezervace a další entity.
-- Limity typu a velikosti, bezpečné názvy, mazání a audit přístupu.
+- Lokálně dokončen první vertikální řez na route
+  `/app/trips/{tripId}/documents`: privátní bucket `trip-documents`, metadata v
+  `documents`, krátkodobé signed URL a owner/editor/viewer RLS pro tabulku i
+  Storage objekty.
+- Objekt používá cestu
+  `trips/{trip_id}/documents/{document_id}/{safe_filename}`. Server i bucket
+  povolují pouze PDF/JPG/PNG do 10 MB; aplikace navíc ověřuje signaturu obsahu.
+- Dokument lze navázat na trip, ubytování, dopravu nebo activity itinerary item.
+  Databázový trigger ověřuje, že cílová entita skutečně patří stejné cestě.
+- `offline_enabled` je zatím pouze uživatelský záměr pro budoucí offline balík;
+  soubor se do zařízení automaticky nestahuje.
+- Další fáze: skutečný offline sync, OCR, import rezervací z e-mailu nebo PDF,
+  automatické párování a případný audit přístupu. Veřejné sdílení není součástí
+  plánovaného bezpečného základu.
 
 ### 9. Checklist
 
