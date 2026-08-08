@@ -63,6 +63,10 @@ implementaci.
   zadání dalších cestovatelů v průvodci a jejich souhrn na kartách.
 - Dokončeno: klikací chráněný detail, kontextová navigace, datová hlavička a
   první přehled reálných destinací, cestovatelů a přístupu.
+- Dokončeno: detail cesty nyní používá kompaktní řídicí přehled nad
+  normalizovanými daty Budgetu, Ubytování, Dopravy, Itineráře, Checklistu a
+  Dokumentů. Finanční částky se nesčítají napříč měnami; attention ukazuje jen
+  odvoditelné problémy a vždy odkazuje do zdrojového modulu.
 - Dokončeno: chráněné nastavení základních údajů a rolově omezená správa více
   destinací včetně hlavní destinace, pořadí a databázových invariantů.
 - Dokončeno: owner-only archivace, obnovení předchozího stavu a bezpečné

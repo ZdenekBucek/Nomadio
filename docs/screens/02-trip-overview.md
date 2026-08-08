@@ -19,6 +19,24 @@ Planning a Travel mode.
 - sdílení a menu,
 - stav offline balíku.
 
+## Implementovaný řídicí přehled
+
+Přehled je kompaktní server-renderovaný dashboard, nikoli druhé místo pro
+editaci dat. Čtyři horní souhrny vedou do Rozpočtu, Ubytování, Itineráře a
+Checklistu. Finance používají normalizované Budget řádky a zobrazuje částky po
+měnách bez FX součtu. Ubytování používá coverage helper, Itinerář počítá jen
+datované dny s položkou a Checklist zobrazuje úkoly a balení odděleně.
+
+Sekce **Vyžaduje pozornost** řadí pouze odvoditelné stavy: prošlé platby,
+mezery nebo překryvy ubytování, prošlé úkoly a důležité dokumenty neoznačené
+pro offline použití. Každá položka odkazuje na zdrojový modul. Pod ní jsou
+nejbližší platba, přesun, ubytování, itinerář, otevřené úkoly, dokumenty a
+odkaz na Mapu. Mobilní pořadí přednostně ukazuje hero, pozornost, souhrny,
+itinerář, dopravu a ubytování; desktop používá hlavní a vedlejší sloupec.
+
+Travel Mode ani skutečný Offline Pack nejsou implementované. Offline údaj proto
+znamená výhradně počet dokumentů označených `offline_enabled`.
+
 ## Karty přehledu
 
 ### Nejbližší důležitá událost

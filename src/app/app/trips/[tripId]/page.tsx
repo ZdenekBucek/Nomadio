@@ -20,6 +20,8 @@ import { getSafeGoogleAvatarUrl } from "@/features/auth/profile";
 import { shareTrip } from "@/features/trips/actions";
 import { continentLabels, countryFlag } from "@/features/trips/countries";
 import { getTripDetail } from "@/features/trips/trip-detail";
+import { getTripOverviewData } from "@/features/trips/overview-data";
+import { TripOverviewDashboard } from "@/features/trips/trip-overview-dashboard";
 import { TripMembers } from "@/features/trips/trip-members";
 import {
   formatTripDates,
@@ -90,6 +92,7 @@ export default async function TripOverviewPage({
   const memberMessage = query.member
     ? memberMessages[query.member as keyof typeof memberMessages] ?? memberMessages.error
     : null;
+  const overview = await getTripOverviewData(trip, detail.currentUserId).catch(() => null);
 
   return (
     <div>
@@ -185,7 +188,8 @@ export default async function TripOverviewPage({
         </div>
       ) : null}
 
-      <div className="mt-6 grid items-start gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(19rem,0.75fr)]">
+      {overview ? <TripOverviewDashboard data={overview} tripId={trip.id} /> : null}
+      {!overview ? <div className="mt-6 grid items-start gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(19rem,0.75fr)]">
         <div className="grid gap-5">
           <Surface depth="panel" className="p-5 sm:p-6">
             <div className="flex items-center justify-between gap-3">
@@ -349,7 +353,7 @@ export default async function TripOverviewPage({
             </p>
           )}
         </Surface>
-      </div>
+      </div> : null}
     </div>
   );
 }
