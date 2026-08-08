@@ -47,6 +47,30 @@ export type AccommodationPaymentStatus = "unknown" | "unpaid" | "partially_paid"
 export type TransportType = "flight" | "train" | "bus" | "ferry" | "rental_car" | "private_car" | "taxi_transfer" | "other";
 export type TransportBookingStatus = "planned" | "booked" | "checked_in" | "completed" | "cancelled";
 export type TransportPaymentStatus = "unknown" | "unpaid" | "partially_paid" | "paid" | "pay_on_site";
+export type BudgetSourceType = "manual" | "accommodation" | "transport";
+export type BudgetCategory = "accommodation" | "transport" | "food" | "activities" | "car" | "shopping" | "travel_services" | "health" | "fees" | "other";
+export type BudgetSubcategory = "hotel" | "apartment" | "hostel" | "guesthouse" | "camping" | "other_accommodation" | "flights" | "train" | "bus" | "ferry" | "local_transport" | "taxi_transfer" | "other_transport" | "restaurants" | "groceries" | "cafes" | "drinks" | "other_food" | "entrance_fees" | "tours" | "wellness_spa" | "entertainment" | "nature" | "other_activity" | "rental_car" | "fuel" | "ev_charging" | "parking" | "tolls" | "road_vignettes" | "car_other" | "souvenirs" | "cosmetics" | "clothing" | "electronics" | "gifts" | "other_shopping" | "insurance" | "visa_entry_fees" | "esim_internet" | "luggage" | "travel_service_other" | "pharmacy" | "medical" | "hygiene" | "health_other" | "bank_fees" | "exchange_fees" | "tips" | "city_tax" | "booking_fees" | "fee_other" | "emergency" | "unexpected" | "miscellaneous";
+export type BudgetPaymentStatus = "unknown" | "unpaid" | "partially_paid" | "paid" | "pay_on_site";
+
+export type BudgetItemRow = {
+  actual_amount: number | null;
+  balance_due_date: string | null;
+  category: BudgetCategory;
+  created_at: string;
+  created_by: string;
+  currency: string;
+  estimated_amount: number | null;
+  id: string;
+  name: string;
+  notes: string | null;
+  paid_amount: number | null;
+  payment_status: BudgetPaymentStatus;
+  source_id: string | null;
+  source_type: BudgetSourceType;
+  subcategory: BudgetSubcategory | null;
+  trip_id: string;
+  updated_at: string;
+};
 
 export type TransportBookingRow = {
   balance_due_date: string | null;
@@ -228,6 +252,36 @@ export type TripTravelerRow = {
 export type Database = {
   public: {
     Tables: {
+      budget_items: {
+        Row: BudgetItemRow;
+        Insert: {
+          actual_amount?: number | null;
+          balance_due_date?: string | null;
+          category: BudgetCategory;
+          created_at?: string;
+          created_by: string;
+          currency: string;
+          estimated_amount?: number | null;
+          id?: string;
+          name: string;
+          notes?: string | null;
+          paid_amount?: number | null;
+          payment_status?: BudgetPaymentStatus;
+          source_id?: string | null;
+          source_type?: BudgetSourceType;
+          subcategory?: BudgetSubcategory | null;
+          trip_id: string;
+          updated_at?: string;
+        };
+        Update: Partial<BudgetItemRow>;
+        Relationships: [];
+      };
+      budget_subcategory_catalog: {
+        Row: { category: BudgetCategory; subcategory: BudgetSubcategory };
+        Insert: { category: BudgetCategory; subcategory: BudgetSubcategory };
+        Update: Partial<{ category: BudgetCategory; subcategory: BudgetSubcategory }>;
+        Relationships: [];
+      };
       accommodations: {
         Row: AccommodationRow;
         Insert: {
@@ -665,6 +719,9 @@ export type Database = {
     Enums: {
       accommodation_payment_status: AccommodationPaymentStatus;
       accommodation_type: AccommodationType;
+      budget_category: BudgetCategory;
+      budget_payment_status: BudgetPaymentStatus;
+      budget_source_type: BudgetSourceType;
       transport_booking_status: TransportBookingStatus;
       transport_payment_status: TransportPaymentStatus;
       transport_type: TransportType;

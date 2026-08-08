@@ -21,7 +21,7 @@ První vertikální řez modulu je dostupný na route
 - Owner/editor zapisují, viewer pouze čte a archivovaný trip je read-only.
 
 Časy z formuláře jsou interpretované v `trips.timezone` a ukládají se jako
-`timestamptz`. Platební data jsou připravená jako budoucí vstup modulu Budget.
+`timestamptz`. Budget čte platební data přímo jako svůj read-only zdroj.
 Segmenty jsou připravené pro pozdější vytvoření odkazovaných itinerary items,
 ale žádná automatická synchronizace nyní neběží.
 
@@ -29,4 +29,4 @@ ale žádná automatická synchronizace nyní neběží.
 
 Nejsou implementované živé statusy letů a spojů, boarding pass, import PDF,
 dokumenty, routing, přímé integrace dopravců, automatické notifikace ani
-automatické vytváření položek itineráře či rozpočtu.
+automatické vytváření položek itineráře. Rozpočet dopravu pouze čte bez kopie.

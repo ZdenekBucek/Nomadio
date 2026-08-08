@@ -81,9 +81,9 @@ sloupec. Formulář při změně částek odvodí `unpaid`, `partially_paid` neb
 explicitní `pay_on_site` nikdy automaticky nepřepíše a datum u něj může zůstat
 prázdné. Databáze současně odmítá zjevné rozpory.
 
-V budoucím Budget řezu bude ubytování zdrojem celkového nákladu, zaplacené a
-zbývající částky, splatnosti, měny a platebního stavu. `budget_items` ani
-automatická synchronizace se nyní nevytvářejí.
+Budget čte ubytování přímo jako zdroj celkového nákladu, zaplacené a zbývající
+částky, splatnosti, měny a platebního stavu. Zdrojová rezervace se do
+`budget_items` nekopíruje a automatická synchronizace není potřeba.
 
 Tento řez zatím neobsahuje dokumenty, vícestupňový platební kalendář,
 automatické check-in/check-out položky itineráře, úkoly, citlivé přístupové kódy,
@@ -196,9 +196,9 @@ správné pořadí časů, unikátní `sort_order`, cenové invarianty a read-on
 archiv. Smazání bookingu kaskádově odstraní segmenty, nikoli uložená místa.
 
 `total_price`, `paid_amount`, dopočítaný zůstatek, `balance_due_date`, měna a
-platební stav jsou budoucí zdroj pro Budget. Segmenty jsou připravené pro
-pozdější odkazy z itineráře, ale tento řez nevytváří `budget_items` ani
-itinerary items.
+platební stav Budget přímo čte jako read-only zdroj. Segmenty jsou připravené
+pro pozdější odkazy z itineráře, ale zdrojová rezervace se nekopíruje do
+`budget_items` a tento řez nevytváří itinerary items.
 
 Zatím chybí živé statusy letů, boarding pass, import PDF, dokumenty, routing,
 přímé integrace dopravců a automatické notifikace.

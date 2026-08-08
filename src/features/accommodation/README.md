@@ -17,12 +17,12 @@ validuje formulář, `accommodation-data.ts` načítá serverová data a
 `accommodation-actions.ts` autentizuje každou mutaci. UI je v samostatných
 form/list komponentách.
 
-Rozpočet, dokumenty, automatické položky itineráře, checklist, platební plán a
-automatické úkoly zůstávají pro další řezy.
+Dokumenty, automatické položky itineráře, checklist, více plateb a automatické
+úkoly zůstávají pro další řezy.
 
-Pro budoucí Budget bude accommodation poskytovat `total_price`, `paid_amount`,
-odvozený doplatek, `balance_due_date`, `currency` a `payment_status`. Tento modul
-zatím nevytváří `budget_items` ani žádný synchronizační mechanismus.
+Budget nyní čte z accommodation `total_price`, `paid_amount`, odvozený doplatek,
+`balance_due_date`, `currency` a `payment_status` jako read-only zdroj. Tento
+modul nevytváří `budget_items` ani žádný synchronizační mechanismus.
 
 `balance_due_date` pokrývá jedinou budoucí platbu: při `paid_amount = 0` celou
 částku, při částečné platbě doplatek. Více samostatných splátek tento jednoduchý

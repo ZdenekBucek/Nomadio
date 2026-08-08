@@ -156,9 +156,9 @@ implementaci.
 - Platební údaje ubytování evidují celkovou cenu, již zaplacenou částku a
   volitelné datum splatnosti zbývající částky — stejné pole pokrývá celou
   plánovanou platbu i doplatek. Zbývající částka se neukládá duplicitně, ale počítá
-  se jako `total_price - paid_amount`. Tyto hodnoty budou v samostatném řezu
-  vstupem pro Budget; automatická synchronizace zatím neexistuje.
-- Zbývá propojení ubytování s rozpočtem, dokumenty, body check-in/check-out v
+  se jako `total_price - paid_amount`. Budget nyní tyto hodnoty čte přímo bez
+  kopie a bez synchronizační tabulky.
+- Zbývá propojení ubytování s dokumenty, body check-in/check-out v
   itineráři a checklistem; platební plán ani automatické úkoly nejsou součástí
   tohoto řezu.
 - Lokálně dokončen první vertikální řez dopravy: `transport_bookings` s jedním
@@ -168,7 +168,7 @@ implementaci.
   normalizovaná `trip_places`, ukládají trip-local časy jako `timestamptz` a
   mají serverem přidělené deterministické pořadí. Smazání rezervace zachovává
   místa.
-- Platební pole dopravy jsou stejně jako u ubytování budoucím zdrojem Budget a
+- Platební pole dopravy Budget stejně jako u ubytování přímo čte a
   jednotlivé segmenty jsou připravené pro pozdější odkazy v itineráři. Žádná
   automatická synchronizace zatím neexistuje.
 - Zbývají aktivity a obecná rezervace se sdíleným kontraktem; u dopravy také
@@ -177,10 +177,23 @@ implementaci.
 
 ### 7. Rozpočet
 
-- Peněžní hodnoty v nejmenších jednotkách měny a explicitní kód měny.
-- Odhad/skutečnost, zaplaceno/zbývá a plátce.
-- Rozdělení mezi cestovatele, cena na osobu a společný účet.
-- Samostatné testy zaokrouhlování, změn měny a nevyvážených podílů.
+- Lokálně dokončen první vertikální řez centrálního rozpočtu. Serverový read
+  model skládá ruční `budget_items` s finančními údaji Ubytování a Dopravy bez
+  kopírování zdrojových rezervací.
+- Dashboard ukazuje odhad, skutečnost, zaplaceno a odvozený zůstatek po měnách,
+  souhrny kategorií a čekající platby. Bez FX kurzu se různé měny nikdy
+  nesčítají.
+- Stabilní hlavní kategorie mají volitelnou podkategorii z centrálního
+  typovaného katalogu. Databáze validuje povolenou dvojici kompozitním cizím
+  klíčem a dashboard agreguje hlavní kategorii s jednoduchým podkategoriálním
+  breakdownem.
+- Owner/editor spravují pouze ruční položky; viewer a archivovaný trip jsou
+  read-only. Automatické řádky odkazují editaci zpět na Ubytování nebo Dopravu.
+- Další fáze: rozdělení mezi cestovatele, cena na osobu, společný účet, kdo komu
+  dluží, uložené FX přepočty, více samostatných plateb a případné vlastní
+  uživatelské podkategorie.
+- Samostatné testy zaokrouhlování, FX historie a nevyvážených podílů přijdou s
+  odpovídající další fází.
 
 ### 8. Dokumenty
 
