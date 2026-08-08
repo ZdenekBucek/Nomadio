@@ -405,6 +405,10 @@ export type Database = {
         Args: { direction: number; target_item_id: string };
         Returns: "moved" | "boundary";
       };
+      move_itinerary_item_to_day: {
+        Args: { target_day_id: string; target_item_id: string };
+        Returns: "moved";
+      };
       remove_itinerary_item: {
         Args: { target_item_id: string };
         Returns: "removed";

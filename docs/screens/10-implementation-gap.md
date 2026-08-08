@@ -45,6 +45,8 @@ technický základ omylem považoval za schválenou finální obrazovku.
 - Owner/editor mohou itinerář spravovat, viewer a člen archivované cesty jej pouze čtou.
 - Detail dne se základní timeline aktivit, přesunů a poznámek.
 - Volitelný čas od/do, textová poznámka, úprava, odstranění a atomické pořadí bodů.
+- Atomický přesun existujícího bodu mezi datovanými i nedatovanými dny se
+  zachováním propojeného místa a ostatních metadat a vložením na konec cíle.
 - Provider-neutrální model uložených míst s kategorií Nomadia, adresou a souřadnicemi.
 - Ruční správa vlastních míst a bezpečné propojení bodu timeline s místem stejné cesty.
 - Přímé přidání výsledku Geoapify z detailu dne: externí místo se v rámci
@@ -85,7 +87,7 @@ se nesmí ztratit.
 
 ## Doporučené nejbližší pořadí
 
-1. Doplnit přesun bodů mezi dny a následně kontextové údaje rezervací.
+1. Doplnit kontextové údaje rezervací k bodům itineráře.
 2. Navrhnout až samostatně hromadnou POI vrstvu a hledání podél trasy.
 3. Postupně stavět skutečné přehledové moduly a další části cesty.
 

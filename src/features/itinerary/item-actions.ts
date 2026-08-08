@@ -10,6 +10,12 @@ function itemPath(tripId: string, dayId: string, status: string) { return uuidPa
 async function client(tripId: string, dayId: string) { const supabase = await createClient(); const { data } = await supabase.auth.getUser(); if (!data.user) redirect(`/login?next=/app/trips/${tripId}/itinerary/${dayId}`); return supabase; }
 function refresh(tripId: string, dayId: string) { revalidatePath(`/app/trips/${tripId}/itinerary`); revalidatePath(`/app/trips/${tripId}/itinerary/${dayId}`); }
 
+function refreshMove(tripId: string, sourceDayId: string, targetDayId: string) {
+  refresh(tripId, sourceDayId);
+  revalidatePath(`/app/trips/${tripId}/itinerary/${targetDayId}`);
+  revalidatePath(`/app/trips/${tripId}/map`);
+}
+
 export async function createItineraryItem(formData: FormData) {
   const tripId = formData.get("tripId")?.toString().trim() ?? ""; const dayId = formData.get("dayId")?.toString().trim() ?? ""; const parsed = parseItineraryItem(formData);
   if (!uuidPattern.test(tripId) || !uuidPattern.test(dayId) || !parsed.success) redirect(itemPath(tripId, dayId, "invalid"));
@@ -31,6 +37,28 @@ export async function moveItineraryItem(formData: FormData) {
   if (!uuidPattern.test(tripId) || !uuidPattern.test(dayId) || !uuidPattern.test(itemId) || !["up","down"].includes(raw ?? "")) redirect(itemPath(tripId, dayId, "invalid"));
   const supabase = await client(tripId, dayId); const { data, error } = await supabase.rpc("move_itinerary_item", { target_item_id: itemId, direction: raw === "up" ? -1 : 1 });
   if (error || !data) redirect(itemPath(tripId, dayId, "error")); refresh(tripId, dayId); redirect(itemPath(tripId, dayId, data));
+}
+
+export async function moveItineraryItemToDay(formData: FormData) {
+  const tripId = formData.get("tripId")?.toString().trim() ?? "";
+  const sourceDayId = formData.get("dayId")?.toString().trim() ?? "";
+  const targetDayId = formData.get("targetDayId")?.toString().trim() ?? "";
+  const itemId = formData.get("itemId")?.toString().trim() ?? "";
+  if (
+    !uuidPattern.test(tripId)
+    || !uuidPattern.test(sourceDayId)
+    || !uuidPattern.test(targetDayId)
+    || !uuidPattern.test(itemId)
+    || sourceDayId === targetDayId
+  ) redirect(itemPath(tripId, sourceDayId, "invalid"));
+  const supabase = await client(tripId, sourceDayId);
+  const { data, error } = await supabase.rpc("move_itinerary_item_to_day", {
+    target_item_id: itemId,
+    target_day_id: targetDayId,
+  });
+  if (error || data !== "moved") redirect(itemPath(tripId, sourceDayId, "error"));
+  refreshMove(tripId, sourceDayId, targetDayId);
+  redirect(itemPath(tripId, sourceDayId, "moved-to-day"));
 }
 
 export async function removeItineraryItem(formData: FormData) {

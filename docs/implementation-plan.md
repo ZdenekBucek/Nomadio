@@ -133,7 +133,10 @@ implementaci.
   kategorii a doplnit čas i poznámku; původní výběr uloženého místa zůstává.
 - Dokončeno: responzivní mapa dne s číslováním podle timeline, výřezem všech
   míst, výběrem bodu a odkazem zpět na odpovídající položku programu.
-- Zbývá: přesun bodu mezi dny a rozšířené kontextové údaje.
+- Dokončeno: atomický přesun existujícího bodu na konec jiného datovaného nebo
+  nedatovaného dne se zachováním místa, obsahu a metadat a s bezpečným
+  přepočtem pořadí obou timeline.
+- Zbývá: rozšířené kontextové údaje.
 
 ### 6. Rezervace po typech
 
