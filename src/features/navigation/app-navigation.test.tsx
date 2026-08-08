@@ -63,6 +63,10 @@ describe("AppNavigation", () => {
       "href",
       "/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/map",
     );
+    expect(screen.getByRole("link", { name: "Doprava" })).toHaveAttribute(
+      "href",
+      "/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/transport",
+    );
     expect(screen.getByRole("link", { name: "Nastavení cesty" })).toHaveAttribute(
       "href",
       "/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/settings",
@@ -94,6 +98,15 @@ describe("AppNavigation", () => {
     unmount();
     render(<AppNavigation mobile />);
     expect(screen.getByRole("link", { name: "Ubytování" })).toHaveAttribute("aria-current", "page");
+  });
+
+  it("marks transport active on desktop and mobile", () => {
+    pathnameState.value = "/app/trips/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/transport";
+    const { unmount } = render(<AppNavigation />);
+    expect(screen.getByRole("link", { name: "Doprava" })).toHaveAttribute("aria-current", "page");
+    unmount();
+    render(<AppNavigation mobile />);
+    expect(screen.getByRole("link", { name: "Doprava" })).toHaveAttribute("aria-current", "page");
   });
 
   it("marks settings active and links mobile More to it", () => {

@@ -44,6 +44,46 @@ export type ItineraryItemType = "activity" | "transport" | "note";
 export type PlaceCategory = "accommodation" | "sight" | "activity" | "food" | "transport" | "shopping" | "nature" | "charging" | "custom";
 export type AccommodationType = "hotel" | "apartment" | "hostel" | "guesthouse" | "camping" | "friends_family" | "other";
 export type AccommodationPaymentStatus = "unknown" | "unpaid" | "partially_paid" | "paid" | "pay_on_site";
+export type TransportType = "flight" | "train" | "bus" | "ferry" | "rental_car" | "private_car" | "taxi_transfer" | "other";
+export type TransportBookingStatus = "planned" | "booked" | "checked_in" | "completed" | "cancelled";
+export type TransportPaymentStatus = "unknown" | "unpaid" | "partially_paid" | "paid" | "pay_on_site";
+
+export type TransportBookingRow = {
+  balance_due_date: string | null;
+  booking_reference: string | null;
+  created_at: string;
+  created_by: string;
+  currency: string | null;
+  id: string;
+  notes: string | null;
+  paid_amount: number | null;
+  payment_status: TransportPaymentStatus;
+  provider: string | null;
+  status: TransportBookingStatus;
+  title: string;
+  total_price: number | null;
+  transport_type: TransportType;
+  trip_id: string;
+  updated_at: string;
+};
+
+export type TransportSegmentRow = {
+  arrival_at: string | null;
+  arrival_place_id: string | null;
+  baggage: string | null;
+  booking_id: string;
+  created_at: string;
+  departure_at: string | null;
+  departure_place_id: string | null;
+  id: string;
+  notes: string | null;
+  platform: string | null;
+  seat: string | null;
+  service_number: string | null;
+  sort_order: number;
+  terminal: string | null;
+  updated_at: string;
+};
 
 export type AccommodationRow = {
   accommodation_type: AccommodationType;
@@ -216,6 +256,51 @@ export type Database = {
           updated_at?: string;
         };
         Update: Partial<AccommodationRow>;
+        Relationships: [];
+      };
+      transport_bookings: {
+        Row: TransportBookingRow;
+        Insert: {
+          balance_due_date?: string | null;
+          booking_reference?: string | null;
+          created_at?: string;
+          created_by: string;
+          currency?: string | null;
+          id?: string;
+          notes?: string | null;
+          paid_amount?: number | null;
+          payment_status?: TransportPaymentStatus;
+          provider?: string | null;
+          status?: TransportBookingStatus;
+          title: string;
+          total_price?: number | null;
+          transport_type?: TransportType;
+          trip_id: string;
+          updated_at?: string;
+        };
+        Update: Partial<TransportBookingRow>;
+        Relationships: [];
+      };
+      transport_segments: {
+        Row: TransportSegmentRow;
+        Insert: {
+          arrival_at?: string | null;
+          arrival_place_id?: string | null;
+          baggage?: string | null;
+          booking_id: string;
+          created_at?: string;
+          departure_at?: string | null;
+          departure_place_id?: string | null;
+          id?: string;
+          notes?: string | null;
+          platform?: string | null;
+          seat?: string | null;
+          service_number?: string | null;
+          sort_order: number;
+          terminal?: string | null;
+          updated_at?: string;
+        };
+        Update: Partial<TransportSegmentRow>;
         Relationships: [];
       };
       itinerary_days: {
@@ -477,6 +562,10 @@ export type Database = {
         Args: { target_item_id: string };
         Returns: "removed";
       };
+      remove_transport_booking: {
+        Args: { target_booking_id: string };
+        Returns: "removed";
+      };
       remove_trip_place: {
         Args: { target_place_id: string };
         Returns: "removed" | "in_use";
@@ -507,6 +596,25 @@ export type Database = {
       set_primary_trip_destination: {
         Args: { target_destination_id: string };
         Returns: "updated" | "no_change";
+      };
+      save_transport_booking: {
+        Args: {
+          booking_balance_due_date: string | null;
+          booking_currency: string | null;
+          booking_notes: string | null;
+          booking_paid_amount: number | null;
+          booking_payment_status: TransportPaymentStatus;
+          booking_provider: string | null;
+          booking_reference: string | null;
+          booking_segments: Array<Record<string, string | null>>;
+          booking_status: TransportBookingStatus;
+          booking_title: string;
+          booking_total_price: number | null;
+          booking_transport_type: TransportType;
+          target_booking_id: string | null;
+          target_trip_id: string;
+        };
+        Returns: string;
       };
       update_trip_destination: {
         Args: {
@@ -557,6 +665,9 @@ export type Database = {
     Enums: {
       accommodation_payment_status: AccommodationPaymentStatus;
       accommodation_type: AccommodationType;
+      transport_booking_status: TransportBookingStatus;
+      transport_payment_status: TransportPaymentStatus;
+      transport_type: TransportType;
       itinerary_day_status: ItineraryDayStatus;
       itinerary_item_type: ItineraryItemType;
       place_category: PlaceCategory;

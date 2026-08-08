@@ -6,7 +6,8 @@ checklist a offline data.
 
 Aktuální lokální stav obsahuje autentizaci, soukromé a sdílené cesty, itinerář,
 uložená místa, Mapbox mapy, serverové Geoapify vyhledávání a první CRUD řez
-ubytování. Přesný stav a čekající práce jsou v implementačním plánu.
+ubytování a vícesegmentové dopravy. Přesný stav a čekající práce jsou v
+implementačním plánu.
 
 ## Lokální spuštění
 

@@ -161,7 +161,18 @@ implementaci.
 - Zbývá propojení ubytování s rozpočtem, dokumenty, body check-in/check-out v
   itineráři a checklistem; platební plán ani automatické úkoly nejsou součástí
   tohoto řezu.
-- Poté doprava, aktivity a obecná rezervace se sdíleným kontraktem.
+- Lokálně dokončen první vertikální řez dopravy: `transport_bookings` s jedním
+  až dvaceti atomicky ukládanými segmenty, chronologický přehled, souhrn,
+  owner/editor CRUD a read-only viewer/archivovaný trip.
+- Segmenty používají existující nebo přes serverové Geoapify vyhledávání nově
+  normalizovaná `trip_places`, ukládají trip-local časy jako `timestamptz` a
+  mají serverem přidělené deterministické pořadí. Smazání rezervace zachovává
+  místa.
+- Platební pole dopravy jsou stejně jako u ubytování budoucím zdrojem Budget a
+  jednotlivé segmenty jsou připravené pro pozdější odkazy v itineráři. Žádná
+  automatická synchronizace zatím neexistuje.
+- Zbývají aktivity a obecná rezervace se sdíleným kontraktem; u dopravy také
+  dokumenty, boarding pass, import PDF, živé statusy, routing a notifikace.
 - Vazby na itinerář, místo a dokument se přidávají vždy v malém řezu.
 
 ### 7. Rozpočet

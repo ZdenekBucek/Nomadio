@@ -174,3 +174,31 @@ nezaplacenou rezervaci. Upozornění jsou informativní, ne agresivní.
 - základní kontroly návazností.
 
 Živé změny spojů, import PDF a přímé integrace s dopravci patří později.
+
+## Aktuálně implementovaný první řez dopravy
+
+Route `/app/trips/{tripId}/transport` zobrazuje rezervace chronologicky podle
+odjezdu prvního segmentu. Souhrn uvádí počet rezervací a segmentů, počet
+nezaplacených nebo částečně zaplacených bookingů a nejbližší budoucí přesun.
+Karta ukazuje typ, název, dopravce, rezervační kód, první odjezd, poslední
+příjezd, krajní místa, počet segmentů, stav rezervace a platební údaje.
+
+Owner a editor mohou rezervaci vytvořit, upravit a po potvrzení smazat. Viewer
+a člen archivované cesty mají pouze čtení. Formulář podporuje jeden až dvacet
+segmentů, jejich přidání, odebrání a deterministické přesuny nahoru/dolů.
+Odjezdové i příjezdové místo lze vybrat z `trip_places` nebo vyhledat přes
+stávající serverový Geoapify našeptávač. Normalizované externí místo se vytvoří
+nebo znovu použije a nikdy se nekopíruje do každého segmentu.
+
+Booking a všechny jeho segmenty ukládá atomická caller-permission RPC. Časy se
+interpretují v časovém pásmu tripu. Databáze vynucuje stejné `trip_id` míst,
+správné pořadí časů, unikátní `sort_order`, cenové invarianty a read-only
+archiv. Smazání bookingu kaskádově odstraní segmenty, nikoli uložená místa.
+
+`total_price`, `paid_amount`, dopočítaný zůstatek, `balance_due_date`, měna a
+platební stav jsou budoucí zdroj pro Budget. Segmenty jsou připravené pro
+pozdější odkazy z itineráře, ale tento řez nevytváří `budget_items` ani
+itinerary items.
+
+Zatím chybí živé statusy letů, boarding pass, import PDF, dokumenty, routing,
+přímé integrace dopravců a automatické notifikace.
