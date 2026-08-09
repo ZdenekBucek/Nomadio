@@ -59,7 +59,7 @@ function PickerPanel({
     <div className="grid gap-4">
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-base font-semibold">{title}</h3>
-        <Button type="button" variant="ghost" size="icon-sm" onClick={onCancel} aria-label={`Zavřít ${title.toLocaleLowerCase("cs-CZ")}`}>
+        <Button className="max-sm:size-10" type="button" variant="ghost" size="icon-sm" onClick={onCancel} aria-label={`Zavřít ${title.toLocaleLowerCase("cs-CZ")}`}>
           <X aria-hidden="true" />
         </Button>
       </div>

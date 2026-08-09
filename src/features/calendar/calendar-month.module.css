@@ -208,6 +208,13 @@
   padding: 0.08rem 0.2rem;
 }
 
+@media (max-width: 639px) {
+  .moreEvents {
+    min-height: 2.25rem;
+    padding: 0.4rem 0.5rem;
+  }
+}
+
 .moreEvents:hover,
 .moreEvents:focus-visible {
   background: color-mix(in oklab, var(--primary) 12%, transparent);
@@ -263,6 +270,13 @@
   justify-content: center;
   line-height: 1;
   width: 1.5rem;
+}
+
+@media (max-width: 639px) {
+  .popoverClose {
+    height: 2.5rem;
+    width: 2.5rem;
+  }
 }
 
 .popoverClose:hover,

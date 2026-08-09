@@ -98,6 +98,7 @@ function MonthToolbar({
       </div>
       <div className={styles.controls}>
         <Button
+          className="max-sm:size-10"
           aria-label="Předchozí měsíc"
           onClick={() => onMonthChange(shiftMonth(month, -1))}
           size="icon"
@@ -105,10 +106,11 @@ function MonthToolbar({
         >
           <ChevronLeft />
         </Button>
-        <Button onClick={() => onMonthChange(monthStart(new Date()))} size="sm" variant="outline">
+        <Button className="max-sm:min-h-10" onClick={() => onMonthChange(monthStart(new Date()))} size="sm" variant="outline">
           Dnes
         </Button>
         <Button
+          className="max-sm:size-10"
           aria-label="Další měsíc"
           onClick={() => onMonthChange(shiftMonth(month, 1))}
           size="icon"

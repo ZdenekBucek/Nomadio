@@ -206,7 +206,7 @@ export function TripMap({
             </p>
           </div>
           <div className="flex w-full min-w-0 flex-col-reverse items-stretch gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-            {canEdit && accessToken ? <Button className="w-full sm:w-auto" type="button" size="lg" variant={picking ? "secondary" : "default"} aria-pressed={picking} onClick={togglePicking}>{picking ? <X /> : <Plus />}{picking ? "Ukončit výběr" : "Přidat místo z mapy"}</Button> : null}
+            {canEdit && accessToken ? <Button className="w-full max-sm:min-h-11 sm:w-auto" type="button" size="lg" variant={picking ? "secondary" : "default"} aria-pressed={picking} onClick={togglePicking}>{picking ? <X /> : <Plus />}{picking ? "Ukončit výběr" : "Přidat místo z mapy"}</Button> : null}
             {canEdit && !accessToken ? <p role="status" className="max-w-xs rounded-xl border border-amber-400/20 bg-amber-400/8 px-3 py-2 text-xs leading-5 text-amber-200">Přidání vlastního místa vyžaduje nakonfigurovanou Mapbox mapu.</p> : null}
             <StatusPill className="self-start sm:self-auto">{visiblePlaces.length} z {model.mapped.length} na mapě</StatusPill>
           </div>
@@ -276,11 +276,11 @@ export function TripMap({
                 );
                 return (
                   <li key={place.id}>
-                    <button
-                      type="button"
+            <button
+              type="button"
                       onClick={() => focusPlace(place)}
                       aria-pressed={selected?.id === place.id}
-                      className="flex w-full items-start gap-3 rounded-xl border border-border bg-background/30 p-3 text-left transition hover:border-primary/35 hover:bg-primary/8 aria-pressed:border-primary/45 aria-pressed:bg-primary/12"
+              className="flex min-h-11 w-full items-start gap-3 rounded-xl border border-border bg-background/30 p-3 text-left transition hover:border-primary/35 hover:bg-primary/8 aria-pressed:border-primary/45 aria-pressed:bg-primary/12"
                     >
                       <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary/15 text-sm font-semibold text-[var(--brand-highlight)]">
                         {originalIndex + 1}
@@ -375,7 +375,7 @@ function MapLayers({
           type="button"
           aria-pressed={allActive}
           onClick={onShowAll}
-          className="rounded-full border border-border bg-muted/35 px-3 py-2 text-xs font-medium text-muted-foreground transition hover:border-primary/35 hover:text-foreground aria-pressed:border-primary/45 aria-pressed:bg-primary/15 aria-pressed:text-[var(--brand-highlight)]"
+          className="min-h-10 rounded-full border border-border bg-muted/35 px-3 py-2 text-xs font-medium text-muted-foreground transition hover:border-primary/35 hover:text-foreground aria-pressed:border-primary/45 aria-pressed:bg-primary/15 aria-pressed:text-[var(--brand-highlight)]"
         >
           Vše · {model.mapped.length}
         </button>
@@ -391,7 +391,7 @@ function MapLayers({
               aria-label={`${placeCategoryLayerLabels[category]}, ${count} míst`}
               disabled={count === 0}
               onClick={() => onToggle(category)}
-              className="rounded-full border border-border bg-muted/35 px-3 py-2 text-xs font-medium text-muted-foreground transition hover:border-primary/35 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-35 aria-pressed:border-primary/45 aria-pressed:bg-primary/15 aria-pressed:text-[var(--brand-highlight)]"
+              className="min-h-10 rounded-full border border-border bg-muted/35 px-3 py-2 text-xs font-medium text-muted-foreground transition hover:border-primary/35 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-35 aria-pressed:border-primary/45 aria-pressed:bg-primary/15 aria-pressed:text-[var(--brand-highlight)]"
             >
               {placeCategoryLayerLabels[category]} · {count}
             </button>

@@ -315,6 +315,15 @@
   box-shadow: 0 8px 18px -10px var(--brand-glow);
 }
 
+@media (max-width: 639px) {
+  .nomadio-date-picker.rdp-root {
+    --rdp-day_button-height: 2.6rem;
+    --rdp-day_button-width: 2.6rem;
+    --rdp-day-height: 2.7rem;
+    --rdp-day-width: 2.7rem;
+  }
+}
+
 .nomadio-day-map-pin[data-selected="true"] {
   border-color: white;
   background: #a78bfa;

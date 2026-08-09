@@ -48,7 +48,7 @@ function PickerPanel({ onCancel, onChange, onConfirm, timeZone, title, value }: 
   value: LocalDateTime;
 }) {
   return <div className="grid gap-4">
-    <div className="flex items-center justify-between gap-3"><h3 className="text-base font-semibold">{title}</h3><Button type="button" variant="ghost" size="icon-sm" onClick={onCancel} aria-label={`Zavřít ${title.toLocaleLowerCase("cs-CZ")}`}><X aria-hidden="true" /></Button></div>
+    <div className="flex items-center justify-between gap-3"><h3 className="text-base font-semibold">{title}</h3><Button className="max-sm:size-10" type="button" variant="ghost" size="icon-sm" onClick={onCancel} aria-label={`Zavřít ${title.toLocaleLowerCase("cs-CZ")}`}><X aria-hidden="true" /></Button></div>
     <DateTimeCalendar value={value} onChange={onChange} />
     <label className="grid gap-2 text-xs font-medium text-muted-foreground">Čas
       <input className="h-11 w-full min-w-0 rounded-xl border border-input bg-background/55 px-3 text-sm text-foreground outline-none transition focus:border-primary/55 focus:ring-3 focus:ring-primary/15" type="time" step={60} value={value.time ?? ""} onChange={(event) => onChange({ ...value, time: event.target.value || null })} />
