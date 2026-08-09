@@ -1,5 +1,6 @@
 import { Surface } from "@/components/ui/surface";
+import { LoadingState } from "@/components/ui/loading-state";
 
 export default function TransportLoading() {
-  return <div className="animate-pulse"><div className="h-5 w-32 rounded bg-muted" /><div className="mt-5 h-10 w-56 rounded bg-muted" /><div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: 4 }, (_, index) => <Surface key={index} className="h-20" />)}</div><Surface className="mt-6 h-52" /></div>;
+  return <LoadingState label="Načítání dopravy…"><div className="animate-pulse"><div className="h-5 w-32 rounded bg-muted" /><div className="mt-5 h-10 w-56 rounded bg-muted" /><div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: 4 }, (_, index) => <Surface key={index} className="h-20" />)}</div><Surface className="mt-6 h-52" /></div></LoadingState>;
 }
