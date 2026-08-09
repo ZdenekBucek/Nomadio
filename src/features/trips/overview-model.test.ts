@@ -97,7 +97,16 @@ describe("buildTripOverview", () => {
 
     expect(view.finance.map((item) => item.currency)).toEqual(["CZK", "EUR"]);
     expect(view.nearestPayment?.id).toBe("accommodation:hotel");
+    expect(view.nearestPaymentOverdue).toBe(true);
     expect(view.alerts[0]?.id).toBe("payment:accommodation:hotel");
+  });
+
+  it("labels the nearest future payment as non-overdue when no overdue payment exists", () => {
+    const future = payment({ dueDate: "2099-01-01", id: "transport:future" });
+    const dashboard = budgetDashboard({ payments: { ...budgetDashboard().payments, items: [future], overduePayments: [], upcomingPayments: [future] } });
+    const view = buildTripOverview(overviewInput(dashboard));
+    expect(view.nearestPayment?.id).toBe("transport:future");
+    expect(view.nearestPaymentOverdue).toBe(false);
   });
 
   it("does not count an undated itinerary template as a planned trip day", () => {

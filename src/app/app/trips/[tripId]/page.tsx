@@ -23,6 +23,7 @@ import { getTripDetail } from "@/features/trips/trip-detail";
 import { getTripCover } from "@/features/trips/trip-cover";
 import { getTripOverviewData } from "@/features/trips/overview-data";
 import { TripOverviewDashboard } from "@/features/trips/trip-overview-dashboard";
+import { OverviewPartialWarning } from "@/features/trips/overview-partial-warning";
 import { TripMembers } from "@/features/trips/trip-members";
 import {
   formatTripDates,
@@ -93,7 +94,13 @@ export default async function TripOverviewPage({
   const memberMessage = query.member
     ? memberMessages[query.member as keyof typeof memberMessages] ?? memberMessages.error
     : null;
-  const overview = await getTripOverviewData(trip, detail.currentUserId).catch(() => null);
+  let overview = null;
+  let overviewFailed = false;
+  try {
+    overview = await getTripOverviewData(trip, detail.currentUserId);
+  } catch {
+    overviewFailed = true;
+  }
   const cover = await getTripCover(trip);
 
   return (
@@ -193,6 +200,8 @@ export default async function TripOverviewPage({
           {memberMessage}
         </div>
       ) : null}
+
+      {overviewFailed ? <OverviewPartialWarning /> : null}
 
       {overview ? <TripOverviewDashboard data={overview} tripId={trip.id} /> : null}
       {!overview ? <div className="mt-6 grid items-start gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(19rem,0.75fr)]">
