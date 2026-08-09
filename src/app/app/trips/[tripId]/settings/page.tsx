@@ -9,11 +9,12 @@ import { TripDestinations } from "@/features/trips/trip-destinations";
 import { TripLifecyclePanel } from "@/features/trips/trip-lifecycle-panel";
 import { memberRoleLabel } from "@/features/trips/trip-presentation";
 import { TripSettingsForm } from "@/features/trips/trip-settings-form";
+import { getTripCover } from "@/features/trips/trip-cover";
 import { cn } from "@/lib/utils";
 
 type TripSettingsPageProps = {
   params: Promise<{ tripId: string }>;
-  searchParams: Promise<{ destination?: string; lifecycle?: string; settings?: string }>;
+  searchParams: Promise<{ cover?: string; destination?: string; lifecycle?: string; settings?: string }>;
 };
 
 const destinationMessages = {
@@ -43,6 +44,8 @@ export default async function TripSettingsPage({ params, searchParams }: TripSet
     ? destinationMessages[query.destination as keyof typeof destinationMessages] ?? destinationMessages.error
     : null;
   const success = ["added", "updated", "moved", "primary", "removed"].includes(query.destination ?? "");
+  const cover = await getTripCover(detail.trip);
+  const coverMessage = query.cover === "uploaded" ? "Obrázek cesty byl nahrán." : query.cover === "removed" ? "Obrázek cesty byl odstraněn." : query.cover ? "Obrázek se nepodařilo změnit. Zkontrolujte formát a velikost souboru." : null;
 
   return (
     <div>
@@ -61,13 +64,14 @@ export default async function TripSettingsPage({ params, searchParams }: TripSet
 
       {isArchived ? <div className="mt-5 flex items-start gap-3 rounded-2xl border border-amber-400/20 bg-amber-400/8 p-4 text-sm text-amber-100"><Archive className="mt-0.5 size-4 shrink-0" aria-hidden="true" /><p>Cesta je archivovaná. Veškerý obsah je pouze pro čtení; vlastník ji může níže obnovit.</p></div> : !canEdit ? <div className="mt-5 flex items-start gap-3 rounded-2xl border border-primary/20 bg-primary/8 p-4 text-sm text-muted-foreground"><Eye className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" /><p>Máte přístup pouze pro čtení. Nastavení i destinace můžete prohlížet, ale ne měnit.</p></div> : null}
       {query.settings === "saved" ? <Feedback success>Základní nastavení bylo uloženo.</Feedback> : null}
+      {coverMessage ? <Feedback success={query.cover === "uploaded" || query.cover === "removed"}>{coverMessage}</Feedback> : null}
       {query.lifecycle === "error" ? <Feedback success={false}>Akci se nepodařilo provést. Ověřte stav cesty a zkuste to znovu.</Feedback> : null}
       {destinationMessage ? <Feedback success={success}>{destinationMessage}</Feedback> : null}
 
       <div className="mt-6 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.85fr)]">
         <Surface depth="panel" className="p-5 sm:p-6">
           <div className="flex items-start gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/12 text-primary"><Settings2 className="size-5" aria-hidden="true" /></span><div><h2 className="text-xl font-semibold">Základní údaje</h2><p className="mt-1 text-sm text-muted-foreground">Název, termín, měna, stav a barevný motiv.</p></div></div>
-          <TripSettingsForm canEdit={canEdit} trip={detail.trip} />
+          <TripSettingsForm canEdit={canEdit} cover={cover} trip={detail.trip} />
         </Surface>
 
         <Surface depth="panel" className="p-5 sm:p-6">

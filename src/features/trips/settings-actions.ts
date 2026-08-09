@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { randomUUID } from "node:crypto";
 
 import { createClient } from "@/lib/supabase/server";
 
@@ -13,6 +14,9 @@ export type TripSettingsActionState = {
   error: "dates" | "invalid" | "save" | null;
 };
 
+const coverTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const maxCoverBytes = 5 * 1024 * 1024;
+
 function settingsPath(tripId: string, key: "destination" | "settings", status: string) {
   const params = new URLSearchParams({ [key]: status });
   return uuidPattern.test(tripId)
@@ -22,8 +26,23 @@ function settingsPath(tripId: string, key: "destination" | "settings", status: s
 
 function revalidateTrip(tripId: string) {
   revalidatePath("/app/trips");
+  revalidatePath("/app");
   revalidatePath(`/app/trips/${tripId}`);
   revalidatePath(`/app/trips/${tripId}/settings`);
+}
+
+function coverPath(tripId: string, status: string) {
+  return `/app/trips/${tripId}/settings?cover=${status}`;
+}
+
+function coverExtension(file: File) {
+  if (file.type === "image/jpeg") return "jpg";
+  if (file.type === "image/png") return "png";
+  return "webp";
+}
+
+function validCover(file: FormDataEntryValue | null): file is File {
+  return file instanceof File && file.size > 0 && file.size <= maxCoverBytes && coverTypes.has(file.type);
 }
 
 async function authenticatedClient(tripId: string) {
@@ -67,6 +86,45 @@ export async function updateTripSettings(
 
   revalidateTrip(tripId);
   redirect(settingsPath(tripId, "settings", "saved"));
+}
+
+export async function uploadTripCover(formData: FormData) {
+  const tripId = formData.get("tripId")?.toString().trim() ?? "";
+  const file = formData.get("cover");
+  if (!uuidPattern.test(tripId) || !validCover(file)) redirect(coverPath(tripId, "invalid"));
+
+  const supabase = await authenticatedClient(tripId);
+  const storagePath = `trips/${tripId}/cover/${randomUUID()}.${coverExtension(file)}`;
+  const upload = await supabase.storage.from("trip-covers").upload(storagePath, file, {
+    cacheControl: "3600",
+    contentType: file.type,
+    upsert: false,
+  });
+  if (upload.error) redirect(coverPath(tripId, "upload-error"));
+
+  const { data, error } = await supabase.rpc("set_trip_cover_upload", {
+    target_storage_path: storagePath,
+    target_trip_id: tripId,
+  });
+  if (error || data !== "updated") {
+    await supabase.storage.from("trip-covers").remove([storagePath]);
+    redirect(coverPath(tripId, "error"));
+  }
+  revalidateTrip(tripId);
+  redirect(coverPath(tripId, "uploaded"));
+}
+
+export async function removeTripCover(formData: FormData) {
+  const tripId = formData.get("tripId")?.toString().trim() ?? "";
+  if (!uuidPattern.test(tripId)) redirect(coverPath(tripId, "invalid"));
+  const supabase = await authenticatedClient(tripId);
+  const current = await supabase.from("trips").select("cover_storage_path").eq("id", tripId).maybeSingle();
+  if (current.error || !current.data) redirect(coverPath(tripId, "error"));
+  const { data, error } = await supabase.rpc("remove_trip_cover", { target_trip_id: tripId });
+  if (error || data !== "updated") redirect(coverPath(tripId, "error"));
+  if (current.data.cover_storage_path) await supabase.storage.from("trip-covers").remove([current.data.cover_storage_path]);
+  revalidateTrip(tripId);
+  redirect(coverPath(tripId, "removed"));
 }
 
 export async function addTripDestination(formData: FormData) {

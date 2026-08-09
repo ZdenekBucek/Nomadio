@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { getUserMock, redirectMock, revalidatePathMock, rpcMock } = vi.hoisted(() => ({
+const { fromMock, getUserMock, redirectMock, revalidatePathMock, rpcMock, storageFromMock } = vi.hoisted(() => ({
+  fromMock: vi.fn(),
   getUserMock: vi.fn(),
   redirectMock: vi.fn((path: string) => {
     throw new Error(`REDIRECT:${path}`);
   }),
   revalidatePathMock: vi.fn(),
   rpcMock: vi.fn(),
+  storageFromMock: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({ revalidatePath: revalidatePathMock }));
@@ -14,7 +16,9 @@ vi.mock("next/navigation", () => ({ redirect: redirectMock }));
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(async () => ({
     auth: { getUser: getUserMock },
+    from: fromMock,
     rpc: rpcMock,
+    storage: { from: storageFromMock },
   })),
 }));
 
@@ -24,6 +28,7 @@ import {
   removeTripDestination,
   updateTripDestination,
   updateTripSettings,
+  uploadTripCover,
 } from "./settings-actions";
 
 const tripId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -58,7 +63,28 @@ describe("trip settings actions", () => {
     redirectMock.mockClear();
     revalidatePathMock.mockReset();
     rpcMock.mockReset();
+    fromMock.mockReset();
+    storageFromMock.mockReset();
     getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
+  });
+
+  it("uploads a permitted cover and only then updates metadata", async () => {
+    const uploadMock = vi.fn().mockResolvedValue({ error: null });
+    storageFromMock.mockReturnValue({ upload: uploadMock, remove: vi.fn() });
+    rpcMock.mockResolvedValue({ data: "updated", error: null });
+    const form = new FormData();
+    form.set("tripId", tripId);
+    form.set("cover", new File(["image"], "fjord.webp", { type: "image/webp" }));
+
+    await expect(uploadTripCover(form)).rejects.toThrow(`REDIRECT:/app/trips/${tripId}/settings?cover=uploaded`);
+    expect(uploadMock).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`^trips/${tripId}/cover/.+\\.webp$`)), expect.any(File), expect.objectContaining({ contentType: "image/webp", upsert: false }));
+    expect(rpcMock).toHaveBeenCalledWith("set_trip_cover_upload", expect.objectContaining({ target_trip_id: tripId }));
+  });
+
+  it("rejects invalid or oversized cover files before authentication", async () => {
+    const form = new FormData(); form.set("tripId", tripId); form.set("cover", new File(["x"], "cover.svg", { type: "image/svg+xml" }));
+    await expect(uploadTripCover(form)).rejects.toThrow(`REDIRECT:/app/trips/${tripId}/settings?cover=invalid`);
+    expect(storageFromMock).not.toHaveBeenCalled();
   });
 
   it("updates valid settings and refreshes every trip view", async () => {

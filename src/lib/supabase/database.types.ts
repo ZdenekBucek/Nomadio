@@ -823,6 +823,10 @@ export type Database = {
         };
         Returns: TripMemberRemovalResult;
       };
+      remove_trip_cover: {
+        Args: { target_trip_id: string };
+        Returns: "updated";
+      };
       restore_trip: {
         Args: { target_trip_id: string };
         Returns: TripRestoreResult;
@@ -834,6 +838,10 @@ export type Database = {
       set_primary_trip_destination: {
         Args: { target_destination_id: string };
         Returns: "updated" | "no_change";
+      };
+      set_trip_cover_upload: {
+        Args: { target_storage_path: string; target_trip_id: string };
+        Returns: "updated";
       };
       save_transport_booking: {
         Args: {

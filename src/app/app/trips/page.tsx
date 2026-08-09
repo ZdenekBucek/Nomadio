@@ -17,6 +17,7 @@ import { Surface } from "@/components/ui/surface";
 import { getAuthenticatedProfile } from "@/features/auth/session";
 import { continentLabels, countryFlag, countryOptions } from "@/features/trips/countries";
 import { TripCreateDialog } from "@/features/trips/trip-create-dialog";
+import { getTripCover, type TripCover } from "@/features/trips/trip-cover";
 import {
   formatTripDates,
   memberCountLabel,
@@ -132,6 +133,8 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
     travelers: travelers.filter((traveler) => traveler.trip_id === trip.id),
   }));
   const visibleItems = items.filter((item) => matchesTripFilter(item, activeFilter));
+  const coverEntries = await Promise.all(visibleItems.map(async (item) => [item.trip.id, await getTripCover(item.trip)] as const));
+  const covers = new Map(coverEntries);
   const message = params.error
     ? errorMessages[params.error as keyof typeof errorMessages] ?? errorMessages.create
     : null;
@@ -210,6 +213,7 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
                 <TripCard
                   key={item.trip.id}
                   currentUserId={auth.id}
+                  cover={covers.get(item.trip.id) ?? { imageUrl: null, variant: item.trip.cover_variant }}
                   item={item}
                 />
               ))}
@@ -225,9 +229,11 @@ export default async function TripsPage({ searchParams }: TripsPageProps) {
 
 function TripCard({
   currentUserId,
+  cover,
   item,
 }: {
   currentUserId: string;
+  cover: TripCover;
   item: TripListItem;
 }) {
   const { trip } = item;
@@ -244,7 +250,7 @@ function TripCard({
   const dates = formatTripDates(trip.start_date, trip.end_date);
   const duration = tripDurationLabel(trip);
   const flag = countryFlag(primaryDestination?.country_code ?? null);
-  const coverClass = tripCoverClasses[trip.cover_variant] ?? tripCoverClasses.violet;
+  const coverClass = tripCoverClasses[cover.variant] ?? tripCoverClasses.violet;
 
   return (
     <Surface
@@ -257,6 +263,11 @@ function TripCard({
         aria-label={`Otevřít cestu ${trip.name}`}
       >
         <div className={cn("relative h-36 overflow-hidden border-b border-border", coverClass)}>
+        {cover.imageUrl ? <>
+          {/* Signed Storage URLs are dynamic and deliberately bypass Next image optimization. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={cover.imageUrl} alt="" className="absolute inset-0 size-full object-cover" />
+        </> : null}
         <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_35%,rgba(3,7,18,0.72))]" />
         <div className="absolute inset-x-4 top-4 flex items-start justify-between gap-3">
           <StatusPill tone={tripStatusTone(status)}>{tripStatusLabels[status]}</StatusPill>

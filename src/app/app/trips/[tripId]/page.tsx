@@ -20,6 +20,7 @@ import { getSafeGoogleAvatarUrl } from "@/features/auth/profile";
 import { shareTrip } from "@/features/trips/actions";
 import { continentLabels, countryFlag } from "@/features/trips/countries";
 import { getTripDetail } from "@/features/trips/trip-detail";
+import { getTripCover } from "@/features/trips/trip-cover";
 import { getTripOverviewData } from "@/features/trips/overview-data";
 import { TripOverviewDashboard } from "@/features/trips/trip-overview-dashboard";
 import { TripMembers } from "@/features/trips/trip-members";
@@ -93,6 +94,7 @@ export default async function TripOverviewPage({
     ? memberMessages[query.member as keyof typeof memberMessages] ?? memberMessages.error
     : null;
   const overview = await getTripOverviewData(trip, detail.currentUserId).catch(() => null);
+  const cover = await getTripCover(trip);
 
   return (
     <div>
@@ -107,9 +109,13 @@ export default async function TripOverviewPage({
       <header
         className={cn(
           "relative overflow-hidden rounded-[1.75rem] border border-border px-5 py-6 shadow-[0_28px_100px_-45px_rgba(0,0,0,0.95)] sm:px-7 sm:py-8 lg:px-9",
-          tripCoverClasses[trip.cover_variant],
+          tripCoverClasses[cover.variant],
         )}
       >
+        {cover.imageUrl ? <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={cover.imageUrl} alt="" className="absolute inset-0 size-full object-cover" />
+        </> : null}
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,7,18,0.92),rgba(3,7,18,0.48)_65%,rgba(3,7,18,0.24))]" />
         <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0 max-w-3xl">

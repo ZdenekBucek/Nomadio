@@ -72,7 +72,7 @@ technický základ omylem považoval za schválenou finální obrazovku.
 
 ## Moje cesty — chybějící potvrzený obsah
 
-- cover upload nebo licenčně bezpečný obrazový návrh,
+- historie coverů, ořez a případné odstraňování EXIF metadat (základní privátní upload coveru je implementovaný),
 - progres příprav a důležitá upozornění,
 - rozšířené menu karty,
 - plnohodnotné přehledové moduly, progres příprav a upozornění v detailu cesty.

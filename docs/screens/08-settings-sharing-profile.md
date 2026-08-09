@@ -10,7 +10,7 @@
 - termín,
 - časové pásmo,
 - hlavní měna,
-- cover,
+- cover: owner/editor může nahrát JPEG, PNG nebo WebP do 5 MB. Soubory jsou v privátním bucketu `trip-covers`; UI používá krátkodobou podepsanou URL a při chybě vždy zobrazí barevný fallback. Viewer ani archivovaná cesta obrázek nemění.
 - stav cesty.
 
 Model má počítat s cestou přes více zemí a případně více světadílů.

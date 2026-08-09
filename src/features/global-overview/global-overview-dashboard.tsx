@@ -14,12 +14,13 @@ import {
   Ship,
 } from "lucide-react";
 import Link from "next/link";
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { Surface } from "@/components/ui/surface";
 import { formatBudgetMoney } from "@/features/budget/budget-model";
 import { calendarEventTypeMeta, formatCalendarDate, type CalendarAgendaItem } from "@/features/calendar/calendar-model";
 import { countryFlag } from "@/features/trips/countries";
+import type { TripCover } from "@/features/trips/trip-cover";
 import { formatTripDates, travelerCountLabel, tripCoverClasses } from "@/features/trips/trip-presentation";
 import { tripDurationLabel, tripTimingLabel } from "@/features/trips/trip-view";
 import { cn } from "@/lib/utils";
@@ -27,13 +28,13 @@ import { cn } from "@/lib/utils";
 import styles from "./global-overview-dashboard.module.css";
 import type { GlobalAttention, GlobalOverview } from "./global-overview-model";
 
-export function GlobalOverviewDashboard({ data }: { data: GlobalOverview }) {
+export function GlobalOverviewDashboard({ cover = null, data }: { cover?: TripCover | null; data: GlobalOverview }) {
   if (!data.stats.active && !data.stats.upcoming && !data.stats.completed) return <EmptyState />;
   const trip = data.dominantTrip;
   return (
     <div className="min-w-0 space-y-5 overflow-x-clip pb-4">
       <DashboardHeader />
-      {trip && data.dominantMeta ? <div data-dashboard-section="hero"><TravelHero data={data} /></div> : null}
+      {trip && data.dominantMeta ? <div data-dashboard-section="hero"><TravelHero cover={cover} data={data} /></div> : null}
       {data.dominantPreparation ? <div data-dashboard-section="preparation"><Preparation data={data} /></div> : null}
       <div data-dashboard-section="attention"><Attention alerts={data.alerts} /></div>
       <div className={styles.commandGrid}>
@@ -62,13 +63,15 @@ function DashboardHeader() {
   );
 }
 
-function TravelHero({ data }: { data: GlobalOverview }) {
+function TravelHero({ cover, data }: { cover: TripCover | null; data: GlobalOverview }) {
   const trip = data.dominantTrip!;
   const meta = data.dominantMeta!;
-  const coverStyle = trip.cover_url ? ({ backgroundImage: `url(${JSON.stringify(trip.cover_url)})` } as CSSProperties) : undefined;
   return (
-    <Surface depth="panel" className={cn("relative min-w-0 overflow-hidden p-0", !trip.cover_url && tripCoverClasses[trip.cover_variant])}>
-      {trip.cover_url ? <div className="absolute inset-0 bg-cover bg-center" style={coverStyle} aria-hidden="true" /> : null}
+    <Surface depth="panel" className={cn("relative min-w-0 overflow-hidden p-0", tripCoverClasses[cover?.variant ?? trip.cover_variant])}>
+      {cover?.imageUrl ? <>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={cover.imageUrl} alt="" className="absolute inset-0 size-full object-cover" />
+      </> : null}
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,7,18,0.94),rgba(3,7,18,0.64)_62%,rgba(3,7,18,0.32))]" aria-hidden="true" />
       <Link href={`/app/trips/${trip.id}`} className="group relative block min-h-64 p-5 outline-none focus-visible:ring-3 focus-visible:ring-primary/55 sm:p-7 lg:min-h-72 lg:p-8">
         <div className="flex min-h-[13rem] min-w-0 flex-col justify-between gap-8">
