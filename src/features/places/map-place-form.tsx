@@ -13,12 +13,14 @@ export type DraftCoordinates = { latitude: number; longitude: number };
 export function MapPlaceForm({
   dayId,
   draft,
+  continueToItinerary = false,
   onCancel,
   onSubmit,
   tripId,
 }: {
   dayId?: string;
   draft: DraftCoordinates;
+  continueToItinerary?: boolean;
   onCancel: () => void;
   onSubmit?: () => void;
   tripId: string;
@@ -74,7 +76,8 @@ export function MapPlaceForm({
         </p>
         <label className="min-w-0 text-xs font-medium text-muted-foreground sm:col-span-2">Poznámka<textarea className={`${control} h-24 resize-y py-2`} name="notes" maxLength={1200} placeholder="Volitelná poznámka k místu" /></label>
         <div className="flex min-w-0 items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm sm:col-span-2"><span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/15 text-primary" aria-hidden="true">✓</span><div><p className="font-medium text-foreground">Bod je umístěn na mapě</p><p className="mt-1 text-xs leading-5 text-muted-foreground">Pozici můžete změnit novým výběrem na mapě.</p></div></div>
-        {dayId ? <label className="flex min-w-0 items-start gap-3 rounded-xl border border-border bg-background/30 p-3 text-sm sm:col-span-2"><input className="mt-1 size-4 shrink-0 accent-primary" type="checkbox" name="addToDay" defaultChecked /><span><span className="font-medium">Přidat rovnou do tohoto dne</span><span className="mt-1 block text-xs leading-5 text-muted-foreground">Vytvoří jeden bod na konci timeline a propojí ho s právě vytvořeným místem.</span></span></label> : null}
+        {dayId && continueToItinerary ? <div className="flex min-w-0 items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm sm:col-span-2"><input type="hidden" name="continueToItinerary" value="on" /><span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/15 text-primary" aria-hidden="true">✓</span><span><span className="font-medium">Po uložení doplníte položku itineráře</span><span className="mt-1 block text-xs leading-5 text-muted-foreground">Místo se uloží jednou a potom ho nastavíte v jednotném formuláři programu dne.</span></span></div> : null}
+        {dayId && !continueToItinerary ? <label className="flex min-w-0 items-start gap-3 rounded-xl border border-border bg-background/30 p-3 text-sm sm:col-span-2"><input className="mt-1 size-4 shrink-0 accent-primary" type="checkbox" name="addToDay" defaultChecked /><span><span className="font-medium">Přidat rovnou do tohoto dne</span><span className="mt-1 block text-xs leading-5 text-muted-foreground">Vytvoří jeden bod na konci timeline a propojí ho s právě vytvořeným místem.</span></span></label> : null}
         <div className="flex min-w-0 flex-col-reverse gap-2 sm:col-span-2 sm:flex-row sm:justify-end">
           <Button type="button" variant="outline" onClick={onCancel}><X /> Zrušit</Button>
           <Button type="submit"><Save /> Uložit místo</Button>

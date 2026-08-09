@@ -10,7 +10,7 @@ import type {
 import { StatusPill } from "@/components/ui/status-pill";
 import { Button } from "@/components/ui/button";
 import { placeCategoryLabels } from "./categories";
-import type { DayMapModel, DayMapPoint } from "./day-map-view-model";
+import type { DayMapModel } from "./day-map-view-model";
 import { MapPlaceForm, type DraftCoordinates } from "./map-place-form";
 import { removePreviewMarker, updatePreviewMarker } from "./map-preview-marker";
 
@@ -24,13 +24,19 @@ export function DayMap({
   accessToken,
   canEdit,
   dayId,
+  mapPickRequest = 0,
   model,
+  onSelectItem,
+  selectedItemId: controlledSelectedItemId,
   tripId,
 }: {
   accessToken: string | null;
   canEdit: boolean;
   dayId: string;
+  mapPickRequest?: number;
   model: DayMapModel;
+  onSelectItem?: (itemId: string) => void;
+  selectedItemId?: string | null;
   tripId: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -38,16 +44,24 @@ export function DayMap({
   const previewMarkerRef = useRef<MapboxMarker | null>(null);
   const pickingRef = useRef(false);
   const markerElementsRef = useRef(new Map<string, HTMLButtonElement>());
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(
+  const [internalSelectedItemId, setInternalSelectedItemId] = useState<string | null>(
     () => model.points[0]?.itemId ?? null,
   );
+  const selectedItemId = controlledSelectedItemId ?? internalSelectedItemId;
+  const selectedItemIdRef = useRef(selectedItemId);
+  const controlledSelectedItemIdRef = useRef(controlledSelectedItemId);
+  const onSelectItemRef = useRef(onSelectItem);
   const [draft, setDraft] = useState<DraftCoordinates | null>(null);
   const [picking, setPicking] = useState(false);
-  const selected =
-    model.points.find((point) => point.itemId === selectedItemId) ??
-    model.points[0] ??
-    null;
+  const [continueToItinerary, setContinueToItinerary] = useState(false);
+  const selected = selectedItemId ? model.points.find((point) => point.itemId === selectedItemId) ?? null : model.points[0] ?? null;
   const canRenderMap = Boolean(accessToken);
+
+  useEffect(() => {
+    selectedItemIdRef.current = selectedItemId;
+    controlledSelectedItemIdRef.current = controlledSelectedItemId;
+    onSelectItemRef.current = onSelectItem;
+  }, [controlledSelectedItemId, onSelectItem, selectedItemId]);
 
   useEffect(() => {
     if (!accessToken || !containerRef.current) {
@@ -104,8 +118,8 @@ export function DayMap({
         element.dataset.selected = String(initiallySelected);
         element.setAttribute("aria-pressed", String(initiallySelected));
         element.addEventListener("click", () => {
-          updateMarkerSelection(markerElements, point.itemId);
-          setSelectedItemId(point.itemId);
+          if (controlledSelectedItemIdRef.current === undefined) setInternalSelectedItemId(point.itemId);
+          onSelectItemRef.current?.(point.itemId);
         });
         markerElements.set(point.itemId, element);
 
@@ -116,6 +130,7 @@ export function DayMap({
         bounds.extend([point.longitude, point.latitude]);
       }
       markerElementsRef.current = markerElements;
+      if (selectedItemIdRef.current) updateMarkerSelection(markerElements, selectedItemIdRef.current);
 
       if (model.points.length > 1) {
         map.fitBounds(bounds, { duration: 0, maxZoom: 14, padding: 56 });
@@ -164,15 +179,16 @@ export function DayMap({
     };
   }, [accessToken, model.points]);
 
-  function focusPoint(point: DayMapPoint) {
+  useEffect(() => {
+    const point = selectedItemId ? model.points.find((candidate) => candidate.itemId === selectedItemId) : null;
+    if (!point) return;
     updateMarkerSelection(markerElementsRef.current, point.itemId);
-    setSelectedItemId(point.itemId);
     mapRef.current?.flyTo({
       center: [point.longitude, point.latitude],
       essential: true,
       zoom: 14,
     });
-  }
+  }, [model.points, selectedItemId]);
 
   function togglePicking() {
     if (picking) {
@@ -180,12 +196,21 @@ export function DayMap({
       return;
     }
     pickingRef.current = true;
+    setContinueToItinerary(false);
     setPicking(true);
   }
+
+  useEffect(() => {
+    if (!mapPickRequest || !canEdit || !accessToken || pickingRef.current) return;
+    pickingRef.current = true;
+    setContinueToItinerary(true);
+    setPicking(true);
+  }, [accessToken, canEdit, mapPickRequest]);
 
   function cancelPicking() {
     pickingRef.current = false;
     setPicking(false);
+    setContinueToItinerary(false);
     setDraft(null);
     removePreviewMarker(previewMarkerRef);
   }
@@ -207,7 +232,7 @@ export function DayMap({
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          {canEdit ? <Button type="button" size="sm" variant={picking ? "secondary" : "outline"} disabled={!accessToken} aria-pressed={picking} onClick={togglePicking}>{picking ? <X /> : <Plus />}{picking ? "Ukončit výběr" : "Přidat vlastní místo"}</Button> : null}
+          {canEdit ? <Button type="button" size="sm" variant={picking ? "secondary" : "default"} disabled={!accessToken} aria-pressed={picking} onClick={togglePicking} className="min-h-11 sm:min-h-9">{picking ? <X /> : <Plus />}{picking ? "Ukončit výběr" : "Přidej místo z mapy"}</Button> : null}
           <StatusPill>{model.points.length} na mapě</StatusPill>
         </div>
       </div>
@@ -221,7 +246,7 @@ export function DayMap({
         <DayMapFallback hasPoints={model.points.length > 0} />
       )}
 
-      {draft ? <MapPlaceForm key={`${draft.latitude}:${draft.longitude}`} dayId={dayId} draft={draft} onCancel={cancelPicking} onSubmit={removePreviewAfterSubmit} tripId={tripId} /> : selected ? (
+      {draft ? <MapPlaceForm key={`${draft.latitude}:${draft.longitude}`} continueToItinerary={continueToItinerary} dayId={dayId} draft={draft} onCancel={cancelPicking} onSubmit={removePreviewAfterSubmit} tripId={tripId} /> : selected ? (
         <div className="border-t border-border bg-background/35 p-4 sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs font-medium tracking-[0.16em] text-primary uppercase">
@@ -247,35 +272,6 @@ export function DayMap({
               .filter(Boolean)
               .join(" · ")}
           </p>
-        </div>
-      ) : null}
-
-      {model.points.length ? (
-        <div className="border-t border-border p-4 sm:p-5">
-          <ol className="grid gap-2">
-            {model.points.map((point) => (
-              <li key={point.itemId}>
-                <button
-                  type="button"
-                  aria-pressed={selected?.itemId === point.itemId}
-                  onClick={() => focusPoint(point)}
-                  className="flex w-full items-start gap-3 rounded-xl border border-border bg-background/30 p-3 text-left transition hover:border-primary/35 hover:bg-primary/8 aria-pressed:border-primary/45 aria-pressed:bg-primary/12"
-                >
-                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary/15 text-sm font-semibold text-[var(--brand-highlight)]">
-                    {point.sequence}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium">
-                      {point.itemTitle}
-                    </span>
-                    <span className="mt-1 block truncate text-xs text-muted-foreground">
-                      {[point.timeLabel, point.placeName].filter(Boolean).join(" · ")}
-                    </span>
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ol>
         </div>
       ) : null}
 

@@ -36,31 +36,45 @@ describe("DayTimeline", () => {
     render(<DayTimeline canEdit dayId={dayId} days={days} items={items} places={[]} tripId={tripId} />);
     expect(screen.getByText("Chrám")).toBeInTheDocument();
     expect(screen.getByText("09:00")).toBeInTheDocument();
-    expect(screen.getByText("Přidat bod do timeline")).toBeInTheDocument();
-    expect(screen.getAllByText("Upravit bod")).toHaveLength(2);
+    expect(screen.queryByText("Přidat bod do timeline")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Upravit bod" })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: "Přesunout do jiného dne" })).toHaveLength(2);
+    expect(screen.queryByText("Přesunout do jiného dne")).not.toBeInTheDocument();
   });
 
   it("offers dated and undated target days but excludes the current day", () => {
     render(<DayTimeline canEdit dayId={dayId} days={days} items={items} places={[]} tripId={tripId} />);
-    expect(screen.getAllByText("Přesunout do jiného dne")).toHaveLength(2);
-    expect(screen.getAllByRole("option", { name: /Druhý den/ })).toHaveLength(2);
-    expect(screen.getAllByRole("option", { name: "Plán bez data · Volný plán" })).toHaveLength(2);
+    fireEvent.click(screen.getAllByRole("button", { name: "Přesunout do jiného dne" })[0]!);
+    expect(screen.getAllByRole("option", { name: /Druhý den/ })).toHaveLength(1);
+    expect(screen.getAllByRole("option", { name: "Plán bez data · Volný plán" })).toHaveLength(1);
     expect(screen.queryByRole("option", { name: /Aktuální den/ })).not.toBeInTheDocument();
   });
 
   it("is read-only for viewer", () => {
     render(<DayTimeline canEdit={false} dayId={dayId} days={days} items={items} places={[]} tripId={tripId} />);
     expect(screen.getByText("Koupit SIM")).toBeInTheDocument();
-    expect(screen.queryByRole("button")).not.toBeInTheDocument();
-    expect(screen.queryByText("Přidat bod do timeline")).not.toBeInTheDocument();
-    expect(screen.queryByText("Přesunout do jiného dne")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /Vybrat .* na mapě/ })).toHaveLength(2);
+    expect(screen.queryByRole("button", { name: "Upravit bod" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Přidat položku" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Přesunout do jiného dne" })).not.toBeInTheDocument();
   });
 
   it("uses shared TimePicker controls with canonical local values", () => {
     const { container } = render(<DayTimeline canEdit dayId={dayId} days={days} items={items} places={[]} tripId={tripId} />);
-    fireEvent.click(screen.getAllByText("Upravit bod")[0]!);
+    fireEvent.click(screen.getAllByRole("button", { name: "Upravit bod" })[0]!);
     expect((container.querySelector('input[name="startTime"]') as HTMLInputElement).value).toBe("09:00");
     expect((container.querySelector('input[name="endTime"]') as HTMLInputElement).value).toBe("");
     expect(container.querySelectorAll('input[type="time"]').length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("selects timeline cards without letting icon actions select them", () => {
+    const onSelectItem = vi.fn();
+    render(<DayTimeline canEdit dayId={dayId} days={days} items={items} onSelectItem={onSelectItem} places={[]} selectedItemId="1" tripId={tripId} />);
+
+    expect(document.querySelector("#timeline-item-1")).toHaveAttribute("data-selected", "true");
+    fireEvent.click(screen.getAllByRole("button", { name: "Upravit bod" })[0]!);
+    expect(onSelectItem).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Vybrat Koupit SIM na mapě" }));
+    expect(onSelectItem).toHaveBeenCalledWith("2");
   });
 });

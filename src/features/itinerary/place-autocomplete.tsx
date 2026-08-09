@@ -17,7 +17,7 @@ type PlaceContext = { kind: "saved"; tripId: string } | { dayId: string; kind: "
 const inputClass = "h-11 w-full rounded-xl border border-input bg-background/55 pl-10 pr-3 text-sm text-foreground outline-none transition focus:border-primary/55 focus:ring-3 focus:ring-primary/15";
 const controlClass = "mt-2 h-10 w-full rounded-xl border border-input bg-background/55 px-3 text-sm text-foreground outline-none transition focus:border-primary/55 focus:ring-3 focus:ring-primary/15";
 
-export function PlaceAutocomplete({ configured, context, mapAccessToken }: { configured: boolean; context: PlaceContext; mapAccessToken: string | null }) {
+export function PlaceAutocomplete({ configured, context, daySubmitLabel, mapAccessToken }: { configured: boolean; context: PlaceContext; daySubmitLabel?: string; mapAccessToken: string | null }) {
   const fieldId = useId();
   const listboxId = useId();
   const requestId = useRef(0);
@@ -132,8 +132,8 @@ export function PlaceAutocomplete({ configured, context, mapAccessToken }: { con
       </ul> : null}
     </div>
 
-    {selected ? <SelectedPlace context={context} result={selected} mapAccessToken={mapAccessToken} onCancel={() => { setSelected(null); setQuery(""); }} /> : null}
-    {canSaveManual ? <ManualFallback context={context} name={query.trim()} /> : null}
+    {selected ? <SelectedPlace context={context} daySubmitLabel={daySubmitLabel} result={selected} mapAccessToken={mapAccessToken} onCancel={() => { setSelected(null); setQuery(""); }} /> : null}
+    {canSaveManual ? <ManualFallback context={context} daySubmitLabel={daySubmitLabel} name={query.trim()} /> : null}
 
     <p className="mt-4 text-[0.68rem] text-muted-foreground">Vyhledávání <a className="underline underline-offset-2" href="https://www.geoapify.com/" target="_blank" rel="noreferrer">Powered by Geoapify</a> · <a className="underline underline-offset-2" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors</a>. Mapové zobrazení a jeho atribuce zůstávají od Mapboxu.</p>
   </div>;
@@ -143,7 +143,7 @@ function ContextIds({ context }: { context: PlaceContext }) {
   return <><input type="hidden" name="tripId" value={context.tripId} />{context.kind === "day" ? <input type="hidden" name="dayId" value={context.dayId} /> : null}</>;
 }
 
-function SelectedPlace({ context, result, mapAccessToken, onCancel }: { context: PlaceContext; result: PlaceSearchResult; mapAccessToken: string | null; onCancel: () => void }) {
+function SelectedPlace({ context, daySubmitLabel, result, mapAccessToken, onCancel }: { context: PlaceContext; daySubmitLabel: string | undefined; result: PlaceSearchResult; mapAccessToken: string | null; onCancel: () => void }) {
   const providerCategory = (result.providerCategories.join(",") || "unknown").slice(0, 160);
   return <div className="mt-4 grid gap-4 rounded-2xl border border-primary/30 bg-background/45 p-4 lg:grid-cols-2">
     <div>
@@ -167,14 +167,14 @@ function SelectedPlace({ context, result, mapAccessToken, onCancel }: { context:
           <select className={controlClass} name="category" defaultValue={result.category}>{placeCategories.map((category) => <option key={category} value={category}>{placeCategoryLabels[category]}</option>)}</select>
         </label>
         {context.kind === "day" ? <DayItemFields /> : null}
-        <div className="mt-4 flex flex-wrap gap-2"><SubmitButton label={context.kind === "day" ? "Přidat do dne" : "Uložit místo"} /><Button type="button" variant="outline" onClick={onCancel}>Zrušit výběr</Button></div>
+        <div className="mt-4 flex flex-wrap gap-2"><SubmitButton label={context.kind === "day" ? daySubmitLabel ?? "Přidat do dne" : "Uložit místo"} /><Button type="button" variant="outline" onClick={onCancel}>Zrušit výběr</Button></div>
       </form>
     </div>
     <PlacePreviewMap accessToken={mapAccessToken} latitude={result.latitude} longitude={result.longitude} />
   </div>;
 }
 
-function ManualFallback({ context, name }: { context: PlaceContext; name: string }) {
+function ManualFallback({ context, daySubmitLabel, name }: { context: PlaceContext; daySubmitLabel: string | undefined; name: string }) {
   return <form action={context.kind === "day" ? addManualPlaceToDay : createTripPlace} className="mt-4 rounded-xl border border-dashed border-border bg-muted/15 p-3">
     <ContextIds context={context} />
     <input type="hidden" name="name" value={name} />
@@ -187,7 +187,7 @@ function ManualFallback({ context, name }: { context: PlaceContext; name: string
       <select className={controlClass} name="category" defaultValue="custom">{placeCategories.map((category) => <option key={category} value={category}>{placeCategoryLabels[category]}</option>)}</select>
     </label>
     {context.kind === "day" ? <DayItemFields /> : null}
-    <div className="mt-3"><SubmitButton label={context.kind === "day" ? `Přidat „${name}“ do dne` : `Uložit „${name}“ bez souřadnic`} variant="outline" /></div>
+    <div className="mt-3"><SubmitButton label={context.kind === "day" ? daySubmitLabel ?? `Přidat „${name}“ do dne` : `Uložit „${name}“ bez souřadnic`} variant="outline" /></div>
   </form>;
 }
 

@@ -10,7 +10,8 @@ const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}
 export async function createMapSelectedPlace(formData: FormData) {
   const tripId = formData.get("tripId")?.toString().trim() ?? "";
   const dayId = formData.get("dayId")?.toString().trim() || null;
-  const addToDay = formData.get("addToDay") === "on";
+  const continueToItinerary = Boolean(dayId) && formData.get("continueToItinerary") === "on";
+  const addToDay = !continueToItinerary && formData.get("addToDay") === "on";
   const returnTo = dayId
     ? `/app/trips/${tripId}/itinerary/${dayId}`
     : `/app/trips/${tripId}/map`;
@@ -36,5 +37,8 @@ export async function createMapSelectedPlace(formData: FormData) {
   revalidatePath(`/app/trips/${tripId}/itinerary`);
   revalidatePath(`/app/trips/${tripId}/itinerary/[dayId]`, "page");
   revalidatePath(`/app/trips/${tripId}/map`);
+  if (continueToItinerary && typeof data === "string" && uuidPattern.test(data)) {
+    redirect(`${returnTo}?mapPlace=continue&mapPlaceId=${encodeURIComponent(data)}`);
+  }
   redirect(`${returnTo}?mapPlace=${dayId && addToDay ? "day-added" : "created"}`);
 }
