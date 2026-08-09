@@ -73,10 +73,7 @@ export function MapPlaceForm({
           {addressStatus === "loading" ? "Hledám adresu…" : addressStatus === "unavailable" ? "Adresu se nepodařilo zjistit. Místo můžete uložit i bez ní." : "Adresu můžete před uložením upravit."}
         </p>
         <label className="min-w-0 text-xs font-medium text-muted-foreground sm:col-span-2">Poznámka<textarea className={`${control} h-24 resize-y py-2`} name="notes" maxLength={1200} placeholder="Volitelná poznámka k místu" /></label>
-        <div className="grid min-w-0 gap-3 sm:col-span-2 sm:grid-cols-2">
-          <label className="min-w-0 text-xs font-medium text-muted-foreground">Latitude<input className={control} value={draft.latitude.toFixed(6)} readOnly aria-readonly="true" /></label>
-          <label className="min-w-0 text-xs font-medium text-muted-foreground">Longitude<input className={control} value={draft.longitude.toFixed(6)} readOnly aria-readonly="true" /></label>
-        </div>
+        <div className="flex min-w-0 items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm sm:col-span-2"><span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/15 text-primary" aria-hidden="true">✓</span><div><p className="font-medium text-foreground">Bod je umístěn na mapě</p><p className="mt-1 text-xs leading-5 text-muted-foreground">Pozici můžete změnit novým výběrem na mapě.</p></div></div>
         {dayId ? <label className="flex min-w-0 items-start gap-3 rounded-xl border border-border bg-background/30 p-3 text-sm sm:col-span-2"><input className="mt-1 size-4 shrink-0 accent-primary" type="checkbox" name="addToDay" defaultChecked /><span><span className="font-medium">Přidat rovnou do tohoto dne</span><span className="mt-1 block text-xs leading-5 text-muted-foreground">Vytvoří jeden bod na konci timeline a propojí ho s právě vytvořeným místem.</span></span></label> : null}
         <div className="flex min-w-0 flex-col-reverse gap-2 sm:col-span-2 sm:flex-row sm:justify-end">
           <Button type="button" variant="outline" onClick={onCancel}><X /> Zrušit</Button>

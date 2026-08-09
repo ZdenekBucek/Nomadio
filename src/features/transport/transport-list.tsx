@@ -1,4 +1,4 @@
-import { ArrowRight, BusFront, CalendarClock, CreditCard, MapPin, Route } from "lucide-react";
+import { ArrowRight, BusFront, CalendarClock, CreditCard, MapPin, Plus, Route } from "lucide-react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Surface } from "@/components/ui/surface";
@@ -18,7 +18,7 @@ function formatMoney(value: number, currency: string | null) {
   return new Intl.NumberFormat("cs-CZ", { currency, maximumFractionDigits: 2, minimumFractionDigits: 0, style: "currency" }).format(value);
 }
 
-export function TransportList({ items, trip }: { items: TransportBookingWithSegments[]; trip: TripRow }) {
+export function TransportList({ canEdit, items, trip }: { canEdit: boolean; items: TransportBookingWithSegments[]; trip: TripRow }) {
   const summary = transportSummary(items);
   return <>
     <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -27,7 +27,7 @@ export function TransportList({ items, trip }: { items: TransportBookingWithSegm
       <Summary label="Čeká na platbu" value={String(summary.pendingPayments)} />
       <Summary label="Nejbližší přesun" value={summary.nearestMovement ? formatDateTime(summary.nearestMovement, trip.timezone) : "—"} compact />
     </div>
-    <div className="mt-6 grid gap-4">{items.length ? items.map((item) => <TransportCard item={item} key={item.id} trip={trip} />) : <Surface className="p-6 text-center"><BusFront className="mx-auto size-7 text-primary" /><h2 className="mt-3 font-medium">Zatím žádná doprava</h2><p className="mt-2 text-sm text-muted-foreground">Přidejte první rezervaci a její jednotlivé segmenty.</p></Surface>}</div>
+    <div className="mt-6 grid gap-4">{items.length ? items.map((item) => <TransportCard item={item} key={item.id} trip={trip} />) : <Surface className="p-5 text-center"><BusFront className="mx-auto size-7 text-primary" /><h2 className="mt-3 font-medium">Zatím nemáte přidanou žádnou dopravu.</h2>{canEdit ? <Link href={`/app/trips/${trip.id}/transport?new=1`} className="mt-4 inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"><Plus className="size-4" /> Přidat dopravu</Link> : null}</Surface>}</div>
   </>;
 }
 

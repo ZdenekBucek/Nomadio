@@ -25,7 +25,7 @@ afterEach(cleanup);
 
 describe("DocumentList", () => {
   it("shows summary, metadata, link and offline state", () => {
-    render(<DocumentList filter="all" items={[document]} tripId={document.trip_id} />);
+    render(<DocumentList canEdit={false} filter="all" items={[document]} tripId={document.trip_id} />);
     expect(screen.getByText("Hotelový voucher")).toBeInTheDocument();
     expect(screen.getByText("PDF · 2 kB")).toBeInTheDocument();
     expect(screen.getByText("Hotel Oslo")).toBeInTheDocument();
@@ -34,10 +34,17 @@ describe("DocumentList", () => {
   });
 
   it("applies important and category filters", () => {
-    const { rerender } = render(<DocumentList filter="important" items={[document]} tripId={document.trip_id} />);
+    const { rerender } = render(<DocumentList canEdit={false} filter="important" items={[document]} tripId={document.trip_id} />);
     expect(screen.getByText("Hotelový voucher")).toBeInTheDocument();
-    rerender(<DocumentList filter="transport" items={[document]} tripId={document.trip_id} />);
+    rerender(<DocumentList canEdit={false} filter="transport" items={[document]} tripId={document.trip_id} />);
     expect(screen.queryByText("Hotelový voucher")).not.toBeInTheDocument();
     expect(screen.getByText("Žádné dokumenty v tomto filtru")).toBeInTheDocument();
+  });
+
+  it("offers upload CTA only to editors when the trip has no documents", () => {
+    const { rerender } = render(<DocumentList canEdit filter="all" items={[]} tripId={document.trip_id} />);
+    expect(screen.getByRole("link", { name: "Nahrát dokument" })).toHaveAttribute("href", `/app/trips/${document.trip_id}/documents?new=1`);
+    rerender(<DocumentList canEdit={false} filter="all" items={[]} tripId={document.trip_id} />);
+    expect(screen.queryByRole("link", { name: "Nahrát dokument" })).not.toBeInTheDocument();
   });
 });

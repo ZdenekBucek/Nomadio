@@ -49,7 +49,7 @@ export default async function AccommodationPage({ params, searchParams }: Props)
     {message ? <div role="status" className={cn("mt-5 rounded-2xl border px-4 py-3 text-sm", success ? "border-emerald-400/20 bg-emerald-400/8 text-emerald-300" : "border-amber-400/20 bg-amber-400/8 text-amber-200")}>{message}</div> : null}
 
     {showForm ? <Surface depth="panel" className="mt-6 min-w-0 overflow-hidden p-4 sm:p-6"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-medium tracking-[0.16em] text-primary uppercase">{selected ? "Detail rezervace" : "Nová rezervace"}</p><h2 className="mt-2 text-xl font-semibold">{selected ? selected.name : "Přidat ubytování"}</h2></div><Link href={`/app/trips/${tripId}/accommodation`} className="rounded-xl border border-border px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted/50 hover:text-foreground">Zavřít</Link></div><AccommodationForm accommodation={selected} canEdit={canEdit} geoapifyConfigured={Boolean(process.env.GEOAPIFY_API_KEY?.trim())} mapAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN?.trim() || null} places={places} trip={detail.trip} /></Surface> : null}
-    <AccommodationList items={accommodations} trip={detail.trip} />
+    <AccommodationList canEdit={canEdit} items={accommodations} trip={detail.trip} />
   </div>;
 }
 

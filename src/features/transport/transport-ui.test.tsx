@@ -17,8 +17,16 @@ function booking(overrides: Partial<TransportBookingWithSegments> = {}): Transpo
 afterEach(cleanup);
 
 describe("transport UI", () => {
+  it("offers the create CTA only when editing is allowed and there are no bookings", () => {
+    const { rerender } = render(<TransportList canEdit items={[]} trip={trip} />);
+    expect(screen.getByText("Zatím nemáte přidanou žádnou dopravu.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Přidat dopravu" })).toHaveAttribute("href", `/app/trips/${trip.id}/transport?new=1`);
+    rerender(<TransportList canEdit={false} items={[]} trip={trip} />);
+    expect(screen.queryByRole("link", { name: "Přidat dopravu" })).not.toBeInTheDocument();
+  });
+
   it("shows payment details and booking metadata on the card", () => {
-    render(<TransportList items={[booking()]} trip={trip} />);
+    render(<TransportList canEdit={false} items={[booking()]} trip={trip} />);
     expect(screen.getByText("Let Praha – Oslo")).toBeInTheDocument();
     expect(screen.getByText(/Norwegian · DY123/)).toBeInTheDocument();
     expect(screen.getByText(/18[\s ]500 Kč/)).toBeInTheDocument();

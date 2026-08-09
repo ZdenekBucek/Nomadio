@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ChevronDown } from "lucide-react";
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -29,10 +29,32 @@ export function TimezoneCombobox({
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [highlighted, setHighlighted] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
   const inputId = useId();
   const listId = inputId + "-options";
   const selected = getTimezoneOption(value) ?? { aliases: [], city: value, id: value, region: "" };
   const results = useMemo(() => searchTimezones(query).slice(0, 80), [query]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+        setQuery("");
+      }
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [open]);
+
+  function closeOnBlur() {
+    window.setTimeout(() => {
+      if (!containerRef.current?.contains(document.activeElement)) {
+        setOpen(false);
+        setQuery("");
+      }
+    }, 0);
+  }
 
   function choose(nextValue: string) {
     setValue(nextValue);
@@ -42,7 +64,7 @@ export function TimezoneCombobox({
   }
 
   return (
-    <div className={cn("relative text-xs font-medium text-muted-foreground", className)}>
+    <div ref={containerRef} className={cn("relative text-xs font-medium text-muted-foreground", className)}>
       <label htmlFor={inputId}>{label}</label>
       <div className="relative mt-2">
         <input
@@ -64,6 +86,7 @@ export function TimezoneCombobox({
             setOpen(true);
             setQuery("");
           }}
+          onBlur={closeOnBlur}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
               setOpen(false);

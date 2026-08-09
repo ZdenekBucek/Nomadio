@@ -31,7 +31,7 @@ export default async function DocumentsPage({ params, searchParams }: Props) {
     {archived ? <Notice icon={<Archive className="size-4" />}>Cesta je archivovaná. Dokumenty zůstávají pouze pro čtení.</Notice> : !canEdit ? <Notice icon={<Eye className="size-4" />}>Dokumenty můžete zobrazit a stáhnout, ale nemůžete je měnit.</Notice> : null}
     {message ? <div role="status" className={cn("mt-5 rounded-2xl border px-4 py-3 text-sm", success ? "border-emerald-400/20 bg-emerald-400/8 text-emerald-300" : "border-amber-400/20 bg-amber-400/8 text-amber-200")}>{message}</div> : null}
     {showForm ? <Surface depth="panel" className="mt-6 min-w-0 overflow-hidden p-4 sm:p-6"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-medium tracking-[0.16em] text-primary uppercase">Privátní Storage</p><h2 className="mt-2 text-xl font-semibold">Přidat dokument</h2></div><Link href={`/app/trips/${tripId}/documents`} className="rounded-xl border border-border px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted/50 hover:text-foreground">Zavřít</Link></div><div className="mt-5"><DocumentForm canEdit linkOptions={data.linkOptions} tripId={tripId} /></div></Surface> : null}
-    <DocumentList filter={filter} items={data.documents} tripId={tripId} />
+    <DocumentList canEdit={canEdit} filter={filter} items={data.documents} tripId={tripId} />
   </div>;
 }
 

@@ -1,4 +1,4 @@
-import { Download, FileImage, FileText, Link2, Star, WifiOff } from "lucide-react";
+import { Download, FileImage, FileText, Link2, Plus, Star, WifiOff } from "lucide-react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Surface } from "@/components/ui/surface";
@@ -6,7 +6,7 @@ import type { DocumentCategory } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
 import { documentCategories, documentCategoryLabels, documentSummary, documentTypeLabel, filterDocuments, formatDocumentSize, type DocumentWithLink } from "./document-model";
 
-export function DocumentList({ filter, items, tripId }: { filter: "all" | "important" | DocumentCategory; items: DocumentWithLink[]; tripId: string }) {
+export function DocumentList({ canEdit, filter, items, tripId }: { canEdit: boolean; filter: "all" | "important" | DocumentCategory; items: DocumentWithLink[]; tripId: string }) {
   const summary = documentSummary(items);
   const visible = filterDocuments(items, filter);
   const base = `/app/trips/${tripId}/documents`;
@@ -18,7 +18,7 @@ export function DocumentList({ filter, items, tripId }: { filter: "all" | "impor
       <SummaryCard label="Pro offline" value={summary.offline} />
     </section>
     <nav aria-label="Filtr dokumentů" className="flex max-w-full flex-wrap gap-2">{filters.map((item) => <Link key={item.value} href={item.value === "all" ? base : `${base}?filter=${item.value}`} className={cn("rounded-xl border px-3 py-2 text-xs transition", filter === item.value ? "border-primary/35 bg-primary/12 text-primary" : "border-border text-muted-foreground hover:bg-muted/40 hover:text-foreground")}>{item.label}</Link>)}</nav>
-    {visible.length ? <section className="grid min-w-0 gap-3 md:grid-cols-2 xl:grid-cols-3">{visible.map((item) => <DocumentCard key={item.id} item={item} tripId={tripId} />)}</section> : <Surface depth="panel" className="p-8 text-center"><FileText className="mx-auto size-9 text-primary" /><h2 className="mt-4 font-medium">Žádné dokumenty v tomto filtru</h2><p className="mt-2 text-sm text-muted-foreground">Změňte filtr nebo nahrajte první soukromý dokument.</p></Surface>}
+    {visible.length ? <section className="grid min-w-0 gap-3 md:grid-cols-2 xl:grid-cols-3">{visible.map((item) => <DocumentCard key={item.id} item={item} tripId={tripId} />)}</section> : <Surface depth="panel" className="p-5 text-center"><FileText className="mx-auto size-9 text-primary" /><h2 className="mt-4 font-medium">{items.length ? "Žádné dokumenty v tomto filtru" : "Zatím zde nejsou žádné dokumenty."}</h2>{items.length ? <p className="mt-2 text-sm text-muted-foreground">Změňte filtr nebo nahrajte první soukromý dokument.</p> : canEdit ? <Link href={`${base}?new=1`} className="mt-4 inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"><Plus className="size-4" /> Nahrát dokument</Link> : null}</Surface>}
   </div>;
 }
 
