@@ -1,11 +1,9 @@
-import { ArrowRight, Compass, ShieldCheck } from "lucide-react";
+import { MapPin, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
+import Image from "next/image";
 
 import { BrandMark } from "@/components/brand/brand-mark";
-import { Button } from "@/components/ui/button";
-import { StatusPill } from "@/components/ui/status-pill";
-import { Surface } from "@/components/ui/surface";
-import { signInWithGoogle } from "@/features/auth/actions";
+import { GoogleSignInButton } from "@/features/auth/google-sign-in-button";
 import { getSafeNextPath } from "@/features/auth/redirects";
 
 export const metadata: Metadata = {
@@ -13,93 +11,50 @@ export const metadata: Metadata = {
   description: "Přihlaste se do Nomadia bezpečně pomocí Google účtu.",
 };
 
-type LoginPageProps = {
-  searchParams: Promise<{
-    error?: string;
-    next?: string;
-  }>;
-};
+type LoginPageProps = { searchParams: Promise<{ error?: string; next?: string }> };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const nextPath = getSafeNextPath(params.next);
 
   return (
-    <main className="relative grid min-h-dvh overflow-x-clip px-4 py-4 sm:px-8 sm:py-8">
-      <div className="nomadio-ambient" aria-hidden="true" />
+    <main className="min-h-dvh overflow-x-clip bg-background p-0 text-foreground md:grid md:grid-cols-[minmax(0,1.2fr)_minmax(25rem,0.8fr)]">
+      <section className="relative isolate flex min-h-[32dvh] overflow-hidden border-b border-border px-5 py-6 sm:min-h-[36dvh] sm:px-8 md:min-h-dvh md:border-r md:border-b-0 md:px-10 md:py-10 lg:px-14">
+        <Image
+          src="/images/login/nomadio-login-hero.png"
+          alt=""
+          fill
+          priority
+          sizes="(min-width: 768px) 60vw, 100vw"
+          className="object-cover object-[64%_center]"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,7,18,0.34),rgba(3,7,18,0.72)_100%)] md:bg-[linear-gradient(90deg,rgba(3,7,18,0.82),rgba(3,7,18,0.48)_58%,rgba(3,7,18,0.2))]" aria-hidden="true" />
 
-      <Surface
-        depth="panel"
-        className="relative mx-auto grid w-full max-w-6xl overflow-hidden sm:rounded-[2rem] lg:grid-cols-[1.05fr_0.95fr]"
-      >
-        <div className="flex min-w-0 flex-col p-5 sm:p-8 lg:p-12">
-          <BrandMark tagline />
-
-          <div className="my-auto py-14 sm:py-20">
-            <p className="mb-5 text-xs font-medium tracking-[0.22em] text-primary uppercase">
-              Vítejte zpět
-            </p>
-            <h1 className="max-w-xl text-4xl leading-[1.02] font-semibold tracking-[-0.055em] text-balance sm:text-6xl">
-              Vaše cesty, bezpečně na jednom místě.
-            </h1>
-            <p className="mt-6 max-w-lg text-base leading-7 text-muted-foreground sm:text-lg">
-              Přihlaste se přes Google. Nové cesty jsou vždy soukromé a přístup
-              k profilu chrání Supabase Auth.
-            </p>
+        <div className="relative z-10 flex w-full flex-col justify-between">
+          <BrandMark tagline className="[&_span:nth-child(2)>span:first-child]:text-white [&_span:nth-child(2)>span:last-child]:text-primary" />
+          <div className="mt-14 max-w-lg md:mt-auto md:mb-[12vh]">
+            <p className="text-xs font-semibold tracking-[0.24em] text-primary uppercase">Plan · Discover · Go</p>
+            <h1 className="mt-4 text-3xl font-semibold tracking-[-0.055em] text-white sm:text-5xl lg:text-6xl">Cesty, které máte pod kontrolou.</h1>
+            <p className="mt-4 max-w-md text-sm leading-6 text-white/65 sm:text-base">Od prvního nápadu až po návrat. Klidně, přehledně a společně.</p>
           </div>
-
-          <p className="text-xs leading-5 text-muted-foreground">
-            Pokračováním použijete svůj Google účet pouze pro ověření identity.
-          </p>
+          <div className="hidden text-xs text-white/52 md:block">Váš další příběh začíná tady.</div>
         </div>
+      </section>
 
-        <div className="flex min-w-0 items-center border-t border-border bg-muted/30 p-5 sm:p-8 lg:border-t-0 lg:border-l lg:p-12">
-          <Surface depth="card" className="w-full p-5 sm:p-7">
-            <div className="grid size-11 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-[var(--brand-highlight)]">
-              <Compass className="size-5" aria-hidden="true" />
-            </div>
-            <StatusPill tone="brand" className="mt-6">
-              Bezpečný vstup
-            </StatusPill>
-            <h2 className="mt-3 text-xl font-semibold tracking-[-0.03em]">
-              Pokračujte do Nomadia
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Jeden bezpečný účet pro plánování na desktopu i používání během
-              cesty.
-            </p>
+      <section className="flex min-w-0 items-center px-5 py-9 sm:px-8 md:px-10 lg:px-14">
+        <div className="mx-auto w-full max-w-md">
+          <BrandMark className="md:hidden" />
+          <p className="mt-8 text-xs font-semibold tracking-[0.22em] text-primary uppercase md:mt-0">Nomadio</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">Vše pro vaše cesty.<br />Na jednom místě.</h2>
+          <p className="mt-4 max-w-sm text-sm leading-6 text-muted-foreground">Plánujte itinerář, rezervace, rozpočet a dokumenty společně.</p>
 
-            {params.error ? (
-              <p
-                role="alert"
-                className="mt-5 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
-              >
-                Přihlášení se nepodařilo. Zkuste to prosím znovu.
-              </p>
-            ) : null}
+          {params.error ? <div role="alert" className="mt-7 rounded-xl border border-destructive/25 bg-destructive/8 px-4 py-3 text-sm text-destructive"><strong className="font-medium">Přihlášení se nepodařilo.</strong><span className="mt-1 block text-destructive/80">Zkuste to prosím znovu.</span></div> : null}
 
-            <form action={signInWithGoogle} className="mt-7">
-              <input type="hidden" name="next" value={nextPath} />
-              <Button
-                type="submit"
-                size="lg"
-                className="min-h-12 h-auto w-full whitespace-normal rounded-full px-4 py-3 text-center leading-5 sm:text-base"
-              >
-                Pokračovat přes Google
-                <ArrowRight data-icon="inline-end" />
-              </Button>
-            </form>
-
-            <div className="mt-6 flex gap-3 border-t border-border pt-5 text-xs leading-5 text-muted-foreground">
-              <ShieldCheck
-                className="mt-0.5 size-4 shrink-0 text-primary"
-                aria-hidden="true"
-              />
-              <span>Session je uložena v zabezpečených cookies spravovaných serverem.</span>
-            </div>
-          </Surface>
+          <div className="mt-8"><GoogleSignInButton nextPath={nextPath} /></div>
+          <p className="mt-4 flex items-center gap-2 text-xs text-muted-foreground"><ShieldCheck className="size-4 shrink-0 text-primary" aria-hidden="true" /> Přihlášení je zabezpečeno přes Google.</p>
+          <div className="mt-8 flex flex-wrap gap-x-4 gap-y-2 border-t border-border pt-5 text-xs text-muted-foreground"><span>Soukromé cesty</span><span aria-hidden="true">·</span><span>Sdílení s blízkými</span><span aria-hidden="true">·</span><span className="inline-flex items-center gap-1"><MapPin className="size-3" aria-hidden="true" /> Vše na jednom místě</span></div>
         </div>
-      </Surface>
+      </section>
     </main>
   );
 }
