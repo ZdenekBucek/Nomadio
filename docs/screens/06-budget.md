@@ -98,31 +98,37 @@ základní rozdělení. Detail lze doplnit později.
 Více peněženek, OCR účtenek, bankovní integrace a automatický import dokladů
 patří později.
 
-## Aktuálně implementovaný první řez
+## Aktuálně implementovaný Budget UI řez
 
-Route `/app/trips/{tripId}/budget` skládá tři zdroje do společného
-provider-neutrálního finančního řádku:
+Route `/app/trips/{tripId}/budget` používá jednotný serverový read model
+`getTripBudgetDashboard(tripId)` a rozděluje finance do tří významově odlišných
+částí:
 
-- `accommodations` jako read-only kategorii Ubytování,
-- `transport_bookings` jako read-only kategorii Doprava,
-- ruční `budget_items`, které může owner/editor vytvářet, upravovat a mazat.
+- **Plán** — očekávané náklady z `budget_plan_items`,
+- **Realita** — skutečně vzniklé náklady z manuálních `expenses` a read-only
+  projekcí Ubytování a Dopravy,
+- **Platby** — uhrazené částky, odvozený zůstatek a splatnosti ze zdrojových
+  rezervací.
 
-Ubytování ani Doprava se do `budget_items` nekopírují. Databázová insert politika
-v této fázi dovoluje pouze `source_type = manual` a prázdné `source_id`;
-automatické řádky se editují ve svém zdrojovém modulu. Zbývající částka se
-neukládá. Základem je skutečná částka, a pokud ještě není známá, odhad; od ní se
-odečte evidované zaplaceno. U známého stavu `paid`, `unpaid` nebo `pay_on_site`
-lze bezpečně doplnit chybějící zaplacenou hodnotu, zatímco `unknown` bez částky
-zůstává neurčitý.
+První UI fáze plně implementuje Plán. Owner/editor může přes responsivní dialog
+vytvářet, upravovat a mazat plánované položky; viewer a archivovaný trip mají
+pouze čtení. Název je volitelný a bez zadání se odvodí z kategorie. Kategorie,
+podkategorie, částka a měna se validují na serveru a databázové RLS zůstává
+autorizačním zdrojem pravdy.
 
-Souhrny se počítají samostatně pro každou měnu. Hlavní měna je
-`trips.currency`, ale cizí měna zůstává původní a bez uloženého FX kurzu se
-nepřepočítává ani nesčítá s ostatními. Čekající platby jsou řazené podle
-splatnosti, položky bez data jsou na konci.
+Druhá UI fáze implementuje Realitu. Manuální výdaj lze rychle zadat částkou a
+kategorií; trip, autor, serverový čas a hlavní měna tripu se doplní automaticky.
+Volitelně lze přidat název, podkategorii, poznámku nebo změnit datum vzniku
+nákladu. Manuální expenses jsou seskupené do časové osy a owner/editor je může
+upravovat nebo mazat. Náklady Ubytování a Dopravy se zobrazují jako read-only
+projekce s odkazem na zdrojovou entitu, takže se jejich data nekopírují.
+Kategoriální porovnání používá jednotný dashboard read model a označuje
+překročený plán i náklady bez odpovídajícího plánu.
 
-Viewer a člen archivované cesty mají jen čtení. Další fáze doplní rozdělení
-nákladů mezi cestovatele, společný účet, kdo komu dluží, FX přepočet a více
-samostatných plateb. Tyto funkce nejsou součástí aktuálního řezu.
+Kompaktní souhrn porovnává Plán a Realitu, ukazuje procento využití i překročení
+nad 100 %. Každá měna má samostatný blok; bez FX kurzu se nikdy nevytváří
+falešný společný total. Záložka Platby má v této fázi pouze pravdivý placeholder
+bez demo dat. Platební cashflow přijde v dalším řezu.
 
 ### Hierarchie kategorií
 
@@ -131,7 +137,7 @@ Hlavní kategorie jsou: Ubytování, Doprava, Jídlo, Aktivity, Auto, Nákupy,
 Cestovní služby, Zdraví, Poplatky a Ostatní. Podkategorie používají stabilní
 anglické hodnoty a české labely z centrálního aplikačního katalogu.
 
-Formulář po změně hlavní kategorie zahodí podkategorii, která do nové kategorie
+Formulář Plánu po změně hlavní kategorie zahodí podkategorii, která do nové kategorie
 nepatří. Server validuje stejný katalog a databáze dvojici nezávisle ověřuje
 kompozitním cizím klíčem. Podkategoriální breakdown se zobrazuje uvnitř hlavní
 kategorie; hlavní reporting se nikdy netříští podle podkategorií.

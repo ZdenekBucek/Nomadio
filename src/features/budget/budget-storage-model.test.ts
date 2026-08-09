@@ -23,6 +23,7 @@ describe("budget storage model", () => {
       currency: "CZK",
       id: "plan",
       name: "Jídlo",
+      notes: null,
       plannedAmount: 10_000,
       subcategory: null,
       tripId: "trip",
@@ -50,8 +51,11 @@ describe("budget storage model", () => {
     expect(mapExpenseToReality(expense)).toMatchObject({
       amount: 450,
       editable: true,
+      enteredTitle: "Taxi",
+      notes: "Centrum",
       occurredAt: "2027-06-01T09:30:00Z",
       origin: "manual",
+      paidByTravelerId: "traveler",
       sourceId: "expense",
     });
   });

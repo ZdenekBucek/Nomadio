@@ -1,41 +1,33 @@
 # Rozpočet
 
-První vertikální řez je dostupný na `/app/trips/{tripId}/budget`. Centrální
-read model normalizuje ruční položky, Ubytování a Dopravu do jednoho typu
-`BudgetRow` se společnými částkami, měnou, platebním stavem a splatností.
+Budget doména odděluje tři otázky, které původní univerzální řádek směšoval:
 
-## Zdroje a výpočty
+- `Plan` jsou očekávané náklady uložené v `budget_plan_items`.
+- `Reality` jsou vzniklé náklady z manuálních `expenses` a read-only adaptérů
+  Ubytování a Dopravy.
+- `Payments` jsou zaplacené částky, odvozené zůstatky a splatnosti. Zůstatek se
+  nikdy neukládá duplicitně.
 
-- Ruční položky se ukládají do trip-scoped `budget_items`.
-- Ubytování a Doprava se čtou přímo ze zdrojových tabulek a nikdy se do
-  `budget_items` nekopírují.
-- `actual_amount` má přednost před `estimated_amount`. `remaining_amount` se
-  odvozuje jako tento základ minus známé `paid_amount` a neukládá se.
-- Původní měna zůstává zachovaná. Více měn se sumarizuje odděleně; bez FX kurzu
-  nevzniká falešný součet.
-- Automatické řádky jsou v Budgetu read-only a editace vede na zdrojovou
-  rezervaci.
+`getTripBudgetDashboard(tripId)` je jednotný serverový read model pro všechny
+tři části. Měny agreguje samostatně a neprovádí FX přepočet.
 
-RLS dovoluje owner/editor CRUD pouze pro manuální řádky, viewerovi čtení a
-archivované cestě pouze čtení. Cizí uživatel nevidí nic.
+## Stav UI
 
-## Kategorie a podkategorie
+Route `/app/trips/{tripId}/budget` má nový kompaktní shell se summary a záložkami
+Plán, Realita a Platby. Implementované jsou Plán a Realita:
 
-Reporting používá deset stabilních hlavních kategorií: Ubytování, Doprava,
-Jídlo, Aktivity, Auto, Nákupy, Cestovní služby, Zdraví, Poplatky a Ostatní.
-Volitelná podkategorie pochází z jediného typovaného katalogu v
-`budget-categories.ts`. Formulář nabízí pouze podkategorie vybrané hlavní
-kategorie a server stejnou dvojici znovu validuje.
+- owner/editor vytváří, upravuje a maže plánované položky,
+- viewer a archivovaný trip mají read-only zobrazení,
+- formulář používá centrální katalog kategorií a podkategorií,
+- server znovu validuje částku, měnu a kombinaci kategorie/podkategorie,
+- mobilní dialog funguje od 320 px a hlavní akce zůstává snadno dosažitelná.
+- manuální expenses mají quick-add flow částka → kategorie → uložit, přičemž
+  čas, autor, trip a hlavní měna se doplňují serverově,
+- manuální náklady jsou v časové ose a mají owner/editor CRUD,
+- Accommodation a Transport se promítají read-only bez ukládání kopií,
+- kategoriální porovnání označuje překročení a náklady bez plánu,
+- všechny měny zůstávají oddělené bez FX přepočtu.
 
-Databáze ověřuje dvojici kompozitním cizím klíčem vůči
-`budget_subcategory_catalog`. Díky tomu nelze podvrhnout například `food + fuel`
-a katalog lze později rozšířit o další předdefinovaný řádek bez změny schématu.
-Vlastní uživatelské podkategorie zatím nejsou podporované.
-
-Accommodation se mapuje podle `accommodation_type`. Běžná doprava se mapuje do
-Dopravy, `rental_car` do `Auto · Půjčení auta` a `private_car` do
-`Auto · Ostatní auto`. Zdrojové rezervace se tím nemění.
-
-Další fáze doplní rozdělení mezi cestovatele, společný účet, kdo komu dluží,
-uložený FX přepočet a více samostatných plateb. Žádná z těchto funkcí se zatím
-neimplementuje.
+Platby zatím zobrazují pouze placeholder. Další fáze připojí platební cashflow.
+Legacy `budget_items` není zdrojem nové Budget obrazovky; dočasně zůstává pouze
+kvůli dosud nepřepojeným přehledovým modulům.

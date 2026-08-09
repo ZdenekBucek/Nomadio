@@ -202,6 +202,13 @@ implementaci.
   Payments do jednoho měnově bezpečného serverového kontraktu. Budget UI,
   Trip Overview, Global Overview a Kalendář na něj budou přepnuty v navazující
   UI fázi.
+- Zahájena první UI fáze redesignu: Budget route používá nový read model,
+  kompaktní summary a záložky Plan/Reality/Payments. Plan má plný CRUD nad
+  `budget_plan_items`.
+- Dokončena druhá UI fáze redesignu: Reality nabízí rychlý CRUD manuálních
+  `expenses`, časovou osu, read-only projekce Ubytování a Dopravy a kategoriální
+  porovnání Plán vs Realita. Měny zůstávají oddělené bez FX. Payments zůstává
+  pravdivý placeholder pro další řez.
 - Lokálně dokončen první vertikální řez centrálního rozpočtu. Serverový read
   model skládá ruční `budget_items` s finančními údaji Ubytování a Dopravy bez
   kopírování zdrojových rezervací.

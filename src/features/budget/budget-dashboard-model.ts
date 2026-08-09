@@ -14,6 +14,7 @@ import {
   type BudgetComparison,
   type BudgetCurrencyAmount,
   type BudgetCurrencyGroup,
+  type BudgetManualExpenseItem,
   type BudgetPaymentItem,
   type BudgetPlanItem,
   type BudgetRealityItem,
@@ -47,7 +48,7 @@ export type TripBudgetDashboard = {
   reality: {
     accommodationItems: BudgetRealityItem[];
     items: BudgetRealityItem[];
-    manualExpenses: BudgetRealityItem[];
+    manualExpenses: BudgetManualExpenseItem[];
     totalsByCurrency: BudgetCurrencyAmount[];
     transportItems: BudgetRealityItem[];
   };

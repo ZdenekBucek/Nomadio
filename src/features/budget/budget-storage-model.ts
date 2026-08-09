@@ -1,5 +1,5 @@
 import type { BudgetPlanItemRow, ExpenseRow } from "@/lib/supabase/database.types";
-import type { BudgetPlanItem, BudgetRealityItem } from "./budget-domain";
+import type { BudgetManualExpenseItem, BudgetPlanItem } from "./budget-domain";
 
 export type Expense = {
   amount: number;
@@ -23,6 +23,7 @@ export function mapBudgetPlanItemRow(item: BudgetPlanItemRow): BudgetPlanItem {
     currency: item.currency,
     id: item.id,
     name: item.name,
+    notes: item.notes,
     plannedAmount: item.planned_amount,
     subcategory: item.subcategory,
     tripId: item.trip_id,
@@ -47,15 +48,18 @@ export function mapExpenseRow(item: ExpenseRow): Expense {
   };
 }
 
-export function mapExpenseToReality(item: Expense): BudgetRealityItem {
+export function mapExpenseToReality(item: Expense): BudgetManualExpenseItem {
   return {
     amount: item.amount,
     category: item.category,
     currency: item.currency,
     editable: true,
+    enteredTitle: item.title,
     id: `manual:${item.id}`,
     occurredAt: item.occurredAt,
     origin: "manual",
+    notes: item.notes,
+    paidByTravelerId: item.paidByTravelerId,
     sourceId: item.id,
     subcategory: item.subcategory,
     title: item.title ?? "Výdaj",

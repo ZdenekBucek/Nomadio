@@ -11,6 +11,7 @@ function plan(overrides: Partial<BudgetPlanItem> = {}): BudgetPlanItem {
     currency: "CZK",
     id: "food-plan",
     name: "Jídlo",
+    notes: null,
     plannedAmount: 1000,
     subcategory: null,
     tripId: "trip",

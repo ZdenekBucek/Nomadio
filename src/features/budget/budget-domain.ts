@@ -19,6 +19,7 @@ export type BudgetPlanItem = {
   currency: string;
   id: string;
   name: string;
+  notes: string | null;
   plannedAmount: number;
   subcategory: BudgetSubcategory | null;
   tripId: string;
@@ -38,6 +39,12 @@ export type BudgetRealityItem = {
   subcategory: BudgetSubcategory | null;
   title: string;
   tripId: string;
+};
+
+export type BudgetManualExpenseItem = BudgetRealityItem & {
+  enteredTitle: string | null;
+  notes: string | null;
+  paidByTravelerId: string | null;
 };
 
 export type BudgetPaymentSourceType = BudgetRealityOrigin;
