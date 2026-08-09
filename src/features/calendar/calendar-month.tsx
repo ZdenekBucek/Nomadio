@@ -1,4 +1,6 @@
-import { useMemo, type CSSProperties } from "react";
+"use client";
+
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from "react";
 import { BedDouble, ChevronLeft, ChevronRight, CircleDollarSign, Plane } from "lucide-react";
 import Link from "next/link";
 
@@ -209,14 +211,56 @@ const monthEventIcons = {
 } as const;
 
 function MonthDayEvents({ date, events, tripLanes }: { date: string; events: MonthEvent[]; tripLanes: number }) {
-  if (!events.length) return null;
   const desktopLimit = tripLanes >= 3 ? 0 : tripLanes === 2 ? 1 : 2;
   const mobileLimit = tripLanes >= 2 ? 0 : 1;
   const tooltipId = `calendar-month-events-${date}`;
+  const dateLabel = monthEventDateLabel(date);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const detailsRef = useRef<HTMLDivElement>(null);
+  const activeTriggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!detailsOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      setDetailsOpen(false);
+      activeTriggerRef.current?.focus();
+    };
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setDetailsOpen(false);
+        activeTriggerRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", handlePointerDown);
+    requestAnimationFrame(() => detailsRef.current?.focus());
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [detailsOpen]);
+
+  const closeDetails = () => {
+    setDetailsOpen(false);
+    activeTriggerRef.current?.focus();
+  };
+
+  const openDetails = (trigger: HTMLButtonElement) => {
+    activeTriggerRef.current = trigger;
+    setDetailsOpen(true);
+  };
+
+  if (!events.length) return null;
+
   return (
     <div
+      ref={containerRef}
       className={styles.monthEvents}
       data-month-events="true"
+      data-open={detailsOpen}
       style={{
         "--trip-offset": `${tripLanes * 1.65}rem`,
         "--trip-offset-mobile": `${tripLanes}rem`,
@@ -224,19 +268,24 @@ function MonthDayEvents({ date, events, tripLanes }: { date: string; events: Mon
     >
       <div className={styles.desktopEvents} data-month-event-layout="desktop" data-visible-limit={desktopLimit}>
         {events.slice(0, desktopLimit).map((event) => <MonthEventLink describedBy={tooltipId} event={event} key={event.id} />)}
-        {events.length > desktopLimit ? <OverflowTrigger count={events.length - desktopLimit} describedBy={tooltipId} /> : null}
+        {events.length > desktopLimit ? <OverflowTrigger count={events.length - desktopLimit} dateLabel={dateLabel} describedBy={tooltipId} expanded={detailsOpen} onOpen={openDetails} /> : null}
       </div>
       <div className={styles.mobileEvents} data-month-event-layout="mobile" data-visible-limit={mobileLimit}>
         {events.slice(0, mobileLimit).map((event) => <MonthEventLink compact describedBy={tooltipId} event={event} key={event.id} />)}
-        {events.length > mobileLimit ? <OverflowTrigger compact count={events.length - mobileLimit} describedBy={tooltipId} /> : null}
+        {events.length > mobileLimit ? <OverflowTrigger compact count={events.length - mobileLimit} dateLabel={dateLabel} describedBy={tooltipId} expanded={detailsOpen} onOpen={openDetails} /> : null}
       </div>
-      <DayEventsPopover date={date} events={events} id={tooltipId} />
+      {detailsOpen ? <div aria-hidden="true" className={styles.dayEventsBackdrop} onClick={closeDetails} /> : null}
+      <DayEventsPopover date={date} events={events} id={tooltipId} onClose={closeDetails} open={detailsOpen} detailsRef={detailsRef} />
     </div>
   );
 }
 
-function OverflowTrigger({ compact = false, count, describedBy }: { compact?: boolean; count: number; describedBy: string }) {
-  return <button aria-describedby={describedBy} aria-label={`Zobrazit ${count} dalších událostí`} className={styles.moreEvents} data-compact={compact} type="button">+{count}{compact ? "" : " další"}</button>;
+function OverflowTrigger({ compact = false, count, dateLabel, describedBy, expanded, onOpen }: { compact?: boolean; count: number; dateLabel: string; describedBy: string; expanded: boolean; onOpen: (trigger: HTMLButtonElement) => void }) {
+  return <button aria-controls={describedBy} aria-expanded={expanded} aria-label={`Zobrazit ${count} dalších událostí pro ${dateLabel}`} className={styles.moreEvents} data-compact={compact} onClick={(event) => onOpen(event.currentTarget)} type="button">+{count}{compact ? "" : " další"}</button>;
+}
+
+function monthEventDateLabel(date: string) {
+  return new Intl.DateTimeFormat("cs-CZ", { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${date}T00:00:00Z`));
 }
 
 function compactEventTitle(title: string) {
@@ -270,11 +319,14 @@ function MonthEventLink({ compact = false, describedBy, event }: { compact?: boo
   );
 }
 
-function DayEventsPopover({ date, events, id }: { date: string; events: MonthEvent[]; id: string }) {
-  const label = new Intl.DateTimeFormat("cs-CZ", { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${date}T00:00:00Z`));
+function DayEventsPopover({ date, detailsRef, events, id, onClose, open }: { date: string; detailsRef: RefObject<HTMLDivElement | null>; events: MonthEvent[]; id: string; onClose: () => void; open: boolean }) {
+  const label = monthEventDateLabel(date);
   return (
-    <div aria-label={`Události ${label}`} className={styles.dayEventsPopover} id={id} role="dialog">
-      <p className={styles.popoverDate}>{label}</p>
+    <div aria-label={`Události ${label}`} className={styles.dayEventsPopover} data-open={open} id={id} ref={detailsRef} role="dialog" tabIndex={-1}>
+      <div className={styles.popoverHeader}>
+        <p className={styles.popoverDate}>{label}</p>
+        <button aria-label={`Zavřít události pro ${label}`} className={styles.popoverClose} onClick={onClose} type="button">×</button>
+      </div>
       <div className={styles.popoverList}>
         {events.map((event) => <MonthEventDetailLink event={event} key={`detail-${event.id}`} />)}
       </div>

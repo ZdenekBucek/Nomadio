@@ -55,10 +55,21 @@ describe("calendar dashboard", () => {
 
     expect(desktop).toHaveAttribute("data-visible-limit", "2");
     expect(desktop.querySelectorAll("[data-month-event-type]")).toHaveLength(2);
-    expect(within(desktop as HTMLElement).getByRole("button", { name: "Zobrazit 2 dalších událostí" })).toHaveTextContent("+2 další");
+    const desktopOverflow = within(desktop as HTMLElement).getByRole("button", { name: "Zobrazit 2 dalších událostí pro 15. října 2026" });
+    expect(desktopOverflow).toHaveTextContent("+2 další");
+    expect(desktopOverflow).toHaveAttribute("aria-expanded", "false");
     expect(mobile).toHaveAttribute("data-visible-limit", "1");
     expect(mobile.querySelectorAll("[data-month-event-type]")).toHaveLength(1);
-    expect(within(mobile as HTMLElement).getByRole("button", { name: "Zobrazit 3 dalších událostí" })).toHaveTextContent("+3");
+    const mobileOverflow = within(mobile as HTMLElement).getByRole("button", { name: "Zobrazit 3 dalších událostí pro 15. října 2026" });
+    expect(mobileOverflow).toHaveTextContent("+3");
+    fireEvent.click(mobileOverflow);
+    expect(mobileOverflow).toHaveAttribute("aria-expanded", "true");
+    expect(day.querySelector("[role='dialog']")).toHaveAttribute("data-open", "true");
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(mobileOverflow).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(mobileOverflow);
+    fireEvent.click(day.querySelector("[aria-label='Zavřít události pro 15. října 2026']")!);
+    expect(mobileOverflow).toHaveFocus();
     expect(day.querySelectorAll("[role='dialog'] [data-month-event-type]")).toHaveLength(0);
     const detailLinks = day.querySelectorAll("[role='dialog'] a");
     expect(detailLinks).toHaveLength(4);
