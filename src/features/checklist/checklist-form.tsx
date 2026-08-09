@@ -1,4 +1,5 @@
 import type { PackingItemRow, TaskRow, TripTravelerRow } from "@/lib/supabase/database.types";
+import { DatePicker } from "@/components/date-time/date-picker";
 import { createPackingItem, createTask, updatePackingItem, updateTask } from "./checklist-actions";
 import { packingBagTypeLabels, packingBagTypes, packingCategories, packingCategoryLabels, taskCategories, taskCategoryLabels, taskPriorities, taskPriorityLabels, taskStatuses, taskStatusLabels } from "./checklist-model";
 
@@ -12,7 +13,7 @@ export function TaskForm({ canEdit, task, travelers, tripId }: { canEdit: boolea
     <label className="min-w-0 text-sm font-medium sm:col-span-2">Popis<textarea className={`${field} min-h-24 py-3`} name="description" maxLength={4000} defaultValue={task?.description ?? ""} disabled={!canEdit} /></label>
     <Select label="Kategorie" name="category" value={task?.category ?? "preparation"} disabled={!canEdit} options={taskCategories.map((value) => [value, taskCategoryLabels[value]])} />
     <Select label="Priorita" name="priority" value={task?.priority ?? "normal"} disabled={!canEdit} options={taskPriorities.map((value) => [value, taskPriorityLabels[value]])} />
-    <label className="min-w-0 text-sm font-medium">Termín<input className={field} type="date" name="dueDate" defaultValue={task?.due_date ?? ""} disabled={!canEdit} /></label>
+    <DatePicker label="Termín" name="dueDate" defaultValue={task?.due_date ?? ""} disabled={!canEdit} />
     <Select label="Přiřadit cestovateli" name="assignedTravelerId" value={task?.assigned_traveler_id ?? ""} disabled={!canEdit} options={[["", "Bez přiřazení"], ...travelers.map((traveler) => [traveler.id, traveler.display_name] as [string, string])]} />
     <Select label="Stav" name="status" value={task?.status ?? "todo"} disabled={!canEdit} options={taskStatuses.map((value) => [value, taskStatusLabels[value]])} />
     <div className="sm:col-span-2"><button disabled={!canEdit} className="min-h-11 rounded-xl bg-[linear-gradient(135deg,var(--primary),var(--brand-highlight))] px-5 text-sm font-medium text-primary-foreground disabled:opacity-50">{task ? "Uložit úkol" : "Přidat úkol"}</button></div>

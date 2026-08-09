@@ -43,6 +43,13 @@ describe("transport UI", () => {
     expect(screen.queryByLabelText("Datum splatnosti zbývající částky")).not.toBeInTheDocument();
   });
 
+  it("uses the shared optional DatePicker for a canonical payment due date", () => {
+    const { container } = render(<TransportForm booking={booking()} canEdit geoapifyConfigured={false} places={[]} trip={trip} />);
+    expect(screen.getByRole("button", { name: "Datum splatnosti zbývající částky" })).toBeInTheDocument();
+    expect(container.querySelector('input[type="date"]')).not.toBeInTheDocument();
+    expect(new FormData(container.querySelector("form")!).get("balanceDueDate")).toBe("2026-10-15");
+  });
+
   it("uses DateTimePicker values while preserving the segments JSON contract", () => {
     const { container } = render(<TransportForm booking={booking()} canEdit geoapifyConfigured={false} places={[]} trip={trip} />);
     expect(screen.queryByDisplayValue("2026-08-25T10:00")).not.toBeInTheDocument();

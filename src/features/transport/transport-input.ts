@@ -1,11 +1,10 @@
 import { placeCategories } from "@/features/places/categories";
 import type { PlaceSearchResult } from "@/features/places/place-search-result";
-import { isValidDateTimeLocal } from "@/lib/date-time";
+import { isValidDateOnly, isValidDateTimeLocal } from "@/lib/date-time";
 import type { PlaceCategory, TransportBookingStatus, TransportPaymentStatus, TransportType } from "@/lib/supabase/database.types";
 import { bookingStatuses, transportPaymentStatuses, transportTypes } from "./transport-model";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const dateTimePattern = /^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/;
 
 export type TransportPlaceSelection =
@@ -135,7 +134,7 @@ export function parseTransportBooking(formData: FormData): Result {
     || (totalPrice !== null && (!Number.isFinite(totalPrice) || totalPrice < 0))
     || (paidAmount !== null && (!Number.isFinite(paidAmount) || paidAmount < 0))
     || (totalPrice !== null && paidAmount !== null && paidAmount > totalPrice)
-    || (balanceDueDate !== null && !datePattern.test(balanceDueDate))
+    || (balanceDueDate !== null && !isValidDateOnly(balanceDueDate))
     || (currency !== null && !/^[A-Z]{3}$/.test(currency))
     || (paymentStatus === "unpaid" && paidAmount !== null && paidAmount !== 0)
     || (paymentStatus === "partially_paid" && totalPrice !== null && paidAmount !== null && !(paidAmount > 0 && paidAmount < totalPrice))

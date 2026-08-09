@@ -163,6 +163,19 @@ describe("Budget Reality UI", () => {
     expect(within(dialog).getByText("CZK")).toBeInTheDocument();
   });
 
+  it("uses the shared DatePicker with a date-only default and edit prefill", () => {
+    const { rerender } = render(reality());
+    fireEvent.click(screen.getAllByRole("button", { name: "Výdaj" })[0]!);
+    expect(screen.getByRole("button", { name: "Datum" })).toBeInTheDocument();
+    expect(screen.queryByDisplayValue("2027-06-01")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Zavřít výdaj" }));
+    rerender(reality());
+    fireEvent.click(screen.getAllByRole("button", { name: "Upravit" })[0]!);
+    const form = screen.getByRole("dialog", { name: "Upravit výdaj" }).querySelector("form")!;
+    expect(new FormData(form).get("occurredDate")).toBe("2027-06-01");
+  });
+
   it("groups manual expenses into today and yesterday and exposes edit only to editors", () => {
     const { rerender } = render(reality());
     expect(screen.getByRole("heading", { name: "Dnes" })).toBeInTheDocument();

@@ -4,6 +4,8 @@ import { LoaderCircle, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/date-time/date-picker";
+import { calendarDateToDateOnly } from "@/lib/date-time";
 import type { BudgetCategory, BudgetSubcategory } from "@/lib/supabase/database.types";
 import type { BudgetManualExpenseItem } from "./budget-domain";
 import { createExpense, deleteExpense, updateExpense } from "./budget-expense-actions";
@@ -66,9 +68,7 @@ export function BudgetExpenseForm({ item, tripCurrency, tripId }: {
             {subcategories.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
           </select>
         </label>
-        <label className={labelClass}>Datum
-          <input className={controlClass} name="occurredDate" type="date" defaultValue={item?.occurredAt.slice(0, 10) ?? ""} />
-        </label>
+        <DatePicker label="Datum" name="occurredDate" defaultValue={item?.occurredAt.slice(0, 10) ?? calendarDateToDateOnly(new Date())} />
         <label className={`${labelClass} sm:col-span-2`}>Poznámka
           <textarea className="mt-2 min-h-20 w-full min-w-0 resize-y rounded-xl border border-input bg-background/55 px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary/55 focus:ring-3 focus:ring-primary/15" name="notes" maxLength={4000} defaultValue={item?.notes ?? ""} />
         </label>

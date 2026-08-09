@@ -3,6 +3,7 @@
 import { AlertTriangle, ArrowDown, ArrowUp, ChevronDown, LoaderCircle, MapPin, Plus, Search, Trash2 } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { DatePicker } from "@/components/date-time/date-picker";
 import { DateTimePicker } from "@/components/date-time/date-time-picker";
 import { Button } from "@/components/ui/button";
 import { placeCategories, placeCategoryLabels } from "@/features/places/categories";
@@ -156,7 +157,7 @@ export function TransportForm({
         <label className={labelClass}>Měna<input className={`${fieldClass} uppercase`} name="currency" pattern="[A-Za-z]{3}" maxLength={3} value={currency} onChange={(event) => setCurrency(event.target.value.toUpperCase())} /></label>
         <label className={labelClass}>Již zaplaceno<input className={fieldClass} type="number" name="paidAmount" min={0} step="0.01" value={paidAmount} onChange={(event) => { const next = event.target.value; setPaidAmount(next); updateDerivedStatus(totalPrice, next); }} /></label>
         <label className={labelClass}>Zbývá doplatit<output aria-live="polite" className={`${fieldClass} flex items-center bg-muted/30 text-foreground`}>{remaining === null ? "Doplňte obě částky" : `${amountFormatter.format(remaining)} ${currency}`}</output></label>
-        {remaining !== null && remaining > 0 ? <label className={labelClass}>Datum splatnosti zbývající částky<input className={fieldClass} type="date" name="balanceDueDate" defaultValue={booking?.balance_due_date ?? ""} /></label> : <input type="hidden" name="balanceDueDate" value="" />}
+        {remaining !== null && remaining > 0 ? <DatePicker label="Datum splatnosti zbývající částky" name="balanceDueDate" defaultValue={booking?.balance_due_date ?? ""} /> : <input type="hidden" name="balanceDueDate" value="" />}
         <label className={labelClass}>Stav platby<select className={fieldClass} name="paymentStatus" value={paymentStatus} onChange={(event) => setPaymentStatus(event.target.value as TransportPaymentStatus)}>{transportPaymentStatuses.map((status) => <option key={status} value={status}>{transportPaymentStatusLabels[status]}</option>)}</select></label>
         {paymentStatus === "pay_on_site" ? <p className="self-end rounded-xl border border-primary/20 bg-primary/8 px-3 py-3 text-sm text-muted-foreground">Platba na místě. Datum splatnosti může zůstat prázdné.</p> : null}
       </section>

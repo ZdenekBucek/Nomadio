@@ -1,7 +1,8 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-vi.mock("./checklist-actions", () => ({ deletePackingItem: vi.fn(), deleteTask: vi.fn(), setPackingItemPacked: vi.fn(), setTaskCompleted: vi.fn() }));
+vi.mock("./checklist-actions", () => ({ createPackingItem: vi.fn(), createTask: vi.fn(), deletePackingItem: vi.fn(), deleteTask: vi.fn(), setPackingItemPacked: vi.fn(), setTaskCompleted: vi.fn(), updatePackingItem: vi.fn(), updateTask: vi.fn() }));
 import { ChecklistDashboard } from "./checklist-dashboard";
+import { TaskForm } from "./checklist-form";
 import type { ChecklistPackingItem, ChecklistTask } from "./checklist-model";
 afterEach(cleanup);
 
@@ -9,6 +10,18 @@ const task = (overrides: Partial<ChecklistTask> = {}): ChecklistTask => ({ assig
 const packing: ChecklistPackingItem = { bag_type: "cabin", category: "electronics", created_at: "2027-01-01", created_by: "user", id: "packing", is_packed: false, name: "Adaptér", quantity: 2, traveler_id: "traveler", travelerName: "Zdeněk", trip_id: "trip", updated_at: "2027-01-01" };
 
 describe("checklist UI", () => {
+  it("uses the shared optional DatePicker for task due dates and preserves the canonical value", () => {
+    const { container } = render(<TaskForm canEdit task={task() as never} travelers={[]} tripId="trip" />);
+    expect(screen.getByRole("button", { name: "Termín" })).toBeInTheDocument();
+    expect(container.querySelector('input[type="date"]')).not.toBeInTheDocument();
+    expect(new FormData(container.querySelector("form")!).get("dueDate")).toBe("2027-05-15");
+  });
+
+  it("keeps the task form read-only for viewers", () => {
+    render(<TaskForm canEdit={false} task={task() as never} travelers={[]} tripId="trip" />);
+    expect(screen.getByRole("button", { name: "Termín" })).toBeDisabled();
+  });
+
   it("renders separate compact summaries and progress for tasks and packing", () => { render(<ChecklistDashboard canEdit currentTravelerId="traveler" packingItems={[packing, { ...packing, id: "packed", is_packed: true, name: "Pas" }]} tasks={[task(), task({ id: "done", status: "completed", title: "Hotovo" })]} tripId="trip" />); const taskSummary = screen.getByLabelText("Souhrn úkolů"); const packingSummary = screen.getByLabelText("Souhrn balení"); expect(taskSummary).toHaveTextContent("1 / 2 hotovo"); expect(taskSummary).toHaveTextContent("1 zbývá"); expect(packingSummary).toHaveTextContent("1 / 2 sbaleno"); expect(packingSummary).toHaveTextContent("1 zbývá"); expect(within(taskSummary).getByRole("progressbar")).toHaveAttribute("aria-valuenow", "1"); expect(within(packingSummary).getByRole("progressbar")).toHaveAttribute("aria-valuenow", "1"); expect(screen.getByText("Elektronika")).toBeInTheDocument(); expect(screen.getByText("1 / 2 sbaleno")).toBeInTheDocument(); expect(screen.getByText("Adaptér × 2")).toBeInTheDocument(); expect(screen.getAllByRole("checkbox")).toHaveLength(4); });
   it("filters completed and my tasks", () => { render(<ChecklistDashboard canEdit currentTravelerId="traveler" packingItems={[]} tasks={[task(), task({ assigned_traveler_id: null, id: "done", status: "completed", title: "Hotovo" })]} tripId="trip" />); const filters = screen.getByRole("group", { name: "Filtr úkolů" }); fireEvent.click(within(filters).getByRole("button", { name: "Hotové" })); expect(screen.queryByText("Doplatit hotel")).not.toBeInTheDocument(); expect(screen.getByRole("heading", { name: "Hotovo" })).toBeInTheDocument(); fireEvent.click(within(filters).getByRole("button", { name: "Moje" })); expect(screen.getByText("Doplatit hotel")).toBeInTheDocument(); expect(screen.queryByRole("heading", { name: "Hotovo" })).not.toBeInTheDocument(); });
   it("hides mutation controls for viewers", () => { render(<ChecklistDashboard canEdit={false} currentTravelerId={null} packingItems={[packing]} tasks={[task()]} tripId="trip" />); expect(screen.queryByRole("link", { name: /upravit/i })).not.toBeInTheDocument(); expect(screen.getAllByRole("checkbox").every((control) => control.hasAttribute("disabled"))).toBe(true); });

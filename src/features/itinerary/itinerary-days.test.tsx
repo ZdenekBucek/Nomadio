@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ItineraryDayRow } from "@/lib/supabase/database.types";
 
@@ -17,4 +17,11 @@ afterEach(cleanup);
 describe("ItineraryDays", () => {
   it("shows dated and undated groups with editor controls", () => { render(<ItineraryDays canEdit days={days} tripId={tripId}/>); expect(screen.getByText("Dny cesty")).toBeInTheDocument(); expect(screen.getByText("Plány bez data")).toBeInTheDocument(); expect(screen.getByText("Přidat datovaný den")).toBeInTheDocument(); expect(screen.getByText("Přidat plán bez data")).toBeInTheDocument(); expect(screen.getAllByText("Upravit den")).toHaveLength(3); });
   it("keeps itinerary read-only for viewers", () => { render(<ItineraryDays canEdit={false} days={days} tripId={tripId}/>); expect(screen.getByText("Deštivý plán")).toBeInTheDocument(); expect(screen.queryByText("Upravit den")).not.toBeInTheDocument(); expect(screen.queryByRole("button")).not.toBeInTheDocument(); });
+  it("uses a shared DatePicker for canonical day dates", () => {
+    const { container } = render(<ItineraryDays canEdit days={days} tripId={tripId}/>);
+    fireEvent.click(screen.getAllByText("Upravit den")[0]!);
+    expect(screen.getAllByRole("button", { name: "Datum (volitelné)" }).length).toBeGreaterThan(0);
+    expect(container.querySelector('input[type="date"]')).not.toBeInTheDocument();
+    expect((container.querySelector('input[name="date"][value="2027-05-02"]') as HTMLInputElement).value).toBe("2027-05-02");
+  });
 });

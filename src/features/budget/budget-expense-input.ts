@@ -1,4 +1,5 @@
 import type { BudgetCategory, BudgetSubcategory } from "@/lib/supabase/database.types";
+import { isValidDateOnly } from "@/lib/date-time";
 import { budgetCategories, isBudgetSubcategory, isSubcategoryForCategory } from "./budget-categories";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -27,12 +28,6 @@ function optional(formData: FormData, key: string) {
   return formData.get(key)?.toString().trim() || null;
 }
 
-function isDateOnly(value: string) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const parsed = new Date(`${value}T00:00:00Z`);
-  return Number.isFinite(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value;
-}
-
 export function parseExpenseInput(formData: FormData, context: ExpenseInputContext): ExpenseParseResult {
   const amountText = formData.get("amount")?.toString().trim() ?? "";
   const categoryText = formData.get("category")?.toString() ?? "";
@@ -54,7 +49,7 @@ export function parseExpenseInput(formData: FormData, context: ExpenseInputConte
     || !/^[A-Z]{3}$/.test(currency)
     || (title?.length ?? 0) > 160
     || (notes?.length ?? 0) > 4000
-    || (occurredDate !== null && !isDateOnly(occurredDate))
+    || (occurredDate !== null && !isValidDateOnly(occurredDate))
     || (paidByTravelerId !== null && !uuidPattern.test(paidByTravelerId))
     || (subcategoryText !== null && (
       !isBudgetSubcategory(subcategoryText)

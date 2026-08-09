@@ -1,4 +1,5 @@
 import type { PackingBagType, PackingCategory, TaskCategory, TaskLinkedEntityType, TaskPriority, TaskStatus } from "@/lib/supabase/database.types";
+import { isValidDateOnly } from "@/lib/date-time";
 import { packingBagTypes, packingCategories, taskCategories, taskPriorities, taskStatuses } from "./checklist-model";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -23,7 +24,7 @@ export function parseTask(data: FormData) {
   const linkedId = optional(data, "linkedEntityId");
   if (title.length < 1 || title.length > 200 || (description !== null && description.length > 4000)
     || !taskCategories.includes(category as TaskCategory) || !taskStatuses.includes(status as TaskStatus)
-    || !taskPriorities.includes(priority as TaskPriority) || (dueDate !== null && !/^\d{4}-\d{2}-\d{2}$/.test(dueDate))
+    || !taskPriorities.includes(priority as TaskPriority) || (dueDate !== null && !isValidDateOnly(dueDate))
     || (travelerId !== null && !isUuid(travelerId)) || ((linkedType === null) !== (linkedId === null))
     || (linkedType !== null && !linkedTypes.includes(linkedType as TaskLinkedEntityType))
     || (linkedId !== null && !isUuid(linkedId))) return { success: false } as const;

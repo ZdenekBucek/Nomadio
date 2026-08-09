@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ItineraryDayRow, ItineraryItemRow } from "@/lib/supabase/database.types";
 
@@ -54,5 +54,13 @@ describe("DayTimeline", () => {
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
     expect(screen.queryByText("Přidat bod do timeline")).not.toBeInTheDocument();
     expect(screen.queryByText("Přesunout do jiného dne")).not.toBeInTheDocument();
+  });
+
+  it("uses shared TimePicker controls with canonical local values", () => {
+    const { container } = render(<DayTimeline canEdit dayId={dayId} days={days} items={items} places={[]} tripId={tripId} />);
+    fireEvent.click(screen.getAllByText("Upravit bod")[0]!);
+    expect((container.querySelector('input[name="startTime"]') as HTMLInputElement).value).toBe("09:00");
+    expect((container.querySelector('input[name="endTime"]') as HTMLInputElement).value).toBe("");
+    expect(container.querySelectorAll('input[type="time"]').length).toBeGreaterThanOrEqual(2);
   });
 });

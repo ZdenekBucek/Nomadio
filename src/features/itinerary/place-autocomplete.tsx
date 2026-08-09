@@ -4,6 +4,7 @@ import { LoaderCircle, MapPin, Search } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
+import { TimePicker } from "@/components/date-time/time-picker";
 import { placeCategories, placeCategoryLabels } from "@/features/places/categories";
 import { PlacePreviewMap } from "@/features/places/place-preview-map";
 import type { PlaceSearchResult } from "@/features/places/place-search-result";
@@ -192,8 +193,8 @@ function ManualFallback({ context, name }: { context: PlaceContext; name: string
 
 function DayItemFields() {
   return <div className="mt-4 grid gap-4 sm:grid-cols-2">
-    <label className="text-xs font-medium text-muted-foreground">Začátek (volitelný)<input className={controlClass} type="time" name="startTime" /></label>
-    <label className="text-xs font-medium text-muted-foreground">Konec (volitelný)<input className={controlClass} type="time" name="endTime" /></label>
+    <TimePicker label="Začátek (volitelný)" name="startTime" />
+    <TimePicker label="Konec (volitelný)" name="endTime" />
     <label className="text-xs font-medium text-muted-foreground sm:col-span-2">Poznámka (volitelná)<textarea className={`${controlClass} h-24 py-3`} name="notes" maxLength={1200} placeholder="Praktické informace nebo připomínka" /></label>
   </div>;
 }
