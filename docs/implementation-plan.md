@@ -187,6 +187,21 @@ implementaci.
 
 ### 7. Rozpočet
 
+- Zahájena první fáze redesignu finanční domény bez databázové změny. Čisté
+  TypeScript kontrakty oddělují očekávaný `Plan`, skutečné/potvrzené náklady
+  `Reality` a cashflow `Payments`. Součástí jsou měnově bezpečné agregace,
+  porovnání plánu se skutečností, kategoriální matching, quick-expense kontrakt
+  a adaptéry Ubytování a Dopravy bez kopírování zdrojových rezervací.
+- Dokončena druhá storage fáze: `budget_plan_items` ukládají očekávané náklady
+  a `expenses` manuální Reality s povinným `occurred_at` a volitelným
+  cestovatelem, který výdaj zaplatil. Obě tabulky používají trip RLS,
+  kategoriální katalog a read-only archiv. Repository je připravené, ale
+  současné UI a přehledové loadery se přepojí až v dalším řezu.
+- Dokončena třetí read-model fáze: `getTripBudgetDashboard(tripId)` skládá Plan,
+  manuální Reality, read-only Accommodation/Transport projekce, porovnání a
+  Payments do jednoho měnově bezpečného serverového kontraktu. Budget UI,
+  Trip Overview, Global Overview a Kalendář na něj budou přepnuty v navazující
+  UI fázi.
 - Lokálně dokončen první vertikální řez centrálního rozpočtu. Serverový read
   model skládá ruční `budget_items` s finančními údaji Ubytování a Dopravy bez
   kopírování zdrojových rezervací.

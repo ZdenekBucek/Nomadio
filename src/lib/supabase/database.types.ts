@@ -128,6 +128,36 @@ export type BudgetItemRow = {
   updated_at: string;
 };
 
+export type BudgetPlanItemRow = {
+  category: BudgetCategory;
+  created_at: string;
+  created_by: string;
+  currency: string;
+  id: string;
+  name: string;
+  notes: string | null;
+  planned_amount: number;
+  subcategory: BudgetSubcategory | null;
+  trip_id: string;
+  updated_at: string;
+};
+
+export type ExpenseRow = {
+  amount: number;
+  category: BudgetCategory;
+  created_at: string;
+  created_by: string;
+  currency: string;
+  id: string;
+  notes: string | null;
+  occurred_at: string;
+  paid_by_traveler_id: string | null;
+  subcategory: BudgetSubcategory | null;
+  title: string | null;
+  trip_id: string;
+  updated_at: string;
+};
+
 export type TransportBookingRow = {
   balance_due_date: string | null;
   booking_reference: string | null;
@@ -366,6 +396,44 @@ export type Database = {
           uploaded_by: string;
         };
         Update: Partial<DocumentRow>;
+        Relationships: [];
+      };
+      budget_plan_items: {
+        Row: BudgetPlanItemRow;
+        Insert: {
+          category: BudgetCategory;
+          created_at?: string;
+          created_by: string;
+          currency: string;
+          id?: string;
+          name: string;
+          notes?: string | null;
+          planned_amount: number;
+          subcategory?: BudgetSubcategory | null;
+          trip_id: string;
+          updated_at?: string;
+        };
+        Update: Partial<BudgetPlanItemRow>;
+        Relationships: [];
+      };
+      expenses: {
+        Row: ExpenseRow;
+        Insert: {
+          amount: number;
+          category: BudgetCategory;
+          created_at?: string;
+          created_by: string;
+          currency: string;
+          id?: string;
+          notes?: string | null;
+          occurred_at: string;
+          paid_by_traveler_id?: string | null;
+          subcategory?: BudgetSubcategory | null;
+          title?: string | null;
+          trip_id: string;
+          updated_at?: string;
+        };
+        Update: Partial<ExpenseRow>;
         Relationships: [];
       };
       budget_items: {
