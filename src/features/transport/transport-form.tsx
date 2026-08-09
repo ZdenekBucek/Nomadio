@@ -3,6 +3,7 @@
 import { AlertTriangle, ArrowDown, ArrowUp, ChevronDown, LoaderCircle, MapPin, Plus, Search, Trash2 } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { DateTimePicker } from "@/components/date-time/date-time-picker";
 import { Button } from "@/components/ui/button";
 import { placeCategories, placeCategoryLabels } from "@/features/places/categories";
 import type { PlaceSearchResult } from "@/features/places/place-search-result";
@@ -34,11 +35,16 @@ function emptySegment(key: string): SegmentDraft {
   return { arrivalAt: "", arrivalPlace: { mode: "none" }, baggage: "", departureAt: "", departurePlace: { mode: "none" }, key, notes: "", platform: "", seat: "", serviceNumber: "", terminal: "" };
 }
 
+function nonexistentTimeMessage(timeZone: string) {
+  return `Tento čas v časovém pásmu ${timeZone} neexistuje kvůli změně letního času. Zvolte jiný čas.`;
+}
+
 export function TransportForm({
-  booking, canEdit, geoapifyConfigured, places, trip,
+  booking, canEdit, dateTimeError = null, geoapifyConfigured, places, trip,
 }: {
   booking: TransportBookingWithSegments | null;
   canEdit: boolean;
+  dateTimeError?: { field: "arrival" | "departure"; segmentIndex: number } | null;
   geoapifyConfigured: boolean;
   places: TripPlaceRow[];
   trip: TripRow;
@@ -61,8 +67,9 @@ export function TransportForm({
   const [paidAmount, setPaidAmount] = useState(booking?.paid_amount?.toString() ?? "");
   const [currency, setCurrency] = useState(booking?.currency ?? trip.currency);
   const [paymentStatus, setPaymentStatus] = useState<TransportPaymentStatus>(booking?.payment_status ?? "unknown");
-  const [openSegmentKeys, setOpenSegmentKeys] = useState<Set<string>>(() => new Set([booking?.segments[0]?.id ?? "new-0"]));
-  const [segmentErrorKeys, setSegmentErrorKeys] = useState<Set<string>>(() => new Set());
+  const dateTimeErrorKey = booking?.segments[dateTimeError?.segmentIndex ?? -1]?.id ?? (dateTimeError?.segmentIndex === 0 ? "new-0" : null);
+  const [openSegmentKeys, setOpenSegmentKeys] = useState<Set<string>>(() => new Set([booking?.segments[0]?.id ?? "new-0", ...(dateTimeErrorKey ? [dateTimeErrorKey] : [])]));
+  const [segmentErrorKeys, setSegmentErrorKeys] = useState<Set<string>>(() => new Set(dateTimeErrorKey ? [dateTimeErrorKey] : []));
   const parsedTotal = totalPrice === "" ? null : Number(totalPrice);
   const parsedPaid = paidAmount === "" ? null : Number(paidAmount);
   const remaining = Number.isFinite(parsedTotal) && Number.isFinite(parsedPaid) ? remainingTransportAmount(parsedTotal, parsedPaid) : null;
@@ -156,7 +163,7 @@ export function TransportForm({
 
       <section className="grid min-w-0 gap-4 rounded-2xl border border-border bg-muted/18 p-4">
         <div className="flex min-w-0 flex-wrap items-start justify-between gap-3"><div><h3 className="font-medium">Segmenty cesty</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Pořadí určíte tlačítky nahoru a dolů. Časy se ukládají v časovém pásmu cesty {trip.timezone}.</p></div>{canEdit ? <Button type="button" size="sm" variant="outline" onClick={addSegment}><Plus /> Přidat segment</Button> : null}</div>
-        <div className="grid min-w-0 gap-4">{segments.map((segment, index) => <SegmentEditor key={segment.key} configured={geoapifyConfigured} hasError={segmentErrorKeys.has(segment.key)} index={index} open={openSegmentKeys.has(segment.key)} places={places} segment={segment} total={segments.length} tripId={trip.id} onChange={(change) => updateSegment(index, change)} onMove={(direction) => moveSegment(index, direction)} onRemove={() => removeSegment(segment.key, index)} onToggle={() => toggleSegment(segment.key)} />)}</div>
+        <div className="grid min-w-0 gap-4">{segments.map((segment, index) => <SegmentEditor key={segment.key} configured={geoapifyConfigured} dateTimeError={dateTimeError?.segmentIndex === index ? dateTimeError.field : null} hasError={segmentErrorKeys.has(segment.key)} index={index} open={openSegmentKeys.has(segment.key)} places={places} segment={segment} timeZone={trip.timezone} total={segments.length} tripId={trip.id} onChange={(change) => updateSegment(index, change)} onMove={(direction) => moveSegment(index, direction)} onRemove={() => removeSegment(segment.key, index)} onToggle={() => toggleSegment(segment.key)} />)}</div>
       </section>
 
       <label className={labelClass}>Poznámka k rezervaci<textarea className={`${fieldClass} h-28 resize-y py-3`} name="notes" maxLength={4000} defaultValue={booking?.notes ?? ""} /></label>
@@ -165,8 +172,8 @@ export function TransportForm({
   </form>;
 }
 
-function SegmentEditor({ configured, hasError, index, onChange, onMove, onRemove, onToggle, open, places, segment, total, tripId }: {
-  configured: boolean; hasError: boolean; index: number; onChange: (change: Partial<SegmentDraft>) => void; onMove: (direction: -1 | 1) => void; onRemove: () => void; onToggle: () => void; open: boolean; places: TripPlaceRow[]; segment: SegmentDraft; total: number; tripId: string;
+function SegmentEditor({ configured, dateTimeError, hasError, index, onChange, onMove, onRemove, onToggle, open, places, segment, timeZone, total, tripId }: {
+  configured: boolean; dateTimeError: "arrival" | "departure" | null; hasError: boolean; index: number; onChange: (change: Partial<SegmentDraft>) => void; onMove: (direction: -1 | 1) => void; onRemove: () => void; onToggle: () => void; open: boolean; places: TripPlaceRow[]; segment: SegmentDraft; timeZone: string; total: number; tripId: string;
 }) {
   const departure = placeSummary(segment.departurePlace, places);
   const arrival = placeSummary(segment.arrivalPlace, places);
@@ -185,8 +192,8 @@ function SegmentEditor({ configured, hasError, index, onChange, onMove, onRemove
     <div id={panelId} hidden={!open} className="mt-4 grid min-w-0 gap-4">
       <div className="grid min-w-0 gap-4 lg:grid-cols-2"><PlacePicker configured={configured} label="Odkud" places={places} selection={segment.departurePlace} tripId={tripId} onChange={(departurePlace) => onChange({ departurePlace })} /><PlacePicker configured={configured} label="Kam" places={places} selection={segment.arrivalPlace} tripId={tripId} onChange={(arrivalPlace) => onChange({ arrivalPlace })} /></div>
       <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <label className={labelClass}>Odjezd / odlet<input className={fieldClass} type="datetime-local" value={segment.departureAt} onChange={(event) => onChange({ departureAt: event.target.value })} /></label>
-        <label className={labelClass}>Příjezd / přílet<input className={fieldClass} type="datetime-local" min={segment.departureAt || undefined} value={segment.arrivalAt} onChange={(event) => onChange({ arrivalAt: event.target.value })} /></label>
+        <DateTimePicker label="Odjezd / odlet" value={segment.departureAt} timeZone={timeZone} error={dateTimeError === "departure" ? nonexistentTimeMessage(timeZone) : null} onChange={(departureAt) => onChange({ departureAt })} />
+        <DateTimePicker label="Příjezd / přílet" value={segment.arrivalAt} timeZone={timeZone} error={dateTimeError === "arrival" ? nonexistentTimeMessage(timeZone) : null} onChange={(arrivalAt) => onChange({ arrivalAt })} />
         <label className={labelClass}>Číslo letu / spoje<input className={fieldClass} maxLength={80} value={segment.serviceNumber} onChange={(event) => onChange({ serviceNumber: event.target.value })} /></label>
         <label className={labelClass}>Terminál<input className={fieldClass} maxLength={80} value={segment.terminal} onChange={(event) => onChange({ terminal: event.target.value })} /></label>
         <label className={labelClass}>Nástupiště<input className={fieldClass} maxLength={80} value={segment.platform} onChange={(event) => onChange({ platform: event.target.value })} /></label>

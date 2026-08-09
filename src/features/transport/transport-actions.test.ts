@@ -58,6 +58,14 @@ describe("transport actions", () => {
     expect(rpcMock).toHaveBeenCalledWith("save_transport_booking", expect.objectContaining({ target_booking_id: bookingId }));
   });
 
+  it("maps the stable DST marker to a safe segment-level form error", async () => {
+    rpcMock.mockImplementation(async (name: string) => name === "save_transport_booking"
+      ? { data: null, error: { message: "transport_nonexistent_local_time:departure:1" } }
+      : { data: null, error: null });
+    await expect(saveTransportBooking(form())).rejects.toThrow("transport=nonexistent-time&field=departure&segment=1");
+    expect(redirectMock).toHaveBeenCalledWith(`/app/trips/${tripId}/transport?transport=nonexistent-time&field=departure&segment=1`);
+  });
+
   it("deletes the booking through the dedicated caller-permission RPC", async () => {
     const data = new FormData(); data.set("tripId", tripId); data.set("bookingId", bookingId);
     await expect(deleteTransportBooking(data)).rejects.toThrow("transport=removed");

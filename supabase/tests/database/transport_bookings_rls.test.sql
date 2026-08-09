@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(60);
+select plan(73);
 
 select ok((select relrowsecurity from pg_class where oid = 'public.transport_bookings'::regclass), 'transport bookings have RLS enabled');
 select ok((select relrowsecurity from pg_class where oid = 'public.transport_segments'::regclass), 'transport segments have RLS enabled');
@@ -113,6 +113,22 @@ select throws_ok($$select public.save_transport_booking((select id from public.t
 select is_empty($$update public.transport_bookings set notes='Archiv update' returning id$$,'archived trip blocks update');
 select is_empty($$delete from public.transport_bookings returning id$$,'archived trip blocks delete');
 select throws_ok($$insert into public.transport_segments(booking_id,sort_order) values ((select id from public.transport_bookings where title='Archivovaný trajekt'),1)$$,'42501',null,'archived trip blocks segment create');
+
+select lives_ok($$select public.create_private_trip(trip_name=>'DST Praha',destination_country_code=>'CZ',destination_country_name=>'Česko',destination_city=>'Praha',destination_continent=>'europe',trip_timezone=>'Europe/Prague')$$, 'owner creates Prague DST trip');
+select isnt(public.save_transport_booking((select id from public.trips where name='DST Praha'),null,'train','Praha zimní čas',null,null,'planned',null,null,null,'CZK','unknown',null,'[{"departure_at":"2026-01-20T14:30"}]'::jsonb),null::uuid,'Prague winter local time is accepted');
+select isnt(public.save_transport_booking((select id from public.trips where name='DST Praha'),null,'train','Praha letní čas',null,null,'planned',null,null,null,'CZK','unknown',null,'[{"departure_at":"2026-08-20T14:30"}]'::jsonb),null::uuid,'Prague summer local time is accepted');
+select throws_ok($$select public.save_transport_booking((select id from public.trips where name='DST Praha'),null,'train','Praha DST mezera',null,null,'planned',null,null,null,'CZK','unknown',null,'[{"departure_at":"2026-03-29T02:30"}]'::jsonb)$$,'22007','transport_nonexistent_local_time:departure:0','Prague spring-forward departure is rejected');
+select throws_ok($$select public.save_transport_booking((select id from public.trips where name='DST Praha'),null,'train','Praha DST příjezd',null,null,'planned',null,null,null,'CZK','unknown',null,'[{"arrival_at":"2026-03-29T02:30"}]'::jsonb)$$,'22007','transport_nonexistent_local_time:arrival:0','Prague spring-forward arrival is rejected');
+select isnt(public.save_transport_booking((select id from public.trips where name='DST Praha'),null,'train','Praha podzimní čas',null,null,'planned',null,null,null,'CZK','unknown',null,'[{"departure_at":"2026-10-25T02:30"}]'::jsonb),null::uuid,'Prague fall-back local time is accepted');
+select is((select departure_at from public.transport_segments where booking_id=(select id from public.transport_bookings where title='Praha podzimní čas')),'2026-10-25 01:30:00+00'::timestamptz,'Prague fall-back keeps PostgreSQL standard-time instant');
+
+select lives_ok($$select public.create_private_trip(trip_name=>'DST New York',destination_country_code=>'US',destination_country_name=>'Spojené státy',destination_city=>'New York',destination_continent=>'north_america',trip_timezone=>'America/New_York')$$, 'owner creates New York DST trip');
+select throws_ok($$select public.save_transport_booking((select id from public.trips where name='DST New York'),null,'flight','New York DST mezera',null,null,'planned',null,null,null,'USD','unknown',null,'[{"departure_at":"2026-03-08T02:30"}]'::jsonb)$$,'22007','transport_nonexistent_local_time:departure:0','New York spring-forward departure is rejected');
+select isnt(public.save_transport_booking((select id from public.trips where name='DST New York'),null,'flight','New York podzimní čas',null,null,'planned',null,null,null,'USD','unknown',null,'[{"departure_at":"2026-11-01T01:30"}]'::jsonb),null::uuid,'New York fall-back local time is accepted');
+select is((select departure_at from public.transport_segments where booking_id=(select id from public.transport_bookings where title='New York podzimní čas')),'2026-11-01 06:30:00+00'::timestamptz,'New York fall-back keeps PostgreSQL standard-time instant');
+
+select lives_ok($$select public.create_private_trip(trip_name=>'DST Soul',destination_country_code=>'KR',destination_country_name=>'Jižní Korea',destination_city=>'Soul',destination_continent=>'asia',trip_timezone=>'Asia/Seoul')$$, 'owner creates Seoul trip');
+select isnt(public.save_transport_booking((select id from public.trips where name='DST Soul'),null,'flight','Soul normální čas',null,null,'planned',null,null,null,'KRW','unknown',null,'[{"departure_at":"2026-03-29T02:30"}]'::jsonb),null::uuid,'Seoul local time remains valid without DST');
 
 select * from finish();
 rollback;

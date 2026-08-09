@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dateOnlyToCalendarDate, formatDateOnly, formatDateOnlyLong, formatTripDateTime, formatTripTime, isValidDateOnly, isValidTimeOnly } from "./date-time";
+import { dateOnlyToCalendarDate, formatDateOnly, formatDateOnlyLong, formatTripDateTime, formatTripTime, isValidDateOnly, isValidDateTimeLocal, isValidTimeOnly, timestampToDateTimeLocal } from "./date-time";
 
 describe("date-time formatters", () => {
   it("formats date-only values without changing the calendar day", () => {
@@ -26,6 +26,12 @@ describe("date-time formatters", () => {
     expect(isValidTimeOnly("24:00")).toBe(false);
   });
 
+  it("validates canonical local datetimes without applying a timezone", () => {
+    expect(isValidDateTimeLocal("2026-10-14T14:30")).toBe(true);
+    expect(isValidDateTimeLocal("2026-02-31T14:30")).toBe(false);
+    expect(isValidDateTimeLocal("2026-10-14T24:00")).toBe(false);
+  });
+
   it.each([
     ["Europe/Prague", "14:00"],
     ["Asia/Seoul", "22:00"],
@@ -36,5 +42,11 @@ describe("date-time formatters", () => {
 
   it("respects DST for Prague", () => {
     expect(formatTripDateTime("2026-07-01T12:00:00Z", "Europe/Prague")).toContain("14:00");
+  });
+
+  it("returns stored instants as canonical local datetime values in the trip timezone", () => {
+    expect(timestampToDateTimeLocal("2026-08-20T12:30:00Z", "Europe/Prague")).toBe("2026-08-20T14:30");
+    expect(timestampToDateTimeLocal("2026-08-20T05:30:00Z", "Asia/Seoul")).toBe("2026-08-20T14:30");
+    expect(timestampToDateTimeLocal("2026-08-20T18:30:00Z", "America/New_York")).toBe("2026-08-20T14:30");
   });
 });

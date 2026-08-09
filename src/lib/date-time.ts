@@ -44,6 +44,13 @@ export function isValidTimeOnly(value: string | null | undefined) {
   return typeof value === "string" && TIME_ONLY_PATTERN.test(value);
 }
 
+/** Validates the local, timezone-free datetime contract used before server conversion. */
+export function isValidDateTimeLocal(value: string | null | undefined) {
+  if (typeof value !== "string") return false;
+  const [date, time, ...rest] = value.split("T");
+  return rest.length === 0 && isValidDateOnly(date) && isValidTimeOnly(time);
+}
+
 function dateOnlyValue(value: string) {
   const parts = dateOnlyParts(value);
   return parts ? new Date(Date.UTC(parts.year, parts.month - 1, parts.day)) : null;
@@ -85,4 +92,17 @@ export function formatTripDate(value: string | null | undefined, timeZone: strin
   if (!value) return "—";
   const date = new Date(value);
   return Number.isNaN(date.valueOf()) ? value : new Intl.DateTimeFormat("cs-CZ", { day: "numeric", month: "numeric", timeZone, year: "numeric" }).format(date);
+}
+
+/** Converts a stored instant back to the canonical local datetime contract for a trip. */
+export function timestampToDateTimeLocal(value: string | null | undefined, timeZone: string) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.valueOf())) return "";
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    day: "2-digit", hour: "2-digit", hour12: false, minute: "2-digit", month: "2-digit", timeZone, year: "numeric",
+  }).formatToParts(date);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value ?? "";
+  const hour = part("hour") === "24" ? "00" : part("hour");
+  return `${part("year")}-${part("month")}-${part("day")}T${hour}:${part("minute")}`;
 }

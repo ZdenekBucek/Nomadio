@@ -43,6 +43,17 @@ describe("transport UI", () => {
     expect(screen.queryByLabelText("Datum splatnosti zbývající částky")).not.toBeInTheDocument();
   });
 
+  it("uses DateTimePicker values while preserving the segments JSON contract", () => {
+    const { container } = render(<TransportForm booking={booking()} canEdit geoapifyConfigured={false} places={[]} trip={trip} />);
+    expect(screen.queryByDisplayValue("2026-08-25T10:00")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Odjezd / odlet" }));
+    fireEvent.change(screen.getByLabelText("Čas"), { target: { value: "11:45" } });
+    fireEvent.click(screen.getByRole("button", { name: "Potvrdit" }));
+    const hidden = container.querySelector<HTMLInputElement>('input[name="segments"]');
+    expect(JSON.parse(hidden!.value)[0].departureAt).toBe("2026-08-25T11:45");
+    expect(screen.getByRole("button", { name: /^Segment 1/ })).toHaveAccessibleName(expect.stringMatching(/11:45/));
+  });
+
   it("adds and deterministically reorders segment drafts", () => {
     const { container } = render(<TransportForm booking={null} canEdit geoapifyConfigured={false} places={[]} trip={trip} />);
     fireEvent.click(screen.getByRole("button", { name: "Přidat segment" }));
@@ -83,6 +94,13 @@ describe("transport UI", () => {
     expect(headers[1]).toHaveAttribute("aria-expanded", "true");
     fireEvent.click(screen.getByRole("button", { name: "Odstranit segment 2" }));
     expect(screen.getAllByRole("button", { name: /^Segment/ })).toHaveLength(1);
+  });
+
+  it("opens the server-reported DST error segment and labels the affected picker", () => {
+    render(<TransportForm booking={null} canEdit dateTimeError={{ field: "departure", segmentIndex: 0 }} geoapifyConfigured={false} places={[]} trip={trip} />);
+    expect(screen.getByRole("button", { name: /^Segment 1/ })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByLabelText("Segment obsahuje chybu")).toBeInTheDocument();
+    expect(screen.getByText(/Tento čas v časovém pásmu Europe\/Prague neexistuje/)).toBeInTheDocument();
   });
 
   it("keeps one segment and exposes Geoapify fallback safely when not configured", () => {

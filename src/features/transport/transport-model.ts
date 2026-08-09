@@ -1,3 +1,4 @@
+import { timestampToDateTimeLocal } from "@/lib/date-time";
 import type {
   TransportBookingRow,
   TransportBookingStatus,
@@ -107,11 +108,5 @@ export function transportSummary(items: TransportBookingWithSegments[], now = ne
 }
 
 export function dateTimeInputValue(value: string | null, timeZone: string) {
-  if (!value) return "";
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    day: "2-digit", hour: "2-digit", hour12: false, minute: "2-digit", month: "2-digit", timeZone, year: "numeric",
-  }).formatToParts(new Date(value));
-  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value ?? "";
-  const hour = part("hour") === "24" ? "00" : part("hour");
-  return `${part("year")}-${part("month")}-${part("day")}T${hour}:${part("minute")}`;
+  return timestampToDateTimeLocal(value, timeZone);
 }

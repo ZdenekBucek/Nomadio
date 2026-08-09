@@ -20,8 +20,11 @@ První vertikální řez modulu je dostupný na route
 - Smazání bookingu kaskádově smaže jen segmenty. `trip_places` zůstávají.
 - Owner/editor zapisují, viewer pouze čte a archivovaný trip je read-only.
 
-Časy z formuláře jsou interpretované v `trips.timezone` a ukládají se jako
-`timestamptz`. Budget čte platební data přímo jako svůj read-only zdroj.
+Časy z formuláře jsou lokální canonical hodnoty `YYYY-MM-DDTHH:mm`. RPC je
+interpretuje v `trips.timezone` (IANA) a ukládá jako `timestamptz`. Neexistující
+jarní DST časy se před zápisem odmítají; dvojznačný podzimní čas zatím používá
+deterministický standardní offset PostgreSQL. Budget čte platební data přímo jako
+svůj read-only zdroj.
 Segmenty jsou připravené pro pozdější vytvoření odkazovaných itinerary items,
 ale žádná automatická synchronizace nyní neběží.
 

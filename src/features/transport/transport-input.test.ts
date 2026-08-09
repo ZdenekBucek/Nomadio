@@ -48,6 +48,14 @@ describe("transport booking input", () => {
     expect(parseTransportBooking(form).success).toBe(false);
   });
 
+  it("rejects impossible calendar dates before the RPC conversion boundary", () => {
+    const form = validForm();
+    const segments = JSON.parse(form.get("segments")!.toString());
+    segments[0].departureAt = "2026-02-31T14:30";
+    form.set("segments", JSON.stringify(segments));
+    expect(parseTransportBooking(form).success).toBe(false);
+  });
+
   it("accepts a complete provider-neutral Geoapify place selection", () => {
     const form = validForm();
     const external = { category: "transport", mode: "external", result: { provider: "geoapify", providerPlaceId: "poi-1", name: "Oslo lufthavn", formattedAddress: "Edvard Munchs veg, Gardermoen", city: "Gardermoen", countryCode: "NO", latitude: 60.1939, longitude: 11.1004, providerCategories: ["public_transport.air"], category: "transport", attribution: "Powered by Geoapify · © OpenStreetMap contributors" } };

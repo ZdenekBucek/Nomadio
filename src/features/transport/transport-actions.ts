@@ -7,8 +7,19 @@ import { parseTransportBooking, type TransportPlaceSelection } from "./transport
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-function path(tripId: string, status: string) {
-  return uuidPattern.test(tripId) ? `/app/trips/${tripId}/transport?transport=${status}` : "/app/trips";
+function path(tripId: string, status: string, detail?: { field: "arrival" | "departure"; segmentIndex: number }) {
+  if (!uuidPattern.test(tripId)) return "/app/trips";
+  const query = new URLSearchParams({ transport: status });
+  if (detail) {
+    query.set("field", detail.field);
+    query.set("segment", String(detail.segmentIndex));
+  }
+  return `/app/trips/${tripId}/transport?${query.toString()}`;
+}
+
+function nonexistentLocalTimeDetail(error: { message?: string } | null) {
+  const match = error?.message?.match(/transport_nonexistent_local_time:(departure|arrival):(\d+)/);
+  return match ? { field: match[1] as "arrival" | "departure", segmentIndex: Number(match[2]) } : null;
 }
 
 async function authenticatedClient(tripId: string) {
@@ -100,6 +111,8 @@ export async function saveTransportBooking(formData: FormData) {
     target_booking_id: bookingId,
     target_trip_id: tripId,
   });
+  const nonexistentTime = nonexistentLocalTimeDetail(error);
+  if (nonexistentTime) redirect(path(tripId, "nonexistent-time", nonexistentTime));
   if (error) redirect(path(tripId, "error"));
   revalidatePath(`/app/trips/${tripId}/transport`);
   revalidatePath(`/app/trips/${tripId}/map`);

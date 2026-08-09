@@ -1,5 +1,6 @@
 import { placeCategories } from "@/features/places/categories";
 import type { PlaceSearchResult } from "@/features/places/place-search-result";
+import { isValidDateTimeLocal } from "@/lib/date-time";
 import type { PlaceCategory, TransportBookingStatus, TransportPaymentStatus, TransportType } from "@/lib/supabase/database.types";
 import { bookingStatuses, transportPaymentStatuses, transportTypes } from "./transport-model";
 
@@ -102,8 +103,8 @@ function parseSegments(value: string): TransportSegmentInput[] | null {
     if (!departurePlace || !arrivalPlace
       || departureAt === undefined || arrivalAt === undefined || serviceNumber === undefined
       || terminal === undefined || platform === undefined || seat === undefined || baggage === undefined || notes === undefined
-      || (departureAt !== null && !dateTimePattern.test(departureAt))
-      || (arrivalAt !== null && !dateTimePattern.test(arrivalAt))
+      || (departureAt !== null && (!dateTimePattern.test(departureAt) || !isValidDateTimeLocal(departureAt)))
+      || (arrivalAt !== null && (!dateTimePattern.test(arrivalAt) || !isValidDateTimeLocal(arrivalAt)))
       || (departureAt !== null && arrivalAt !== null && arrivalAt < departureAt)) return null;
     parsed.push({ arrivalAt, arrivalPlace, baggage, departureAt, departurePlace, notes, platform, seat, serviceNumber, terminal });
   }
