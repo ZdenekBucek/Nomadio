@@ -1,11 +1,12 @@
 import { CalendarDays, Download, ExternalLink, FileWarning, Link2 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Surface } from "@/components/ui/surface";
+import { formatTripDateTime } from "@/lib/date-time";
 import { DocumentForm } from "./document-form";
 import { documentCategoryLabels, documentTypeLabel, formatDocumentSize, type DocumentLinkOption, type DocumentWithLink } from "./document-model";
 
-export function DocumentDetail({ canEdit, document, linkOptions, signedUrl }: { canEdit: boolean; document: DocumentWithLink; linkOptions: DocumentLinkOption[]; signedUrl: string | null }) {
-  const date = new Intl.DateTimeFormat("cs-CZ", { dateStyle: "long" }).format(new Date(document.created_at));
+export function DocumentDetail({ canEdit, document, linkOptions, signedUrl, timezone }: { canEdit: boolean; document: DocumentWithLink; linkOptions: DocumentLinkOption[]; signedUrl: string | null; timezone: string }) {
+  const date = formatTripDateTime(document.created_at, timezone);
   return <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)]">
     <Surface depth="panel" className="min-w-0 overflow-hidden p-4 sm:p-6"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-medium tracking-[0.16em] text-primary uppercase">Soukromý náhled</p><h2 className="mt-2 text-xl font-semibold">{document.name}</h2></div>{signedUrl ? <a href={signedUrl} download className={buttonVariants()}><Download /> Stáhnout</a> : null}</div>
       {signedUrl ? <object className="mt-5 h-[60vh] min-h-80 w-full rounded-xl border border-border bg-white" data={signedUrl} type={document.mime_type} aria-label={`Náhled dokumentu ${document.name}`}><a href={signedUrl} className="p-4 text-primary">Otevřít dokument <ExternalLink className="inline size-4" /></a></object> : <div className="mt-5 grid min-h-72 place-items-center rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground"><div><FileWarning className="mx-auto size-8 text-amber-300" /><p className="mt-3">Náhled se nepodařilo bezpečně připravit. Metadata zůstávají dostupná.</p></div></div>}

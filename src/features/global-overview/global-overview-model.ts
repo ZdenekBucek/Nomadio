@@ -24,6 +24,7 @@ import type {
   TripRow,
   TripTravelerRow,
 } from "@/lib/supabase/database.types";
+import { formatDateOnly } from "@/lib/date-time";
 
 export type OverviewDocument = Pick<DocumentRow, "id" | "is_important" | "name" | "offline_enabled" | "trip_id">;
 export type GlobalAttention = {
@@ -134,7 +135,7 @@ export function buildGlobalOverview(input: {
   for (const task of openTasks.filter((task) => task.due_date && task.due_date < today)) {
     const trip = tripById.get(task.trip_id);
     if (!trip) continue;
-    alerts.push({ detail: `Termín ${task.due_date} už uplynul.`, href: `/app/trips/${trip.id}/checklist`, id: `task:${task.id}`, severity: "high", tripId: trip.id, tripName: trip.name, title: task.title, type: "task" });
+    alerts.push({ detail: `Termín ${formatDateOnly(task.due_date)} už uplynul.`, href: `/app/trips/${trip.id}/checklist`, id: `task:${task.id}`, severity: "high", tripId: trip.id, tripName: trip.name, title: task.title, type: "task" });
   }
   for (const document of input.documents.filter((item) => item.is_important && !item.offline_enabled)) {
     const trip = tripById.get(document.trip_id);

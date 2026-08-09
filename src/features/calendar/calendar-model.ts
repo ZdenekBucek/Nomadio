@@ -1,5 +1,10 @@
 import type { AccommodationRow, TaskRow, TripRow } from "@/lib/supabase/database.types";
 import type { BudgetPaymentItem } from "@/features/budget/budget-domain";
+import { formatDateOnly, formatDateOnlyLong } from "@/lib/date-time";
+
+function utcDate(date: string) {
+  return new Date(`${date}T00:00:00.000Z`);
+}
 
 export type CalendarEventType =
   | "trip_start"
@@ -120,23 +125,16 @@ export type CalendarAgendaSources = {
   trips: CalendarTrip[];
 };
 
-const dateFormatter = new Intl.DateTimeFormat("cs-CZ", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
-const shortDateFormatter = new Intl.DateTimeFormat("cs-CZ", { day: "numeric", month: "numeric", year: "numeric", timeZone: "UTC" });
-
-function utcDate(date: string) {
-  return new Date(`${date}T00:00:00.000Z`);
-}
-
 export function dateKey(value: Date) {
   return value.toISOString().slice(0, 10);
 }
 
 export function formatCalendarDate(value: string) {
-  return dateFormatter.format(utcDate(value));
+  return formatDateOnlyLong(value);
 }
 
 export function formatCalendarDateRange(start: string, end: string) {
-  return `${shortDateFormatter.format(utcDate(start))} – ${shortDateFormatter.format(utcDate(end))}`;
+  return `${formatDateOnly(start)} – ${formatDateOnly(end)}`;
 }
 
 export function monthLabel(month: Date) {

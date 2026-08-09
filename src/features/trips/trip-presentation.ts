@@ -3,6 +3,7 @@ import type {
   TripMemberRole,
   TripStatus,
 } from "@/lib/supabase/database.types";
+import { formatDateOnly } from "@/lib/date-time";
 
 export const tripCoverClasses: Record<TripCoverVariant, string> = {
   forest:
@@ -18,13 +19,7 @@ export const tripCoverClasses: Record<TripCoverVariant, string> = {
 export function formatTripDates(startDate: string | null, endDate: string | null) {
   if (!startDate && !endDate) return "Termín bude doplněn";
 
-  const formatter = new Intl.DateTimeFormat("cs-CZ", {
-    day: "numeric",
-    month: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-  const format = (date: string) => formatter.format(new Date(`${date}T00:00:00Z`));
+  const format = (date: string) => formatDateOnly(date);
 
   if (startDate && endDate) return `${format(startDate)} – ${format(endDate)}`;
   return startDate ? `Od ${format(startDate)}` : `Do ${format(endDate!)}`;

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/status-pill";
 import type { ItineraryDayRow } from "@/lib/supabase/database.types";
+import { formatDateOnlyLong } from "@/lib/date-time";
 import { createItineraryDay, moveItineraryDay, removeItineraryDay, updateItineraryDay } from "./actions";
 
 const control = "mt-2 h-10 w-full rounded-xl border border-input bg-background/55 px-3 text-sm text-foreground outline-none transition focus:border-primary/55 focus:ring-3 focus:ring-primary/15";
@@ -31,7 +32,7 @@ function DaySection({ children, count, description, empty, title }: { children: 
 }
 
 function DayCard({ canEdit, day, index, total, tripId }: { canEdit: boolean; day: ItineraryDayRow; index?: number; total?: number; tripId: string }) {
-  const date = day.day_date ? new Intl.DateTimeFormat("cs-CZ", { weekday: "short", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${day.day_date}T00:00:00Z`)) : null;
+  const date = day.day_date ? formatDateOnlyLong(day.day_date) : null;
   return <article className="rounded-2xl border border-border bg-muted/22 p-4">
     <div className="flex items-start gap-3"><span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/12 text-primary">{day.day_date ? <CalendarPlus className="size-5" /> : <CalendarX2 className="size-5" />}</span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="font-medium">{day.name}</h3>{day.is_reserve ? <StatusPill tone="warning"><Shield className="size-3" /> Rezervní</StatusPill> : null}<StatusPill tone={day.status === "completed" ? "success" : day.status === "confirmed" ? "brand" : "neutral"}>{day.status === "completed" ? <CheckCircle2 className="size-3" /> : <Clock3 className="size-3" />}{statusLabels[day.status]}</StatusPill></div><p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">{date ? <span className="capitalize">{date}</span> : <span>Bez data</span>}{day.city ? <span className="flex items-center gap-1"><MapPin className="size-3" />{day.city}</span> : null}</p></div></div>
     <Link href={`/app/trips/${tripId}/itinerary/${day.id}`} className="mt-4 inline-flex min-h-9 items-center gap-2 rounded-xl border border-primary/25 bg-primary/8 px-3 text-sm font-medium text-[var(--brand-highlight)] transition hover:bg-primary/14">Otevřít detail dne <ArrowRight className="size-4"/></Link>

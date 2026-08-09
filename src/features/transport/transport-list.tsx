@@ -2,15 +2,14 @@ import { ArrowRight, BusFront, CalendarClock, CreditCard, MapPin, Plus, Route } 
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Surface } from "@/components/ui/surface";
+import { formatDateOnly, formatTripDateTime } from "@/lib/date-time";
 import type { TripRow } from "@/lib/supabase/database.types";
 import { bookingStatusLabels, firstDeparture, lastArrival, remainingTransportAmount, transportPaymentStatusLabels, transportSummary, transportTypeLabels, type TransportBookingWithSegments } from "./transport-model";
 
-const dueDateFormatter = new Intl.DateTimeFormat("cs-CZ", { day: "numeric", month: "numeric", year: "numeric", timeZone: "UTC" });
-function formatDueDate(value: string) { return dueDateFormatter.format(new Date(`${value}T00:00:00Z`)); }
+function formatDueDate(value: string) { return formatDateOnly(value); }
 
 function formatDateTime(value: string | null, timezone: string) {
-  if (!value) return "Bez termínu";
-  return new Intl.DateTimeFormat("cs-CZ", { day: "numeric", hour: "2-digit", minute: "2-digit", month: "short", timeZone: timezone, year: "numeric" }).format(new Date(value));
+  return value ? formatTripDateTime(value, timezone) : "Bez termínu";
 }
 
 function formatMoney(value: number, currency: string | null) {

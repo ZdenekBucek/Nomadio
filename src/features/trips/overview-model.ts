@@ -6,6 +6,7 @@ import { summarizePacking, summarizeTasks, type ChecklistPackingItem, type Check
 import { documentSummary, type DocumentWithLink } from "@/features/documents/document-model";
 import type { ItineraryDayRow, ItineraryItemRow } from "@/lib/supabase/database.types";
 import type { TransportBookingWithSegments } from "@/features/transport/transport-model";
+import { formatDateOnly } from "@/lib/date-time";
 
 export type OverviewAlert = { href: string; id: string; title: string; detail: string };
 
@@ -58,10 +59,10 @@ export function buildTripOverview(input: { accommodations: AccommodationWithPlac
     return (left.due_date ?? "9999").localeCompare(right.due_date ?? "9999");
   });
   const alerts: OverviewAlert[] = [];
-  if (nearestPayment?.dueDate && nearestPayment.dueDate < now) alerts.push({ detail: `${formatBudgetMoney(nearestPayment.remainingAmount ?? 0, nearestPayment.currency)} bylo splatné ${nearestPayment.dueDate}.`, href: paymentHref(nearestPayment), id: `payment:${nearestPayment.id}`, title: nearestPayment.title });
+  if (nearestPayment?.dueDate && nearestPayment.dueDate < now) alerts.push({ detail: `${formatBudgetMoney(nearestPayment.remainingAmount ?? 0, nearestPayment.currency)} bylo splatné ${formatDateOnly(nearestPayment.dueDate)}.`, href: paymentHref(nearestPayment), id: `payment:${nearestPayment.id}`, title: nearestPayment.title });
   if (coverage.gapNights) alerts.push({ detail: `Chybí ubytování na ${coverage.gapNights} ${coverage.gapNights === 1 ? "noc" : "noci"}.`, href: `/app/trips/${input.tripId}/accommodation`, id: "accommodation-gap", title: "Ubytování není pokryté" });
   if (coverage.overlapCount) alerts.push({ detail: `${coverage.overlapCount} překrývající se rezervace.`, href: `/app/trips/${input.tripId}/accommodation`, id: "accommodation-overlap", title: "Překrývající se ubytování" });
-  for (const task of openTasks.filter((task) => task.due_date && task.due_date < now).slice(0, 2)) alerts.push({ detail: `Termín ${task.due_date} už uplynul.`, href: `/app/trips/${input.tripId}/checklist?editTask=${task.id}`, id: `task:${task.id}`, title: task.title });
+  for (const task of openTasks.filter((task) => task.due_date && task.due_date < now).slice(0, 2)) alerts.push({ detail: `Termín ${formatDateOnly(task.due_date)} už uplynul.`, href: `/app/trips/${input.tripId}/checklist?editTask=${task.id}`, id: `task:${task.id}`, title: task.title });
   for (const document of input.documents.filter((item) => item.is_important && !item.offline_enabled).slice(0, 2)) alerts.push({ detail: "Důležitý dokument není označený pro offline použití.", href: `/app/trips/${input.tripId}/documents/${document.id}`, id: `document:${document.id}`, title: document.name });
   return { accommodation, alerts, dayItems, document: documentSummary(input.documents), finance, itinerary: { items: input.itineraryItems.length, plannedDays: plannedDays.length, totalDays: datedDays.length }, nearestPayment, nearestTransport, openTasks: openTasks.slice(0, 3), packing: summarizePacking(input.packingItems), selectedDay, task: summarizeTasks(input.tasks), timezone: input.timezone, upcomingAccommodation, coverage };
 }

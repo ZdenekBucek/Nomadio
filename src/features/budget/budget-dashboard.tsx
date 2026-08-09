@@ -2,6 +2,7 @@ import { CalendarClock, ExternalLink, Pencil, ReceiptText } from "lucide-react";
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Surface } from "@/components/ui/surface";
+import { formatDateOnly } from "@/lib/date-time";
 import {
   budgetCategoryLabels,
   budgetCategoryPathLabel,
@@ -16,10 +17,6 @@ import {
   summarizeBudgetBySubcategory,
   type BudgetRow,
 } from "./budget-model";
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("cs-CZ", { day: "numeric", month: "numeric", year: "numeric" }).format(new Date(`${value}T00:00:00Z`));
-}
 
 function sourceLabel(item: BudgetRow) {
   if (item.sourceType === "accommodation") return "Zdroj: Ubytování";
@@ -43,7 +40,7 @@ export function BudgetDashboard({ canEdit, items, tripId }: { canEdit: boolean; 
 
     <section aria-labelledby="budget-items-title"><h2 id="budget-items-title" className="text-xl font-semibold">Položky</h2>{items.length ? <div className="mt-3 space-y-3">{items.map((item) => <Surface key={item.id} className="min-w-0 p-4"><div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h3 className="font-medium">{item.name}</h3><StatusPill tone="neutral">{budgetCategoryPathLabel(item.category, item.subcategory)}</StatusPill></div><p className="mt-1 text-xs text-muted-foreground">{sourceLabel(item)}</p>{item.notes ? <p className="mt-2 text-sm text-muted-foreground">{item.notes}</p> : null}</div><div className="flex shrink-0 flex-col items-start gap-1 text-sm sm:items-end"><p>{item.actualAmount !== null ? formatBudgetMoney(item.actualAmount, item.currency) : item.estimatedAmount !== null ? `Odhad ${formatBudgetMoney(item.estimatedAmount, item.currency)}` : "Cena neuvedena"}</p><p className="text-xs text-muted-foreground">Zaplaceno {item.paidAmount === null ? "neuvedeno" : formatBudgetMoney(item.paidAmount, item.currency)}</p><p className="text-xs text-muted-foreground">Zbývá {item.remainingAmount === null ? "neuvedeno" : formatBudgetMoney(item.remainingAmount, item.currency)}</p><StatusPill tone={item.paymentStatus === "paid" ? "success" : item.remainingAmount ? "warning" : "neutral"}>{budgetPaymentStatusLabels[item.paymentStatus]}</StatusPill>{item.editable && canEdit ? <Link href={`/app/trips/${tripId}/budget?edit=${item.id}`} className="mt-1 inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-border px-3 text-xs text-muted-foreground transition hover:bg-muted/50 hover:text-foreground"><Pencil className="size-3.5" /> Upravit</Link> : item.href ? <Link href={item.href} className="mt-1 inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-border px-3 text-xs text-muted-foreground transition hover:bg-muted/50 hover:text-foreground"><ExternalLink className="size-3.5" /> Upravit ve zdroji</Link> : null}</div></div></Surface>)}</div> : <Empty>Zatím nejsou žádné položky.</Empty>}</section>
 
-    <section aria-labelledby="pending-payments-title"><h2 id="pending-payments-title" className="flex items-center gap-2 text-xl font-semibold"><CalendarClock className="size-5 text-primary" /> Čekající platby</h2>{pending.length ? <div className="mt-3 space-y-2">{pending.map((item) => <Surface key={`pending-${item.id}`} className="flex min-w-0 flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><p className="font-medium">{item.name}</p><p className="text-xs text-muted-foreground">{budgetCategoryPathLabel(item.category, item.subcategory)} · {budgetPaymentStatusLabels[item.paymentStatus]}</p></div><div className="shrink-0 text-sm sm:text-right"><p>{formatBudgetMoney(item.remainingAmount!, item.currency)}</p><p className="text-xs text-muted-foreground">{item.balanceDueDate ? `Splatnost ${formatDate(item.balanceDueDate)}` : "Bez zadané splatnosti"}</p></div></Surface>)}</div> : <Empty>Žádné známé čekající platby.</Empty>}</section>
+    <section aria-labelledby="pending-payments-title"><h2 id="pending-payments-title" className="flex items-center gap-2 text-xl font-semibold"><CalendarClock className="size-5 text-primary" /> Čekající platby</h2>{pending.length ? <div className="mt-3 space-y-2">{pending.map((item) => <Surface key={`pending-${item.id}`} className="flex min-w-0 flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><p className="font-medium">{item.name}</p><p className="text-xs text-muted-foreground">{budgetCategoryPathLabel(item.category, item.subcategory)} · {budgetPaymentStatusLabels[item.paymentStatus]}</p></div><div className="shrink-0 text-sm sm:text-right"><p>{formatBudgetMoney(item.remainingAmount!, item.currency)}</p><p className="text-xs text-muted-foreground">{item.balanceDueDate ? `Splatnost ${formatDateOnly(item.balanceDueDate)}` : "Bez zadané splatnosti"}</p></div></Surface>)}</div> : <Empty>Žádné známé čekající platby.</Empty>}</section>
   </div>;
 }
 

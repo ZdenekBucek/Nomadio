@@ -37,7 +37,7 @@ describe("GlobalOverviewDashboard", () => {
     expect(screen.getByText("50 000 Kč")).toBeInTheDocument();
     expect(screen.getByText("500 €")).toBeInTheDocument();
     expect(screen.getByText("1 200 Kč")).toBeInTheDocument();
-    expect(screen.getByText("Po splatnosti 2026-08-01")).toBeInTheDocument();
+    expect(screen.getByText("Po splatnosti 1. 8. 2026")).toBeInTheDocument();
     expect(screen.queryByText(/celkem/i)).not.toBeInTheDocument();
   });
 });

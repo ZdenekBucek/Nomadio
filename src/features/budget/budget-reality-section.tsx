@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Surface } from "@/components/ui/surface";
 import { cn } from "@/lib/utils";
+import { formatDateOnlyLong, formatTripDate } from "@/lib/date-time";
 import { budgetCategoryLabels, budgetCategoryPathLabel } from "./budget-categories";
 import type { TripBudgetDashboard } from "./budget-dashboard-model";
 import type { BudgetManualExpenseItem, BudgetRealityItem } from "./budget-domain";
@@ -37,7 +38,7 @@ export function groupExpensesByDate(items: BudgetManualExpenseItem[], today: str
         ? "Dnes"
         : date === yesterday
           ? "Včera"
-          : new Intl.DateTimeFormat("cs-CZ", { day: "numeric", month: "long", year: "numeric" }).format(new Date(`${date}T00:00:00Z`)),
+          : formatDateOnlyLong(date),
     }));
 }
 
@@ -111,7 +112,7 @@ export function BudgetRealitySection({ canEdit, comparison, reality, timezone, t
 }
 
 function ExpenseRow({ canEdit, item, onEdit, separated, timezone }: { canEdit: boolean; item: BudgetManualExpenseItem; onEdit: () => void; separated: boolean; timezone: string }) {
-  return <article className={cn("flex min-w-0 items-center gap-3 p-4", separated && "border-t border-border/70")}><span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><CircleDollarSign className="size-4" aria-hidden="true" /></span><div className="min-w-0 flex-1"><h4 className="truncate font-medium">{item.enteredTitle ?? budgetCategoryLabels[item.category]}</h4><p className="mt-0.5 truncate text-xs text-muted-foreground">{budgetCategoryPathLabel(item.category, item.subcategory)} · {new Intl.DateTimeFormat("cs-CZ", { day: "numeric", month: "numeric", timeZone: timezone }).format(new Date(item.occurredAt))}</p></div><div className="shrink-0 text-right"><p className="font-semibold tabular-nums">{formatBudgetMoney(item.amount, item.currency)}</p>{canEdit ? <button type="button" onClick={onEdit} className="mt-1 inline-flex min-h-9 items-center gap-1 rounded-lg px-2 text-xs text-muted-foreground outline-none transition hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary"><Pencil className="size-3.5" aria-hidden="true" /> Upravit</button> : null}</div></article>;
+  return <article className={cn("flex min-w-0 items-center gap-3 p-4", separated && "border-t border-border/70")}><span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><CircleDollarSign className="size-4" aria-hidden="true" /></span><div className="min-w-0 flex-1"><h4 className="truncate font-medium">{item.enteredTitle ?? budgetCategoryLabels[item.category]}</h4><p className="mt-0.5 truncate text-xs text-muted-foreground">{budgetCategoryPathLabel(item.category, item.subcategory)} · {formatTripDate(item.occurredAt, timezone)}</p></div><div className="shrink-0 text-right"><p className="font-semibold tabular-nums">{formatBudgetMoney(item.amount, item.currency)}</p>{canEdit ? <button type="button" onClick={onEdit} className="mt-1 inline-flex min-h-9 items-center gap-1 rounded-lg px-2 text-xs text-muted-foreground outline-none transition hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary"><Pencil className="size-3.5" aria-hidden="true" /> Upravit</button> : null}</div></article>;
 }
 
 function ConfirmedCosts({ items, tripId }: { items: BudgetRealityItem[]; tripId: string }) {

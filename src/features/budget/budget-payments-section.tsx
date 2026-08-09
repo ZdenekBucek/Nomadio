@@ -9,17 +9,12 @@ import {
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Surface } from "@/components/ui/surface";
+import { formatDateOnly } from "@/lib/date-time";
 import { cn } from "@/lib/utils";
 import type { TripBudgetDashboard } from "./budget-dashboard-model";
 import type { BudgetPaymentItem } from "./budget-domain";
 import { formatBudgetMoney } from "./budget-model";
 
-const dueDateFormatter = new Intl.DateTimeFormat("cs-CZ", {
-  day: "numeric",
-  month: "numeric",
-  year: "numeric",
-  timeZone: "UTC",
-});
 
 type SourcePayment = BudgetPaymentItem & {
   sourceType: "accommodation" | "transport";
@@ -38,7 +33,7 @@ function sourceLabel(item: SourcePayment) {
 }
 
 function formattedDueDate(value: string | null) {
-  return value ? dueDateFormatter.format(new Date(`${value}T00:00:00Z`)) : "Bez data splatnosti";
+  return value ? formatDateOnly(value) : "Bez data splatnosti";
 }
 
 export function BudgetPaymentsSection({ payments }: {

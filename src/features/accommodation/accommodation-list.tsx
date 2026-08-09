@@ -2,11 +2,11 @@ import { AlertTriangle, BedDouble, CalendarDays, Coffee, CreditCard, MapPin, Plu
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Surface } from "@/components/ui/surface";
+import { formatDateOnlyShort } from "@/lib/date-time";
 import type { TripRow } from "@/lib/supabase/database.types";
 import { accommodationCoverage, accommodationNights, accommodationSummary, accommodationTypeLabels, paymentStatusLabels, remainingAccommodationAmount, type AccommodationWithPlace } from "./accommodation-model";
 
-const dateFormatter = new Intl.DateTimeFormat("cs-CZ", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-function formatDate(value: string) { return dateFormatter.format(new Date(`${value}T00:00:00Z`)); }
+function formatDate(value: string) { return formatDateOnlyShort(value); }
 
 function formatMoney(value: number, currency: string | null) {
   if (!currency) return new Intl.NumberFormat("cs-CZ", { maximumFractionDigits: 2 }).format(value);

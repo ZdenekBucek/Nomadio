@@ -5,6 +5,7 @@ import { CalendarDays, Luggage, Pencil, Plus, Trash2, UserRound } from "lucide-r
 import Link from "next/link";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Surface } from "@/components/ui/surface";
+import { formatDateOnly } from "@/lib/date-time";
 import { deletePackingItem, deleteTask, setPackingItemPacked, setTaskCompleted } from "./checklist-actions";
 import { filterPacking, filterTasks, packingBagTypeLabels, packingCategories, packingCategoryLabels, summarizePacking, summarizeTasks, taskCategoryLabels, taskPriorityLabels, type ChecklistPackingItem, type ChecklistTask, type PackingFilter, type TaskFilter } from "./checklist-model";
 
@@ -80,4 +81,4 @@ function Toggle({ action, canEdit, checked, id, idName, label, stateName, tripId
 }
 function Delete({ action, id, idName, label, tripId }: { action: (data: FormData) => Promise<void>; id: string; idName: string; label: string; tripId: string }) { return <form action={action}><input type="hidden" name="tripId" value={tripId} /><input type="hidden" name={idName} value={id} /><button aria-label={label} className="grid size-9 place-items-center rounded-xl border border-red-400/20 text-red-300"><Trash2 className="size-4" /></button></form>; }
 function Empty({ children }: { children: React.ReactNode }) { return <Surface className="mt-3 p-4 text-sm text-muted-foreground">{children}</Surface>; }
-function formatDate(value: string) { return new Intl.DateTimeFormat("cs-CZ", { day: "numeric", month: "numeric", year: "numeric" }).format(new Date(`${value}T00:00:00Z`)); }
+function formatDate(value: string) { return formatDateOnly(value); }

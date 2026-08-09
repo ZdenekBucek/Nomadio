@@ -11,6 +11,7 @@ import { createDayMapModel } from "@/features/places/day-map-view-model";
 import { getTripDetail } from "@/features/trips/trip-detail";
 import { memberRoleLabel } from "@/features/trips/trip-presentation";
 import { cn } from "@/lib/utils";
+import { formatDateOnlyLong } from "@/lib/date-time";
 
 type Props={params:Promise<{tripId:string;dayId:string}>;searchParams:Promise<{item?:string;mapPlace?:string}>};
 const messages={created:"Bod byl přidán.",updated:"Bod byl upraven.",moved:"Pořadí timeline bylo změněno.","moved-to-day":"Bod byl přesunut do jiného dne.",removed:"Bod byl odstraněn.",boundary:"Bod už je na kraji timeline.","place-added":"Místo bylo přidáno do dne.","place-invalid":"Zkontrolujte vybrané místo, čas a poznámku.","place-error":"Místo se nepodařilo přidat do dne.",invalid:"Zkontrolujte vyplněné údaje.",error:"Změnu se nepodařilo uložit."} as const;
@@ -25,7 +26,7 @@ export default async function DayPage({params,searchParams}:Props){
   const archived=detail.trip.status==="archived"; const canEdit=(role==="owner"||role==="editor")&&!archived;
   const message=query.item?messages[query.item as keyof typeof messages]??messages.error:null; const success=["created","updated","moved","moved-to-day","removed","place-added"].includes(query.item??"");
   const mapPlaceMessage=query.mapPlace?mapPlaceMessages[query.mapPlace as keyof typeof mapPlaceMessages]??mapPlaceMessages.error:null;
-  const date=timeline.day.day_date?new Intl.DateTimeFormat("cs-CZ",{weekday:"long",day:"numeric",month:"long",year:"numeric",timeZone:"UTC"}).format(new Date(`${timeline.day.day_date}T00:00:00Z`)):"Plán bez data";
+  const date=timeline.day.day_date?formatDateOnlyLong(timeline.day.day_date):"Plán bez data";
   const mapModel=createDayMapModel(timeline.items,places);
   return <div>
     <Link href={`/app/trips/${tripId}/itinerary`} className="inline-flex min-h-10 items-center gap-2 rounded-xl px-2 text-sm text-muted-foreground transition hover:bg-muted/50 hover:text-foreground"><ChevronLeft className="size-4"/> Zpět na itinerář</Link>

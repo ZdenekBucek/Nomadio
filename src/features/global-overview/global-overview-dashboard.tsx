@@ -24,6 +24,7 @@ import type { TripCover } from "@/features/trips/trip-cover";
 import { formatTripDates, travelerCountLabel, tripCoverClasses } from "@/features/trips/trip-presentation";
 import { tripDurationLabel, tripTimingLabel } from "@/features/trips/trip-view";
 import { cn } from "@/lib/utils";
+import { formatDateOnly } from "@/lib/date-time";
 
 import styles from "./global-overview-dashboard.module.css";
 import type { GlobalAttention, GlobalOverview } from "./global-overview-model";
@@ -160,14 +161,14 @@ function Finance({ data }: { data: GlobalOverview }) {
       <p className="text-xs text-muted-foreground">Nejbližší platby</p>
       {data.payments.length ? <div className="mt-2 divide-y divide-border">{data.payments.map((item) => <Link key={item.id} href={item.href} className="block min-w-0 py-2.5 first:pt-0 last:pb-0">
         <span className="flex min-w-0 items-start justify-between gap-3"><span className="min-w-0"><span className="block truncate text-sm font-medium">{item.title}</span><span className="block truncate text-xs text-muted-foreground">{item.tripName}</span></span><strong className="shrink-0 text-sm tabular-nums">{formatBudgetMoney(item.remainingAmount ?? 0, item.currency)}</strong></span>
-        <span className={cn("mt-1 block text-xs", item.isOverdue ? "text-destructive" : "text-muted-foreground")}>{item.dueDate ? `${item.isOverdue ? "Po splatnosti" : "Splatnost"} ${item.dueDate}` : "Bez data splatnosti"}</span>
+        <span className={cn("mt-1 block text-xs", item.isOverdue ? "text-destructive" : "text-muted-foreground")}>{item.dueDate ? `${item.isOverdue ? "Po splatnosti" : "Splatnost"} ${formatDateOnly(item.dueDate)}` : "Bez data splatnosti"}</span>
       </Link>)}</div> : <p className="mt-2 text-sm text-muted-foreground">Žádné zbývající platby.</p>}
     </div>
   </Surface>;
 }
 
 function Tasks({ data }: { data: GlobalOverview }) {
-  return <Surface depth="panel" className="min-w-0 p-5"><p className="text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">Příprava</p>{data.openTasks.length ? <div className="mt-3 divide-y divide-border">{data.openTasks.map((task) => <Link key={task.id} href={task.href} className="flex min-w-0 gap-3 py-3 first:pt-0 last:pb-0"><span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border border-muted-foreground/45" aria-hidden="true" /><span className="min-w-0"><span className="block truncate text-sm font-medium">{task.title}</span><span className="mt-0.5 block truncate text-xs text-muted-foreground">{task.tripName}{task.due_date ? ` · do ${task.due_date}` : ""}{task.priority === "high" ? " · vysoká priorita" : ""}</span></span></Link>)}</div> : <p className="mt-3 text-sm text-muted-foreground">Žádné otevřené úkoly.</p>}</Surface>;
+  return <Surface depth="panel" className="min-w-0 p-5"><p className="text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">Příprava</p>{data.openTasks.length ? <div className="mt-3 divide-y divide-border">{data.openTasks.map((task) => <Link key={task.id} href={task.href} className="flex min-w-0 gap-3 py-3 first:pt-0 last:pb-0"><span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border border-muted-foreground/45" aria-hidden="true" /><span className="min-w-0"><span className="block truncate text-sm font-medium">{task.title}</span><span className="mt-0.5 block truncate text-xs text-muted-foreground">{task.tripName}{task.due_date ? ` · do ${formatDateOnly(task.due_date)}` : ""}{task.priority === "high" ? " · vysoká priorita" : ""}</span></span></Link>)}</div> : <p className="mt-3 text-sm text-muted-foreground">Žádné otevřené úkoly.</p>}</Surface>;
 }
 
 function Documents({ data }: { data: GlobalOverview }) {
