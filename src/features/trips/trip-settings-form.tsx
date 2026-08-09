@@ -25,7 +25,7 @@ const coverOptions = [
 
 const initialState: TripSettingsActionState = { error: null };
 
-export function TripSettingsForm({ canEdit, cover, trip }: { canEdit: boolean; cover: TripCover; trip: TripRow }) {
+export function TripSettingsForm({ canEdit, cover, trip, includeCover = true }: { canEdit: boolean; cover: TripCover; trip: TripRow; includeCover?: boolean }) {
   const [state, formAction, pending] = useActionState(updateTripSettings, initialState);
   const errorMessage = state.error === "dates"
     ? "Datum návratu nesmí být před datem odjezdu."
@@ -37,7 +37,7 @@ export function TripSettingsForm({ canEdit, cover, trip }: { canEdit: boolean; c
 
   return (
     <div className="mt-6 grid gap-5">
-      <form action={formAction} className="grid gap-5">
+      <form id="trip-settings-form" action={formAction} className="grid gap-5">
         <input type="hidden" name="tripId" value={trip.id} />
         <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Název cesty" name="name" defaultValue={trip.name} maxLength={120} required disabled={!canEdit} className="sm:col-span-2" />
@@ -62,23 +62,30 @@ export function TripSettingsForm({ canEdit, cover, trip }: { canEdit: boolean; c
         </SelectField>
         </div>
 
-        <fieldset disabled={!canEdit}>
-          <legend className="text-xs font-medium text-muted-foreground">Barevný cover</legend>
-          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {coverOptions.map((cover) => (
-              <label key={cover.value} className="group cursor-pointer has-disabled:cursor-not-allowed">
-                <input className="peer sr-only" type="radio" name="coverVariant" value={cover.value} defaultChecked={trip.cover_variant === cover.value} />
-                <span className={cn("flex h-20 items-end rounded-xl border border-border bg-gradient-to-br p-2 text-[0.68rem] text-white transition peer-checked:border-primary peer-checked:ring-2 peer-checked:ring-primary/30 peer-disabled:opacity-65", cover.className)}>{cover.label}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
         {errorMessage ? <p role="alert" className="rounded-xl border border-amber-400/20 bg-amber-400/8 px-3 py-2 text-sm text-amber-200">{errorMessage}</p> : null}
         {canEdit ? <Button type="submit" size="lg" className="justify-self-start" disabled={pending}><Save aria-hidden="true" />{pending ? "Ukládám…" : "Uložit nastavení"}</Button> : null}
       </form>
 
-      <section aria-labelledby="trip-cover-title" className="rounded-2xl border border-border bg-muted/20 p-4">
+      {includeCover ? <TripCoverSettings canEdit={canEdit} cover={cover} trip={trip} /> : null}
+    </div>
+  );
+}
+
+export function TripCoverSettings({ canEdit, cover, trip }: { canEdit: boolean; cover: TripCover; trip: TripRow }) {
+  return (
+      <div className="grid gap-4">
+        <fieldset form="trip-settings-form" disabled={!canEdit}>
+          <legend className="text-xs font-medium text-muted-foreground">Barevný cover</legend>
+          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {coverOptions.map((coverOption) => (
+              <label key={coverOption.value} className="group cursor-pointer has-disabled:cursor-not-allowed">
+                <input form="trip-settings-form" className="peer sr-only" type="radio" name="coverVariant" value={coverOption.value} defaultChecked={trip.cover_variant === coverOption.value} />
+                <span className={cn("flex h-20 items-end rounded-xl border border-border bg-gradient-to-br p-2 text-[0.68rem] text-white transition peer-checked:border-primary peer-checked:ring-2 peer-checked:ring-primary/30 peer-disabled:opacity-65", coverOption.className)}>{coverOption.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <section aria-labelledby="trip-cover-title" className="rounded-2xl border border-border bg-muted/20 p-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h3 id="trip-cover-title" className="text-sm font-semibold">Obrázek cesty</h3>
@@ -102,8 +109,8 @@ export function TripSettingsForm({ canEdit, cover, trip }: { canEdit: boolean; c
           </form>
           {trip.cover_kind === "upload" ? <form action={removeTripCover}><input type="hidden" name="tripId" value={trip.id} /><Button type="submit" variant="ghost" size="sm"><Trash2 aria-hidden="true" /> Odstranit obrázek</Button></form> : null}
         </div> : null}
-      </section>
-    </div>
+        </section>
+      </div>
   );
 }
 
