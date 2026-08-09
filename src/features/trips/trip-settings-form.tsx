@@ -4,6 +4,7 @@ import { ImagePlus, Save, Trash2 } from "lucide-react";
 import { useActionState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { TimezoneCombobox } from "@/features/timezones/timezone-combobox";
 import type { TripRow } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
 
@@ -19,16 +20,6 @@ const coverOptions = [
   { className: "from-slate-950 via-sky-950 to-cyan-900", label: "Oceán", value: "ocean" },
   { className: "from-slate-950 via-rose-950 to-amber-800", label: "Západ slunce", value: "sunset" },
   { className: "from-slate-950 via-emerald-950 to-teal-900", label: "Les", value: "forest" },
-] as const;
-
-const timezoneOptions = [
-  "Europe/Prague",
-  "Europe/London",
-  "America/New_York",
-  "America/Los_Angeles",
-  "Asia/Tokyo",
-  "Asia/Bangkok",
-  "Australia/Sydney",
 ] as const;
 
 const initialState: TripSettingsActionState = { error: null };
@@ -53,10 +44,7 @@ export function TripSettingsForm({ canEdit, cover, trip }: { canEdit: boolean; c
         <Field label="Od" name="startDate" type="date" defaultValue={trip.start_date ?? ""} disabled={!canEdit} />
         <Field label="Do" name="endDate" type="date" defaultValue={trip.end_date ?? ""} disabled={!canEdit} />
         <Field label="Hlavní měna" name="currency" defaultValue={trip.currency} maxLength={3} pattern="[A-Za-z]{3}" required disabled={!canEdit} />
-        <SelectField label="Časové pásmo" name="timezone" defaultValue={trip.timezone} required disabled={!canEdit}>
-          {!timezoneOptions.includes(trip.timezone as (typeof timezoneOptions)[number]) ? <option value={trip.timezone}>{trip.timezone}</option> : null}
-          {timezoneOptions.map((timezone) => <option key={timezone} value={timezone}>{timezone}</option>)}
-        </SelectField>
+        <TimezoneCombobox name="timezone" defaultValue={trip.timezone} disabled={!canEdit} />
         <SelectField label="Fáze cesty" name="status" defaultValue={trip.status} disabled={!canEdit} className="sm:col-span-2">
           {trip.status === "archived" ? <option value="archived">Archivováno</option> : null}
           {trip.status === "active" ? <option value="active">Probíhá</option> : null}

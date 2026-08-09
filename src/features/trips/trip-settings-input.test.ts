@@ -43,6 +43,12 @@ describe("parseTripSettings", () => {
     formData.set("status", "archived");
     expect(parseTripSettings(formData)).toEqual({ error: "invalid", success: false });
   });
+
+  it("rejects an invalid IANA timezone", () => {
+    const formData = settingsForm();
+    formData.set("timezone", "Europe/Praguuu");
+    expect(parseTripSettings(formData)).toEqual({ error: "invalid", success: false });
+  });
 });
 
 describe("parseDestination", () => {

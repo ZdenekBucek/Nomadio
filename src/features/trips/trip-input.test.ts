@@ -74,6 +74,11 @@ describe("parseNewTrip", () => {
     ).toEqual({ error: "invalid", success: false });
   });
 
+  it("rejects an invalid IANA timezone", () => {
+    const formData = createForm({ countryCode: "CZ", currency: "CZK", name: "Cesta", timezone: "Europe/Praguuu" });
+    expect(parseNewTrip(formData)).toEqual({ error: "invalid", success: false });
+  });
+
   it("normalizes and deduplicates additional travelers", () => {
     const formData = createForm({
       countryCode: "CZ",

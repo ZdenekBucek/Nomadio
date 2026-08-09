@@ -5,6 +5,7 @@ import type {
 } from "@/lib/supabase/database.types";
 
 import { getCountryOption } from "./countries";
+import { isValidTimeZone } from "@/features/timezones/timezone-catalog";
 
 export type NewTripInput = {
   city: string | null;
@@ -77,6 +78,7 @@ export function parseNewTrip(formData: FormData): TripInputResult {
     !country ||
     timezone.length < 1 ||
     timezone.length > 80 ||
+    !isValidTimeZone(timezone) ||
     travelerNames.length > 10 ||
     travelerNames.some((travelerName) => travelerName.length > 120) ||
     !/^[A-Z]{3}$/.test(currency) ||

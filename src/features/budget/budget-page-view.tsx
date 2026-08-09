@@ -15,13 +15,14 @@ export function normalizeBudgetTab(value: string | undefined): BudgetTab {
   return value === "reality" || value === "payments" ? value : "plan";
 }
 
-export function BudgetPageView({ activeTab, archived, canEdit, dashboard, message, roleLabel, today, tripCurrency, tripName }: {
+export function BudgetPageView({ activeTab, archived, canEdit, dashboard, message, roleLabel, timezone, today, tripCurrency, tripName }: {
   activeTab: BudgetTab;
   archived: boolean;
   canEdit: boolean;
   dashboard: TripBudgetDashboard;
   message: { success: boolean; text: string } | null;
   roleLabel: string;
+  timezone?: string;
   today: string;
   tripCurrency: string;
   tripName: string;
@@ -46,7 +47,7 @@ export function BudgetPageView({ activeTab, archived, canEdit, dashboard, messag
 
     <div className="mt-5 min-w-0">
       {activeTab === "plan" ? <BudgetPlanSection canEdit={canEdit} items={dashboard.plan.items} tripCurrency={tripCurrency} tripId={tripId} /> : null}
-      {activeTab === "reality" ? <BudgetRealitySection canEdit={canEdit} comparison={dashboard.comparison} reality={dashboard.reality} today={today} tripCurrency={tripCurrency} tripId={tripId} /> : null}
+      {activeTab === "reality" ? <BudgetRealitySection canEdit={canEdit} comparison={dashboard.comparison} reality={dashboard.reality} timezone={timezone ?? "Europe/Prague"} today={today} tripCurrency={tripCurrency} tripId={tripId} /> : null}
       {activeTab === "payments" ? <BudgetPaymentsSection payments={dashboard.payments} /> : null}
     </div>
   </div>;

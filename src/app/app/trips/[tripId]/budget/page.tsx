@@ -43,6 +43,7 @@ export default async function BudgetPage({ params, searchParams }: Props) {
     message={message}
     roleLabel={memberRoleLabel(role)}
     today={new Date().toISOString().slice(0, 10)}
+    timezone={detail.trip.timezone}
     tripCurrency={detail.trip.currency}
     tripName={detail.trip.name}
   />;

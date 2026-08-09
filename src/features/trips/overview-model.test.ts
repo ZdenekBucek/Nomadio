@@ -54,6 +54,7 @@ function overviewInput(dashboard = budgetDashboard()) {
     packingItems: [],
     tasks: [],
     transport: [],
+    timezone: "Europe/Prague",
     tripEnd: "2026-08-15",
     tripId: "trip",
     tripStart: "2026-08-14",

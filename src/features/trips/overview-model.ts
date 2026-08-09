@@ -36,7 +36,7 @@ function overviewFinance(dashboard: TripBudgetDashboard) {
   });
 }
 
-export function buildTripOverview(input: { accommodations: AccommodationWithPlace[]; budgetDashboard: TripBudgetDashboard; documents: DocumentWithLink[]; itineraryDays: ItineraryDayRow[]; itineraryItems: ItineraryItemRow[]; tasks: ChecklistTask[]; packingItems: ChecklistPackingItem[]; transport: TransportBookingWithSegments[]; tripEnd: string | null; tripId: string; tripStart: string | null }) {
+export function buildTripOverview(input: { accommodations: AccommodationWithPlace[]; budgetDashboard: TripBudgetDashboard; documents: DocumentWithLink[]; itineraryDays: ItineraryDayRow[]; itineraryItems: ItineraryItemRow[]; tasks: ChecklistTask[]; packingItems: ChecklistPackingItem[]; timezone: string; transport: TransportBookingWithSegments[]; tripEnd: string | null; tripId: string; tripStart: string | null }) {
   const now = today();
   const coverage = accommodationCoverage(input.accommodations, input.tripStart, input.tripEnd);
   const accommodation = accommodationSummary(input.accommodations);
@@ -63,5 +63,5 @@ export function buildTripOverview(input: { accommodations: AccommodationWithPlac
   if (coverage.overlapCount) alerts.push({ detail: `${coverage.overlapCount} překrývající se rezervace.`, href: `/app/trips/${input.tripId}/accommodation`, id: "accommodation-overlap", title: "Překrývající se ubytování" });
   for (const task of openTasks.filter((task) => task.due_date && task.due_date < now).slice(0, 2)) alerts.push({ detail: `Termín ${task.due_date} už uplynul.`, href: `/app/trips/${input.tripId}/checklist?editTask=${task.id}`, id: `task:${task.id}`, title: task.title });
   for (const document of input.documents.filter((item) => item.is_important && !item.offline_enabled).slice(0, 2)) alerts.push({ detail: "Důležitý dokument není označený pro offline použití.", href: `/app/trips/${input.tripId}/documents/${document.id}`, id: `document:${document.id}`, title: document.name });
-  return { accommodation, alerts, dayItems, document: documentSummary(input.documents), finance, itinerary: { items: input.itineraryItems.length, plannedDays: plannedDays.length, totalDays: datedDays.length }, nearestPayment, nearestTransport, openTasks: openTasks.slice(0, 3), packing: summarizePacking(input.packingItems), selectedDay, task: summarizeTasks(input.tasks), upcomingAccommodation, coverage };
+  return { accommodation, alerts, dayItems, document: documentSummary(input.documents), finance, itinerary: { items: input.itineraryItems.length, plannedDays: plannedDays.length, totalDays: datedDays.length }, nearestPayment, nearestTransport, openTasks: openTasks.slice(0, 3), packing: summarizePacking(input.packingItems), selectedDay, task: summarizeTasks(input.tasks), timezone: input.timezone, upcomingAccommodation, coverage };
 }

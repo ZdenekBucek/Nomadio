@@ -41,16 +41,18 @@ export function groupExpensesByDate(items: BudgetManualExpenseItem[], today: str
     }));
 }
 
-export function BudgetRealitySection({ canEdit, comparison, reality, today, tripCurrency, tripId }: {
+export function BudgetRealitySection({ canEdit, comparison, reality, timezone, today, tripCurrency, tripId }: {
   canEdit: boolean;
   comparison: TripBudgetDashboard["comparison"];
   reality: TripBudgetDashboard["reality"];
+  timezone?: string;
   today: string;
   tripCurrency: string;
   tripId: string;
 }) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<BudgetManualExpenseItem | null>(null);
+  const displayTimezone = timezone ?? "Europe/Prague";
   const timeline = groupExpensesByDate(reality.manualExpenses, today);
   const confirmed = [...reality.accommodationItems, ...reality.transportItems]
     .sort((left, right) => right.occurredAt.localeCompare(left.occurredAt) || left.title.localeCompare(right.title, "cs"));
@@ -85,7 +87,7 @@ export function BudgetRealitySection({ canEdit, comparison, reality, today, trip
 
     <section aria-labelledby="manual-expenses-title">
       <h2 id="manual-expenses-title" className="text-lg font-semibold">Výdaje</h2>
-      {timeline.length ? <div className="mt-3 space-y-5">{timeline.map((group) => <div key={group.date}><h3 className="mb-2 text-xs font-semibold tracking-[0.12em] text-muted-foreground uppercase">{group.label}</h3><div className="overflow-hidden rounded-2xl border border-border bg-card/55">{group.items.map((item, index) => <ExpenseRow key={item.id} canEdit={canEdit} item={item} onEdit={() => openEdit(item)} separated={index > 0} />)}</div></div>)}</div> : <Surface className="mt-3 flex items-start gap-3 p-5 text-sm text-muted-foreground"><ReceiptText className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" /><div><p className="font-medium text-foreground">Žádné manuální výdaje.</p><p className="mt-1">Rychlý výdaj můžete přidat částkou a kategorií.</p></div></Surface>}
+      {timeline.length ? <div className="mt-3 space-y-5">{timeline.map((group) => <div key={group.date}><h3 className="mb-2 text-xs font-semibold tracking-[0.12em] text-muted-foreground uppercase">{group.label}</h3><div className="overflow-hidden rounded-2xl border border-border bg-card/55">{group.items.map((item, index) => <ExpenseRow key={item.id} canEdit={canEdit} item={item} onEdit={() => openEdit(item)} separated={index > 0} timezone={displayTimezone} />)}</div></div>)}</div> : <Surface className="mt-3 flex items-start gap-3 p-5 text-sm text-muted-foreground"><ReceiptText className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" /><div><p className="font-medium text-foreground">Žádné manuální výdaje.</p><p className="mt-1">Rychlý výdaj můžete přidat částkou a kategorií.</p></div></Surface>}
     </section>
 
     <ConfirmedCosts items={confirmed} tripId={tripId} />
@@ -108,8 +110,8 @@ export function BudgetRealitySection({ canEdit, comparison, reality, today, trip
   </div>;
 }
 
-function ExpenseRow({ canEdit, item, onEdit, separated }: { canEdit: boolean; item: BudgetManualExpenseItem; onEdit: () => void; separated: boolean }) {
-  return <article className={cn("flex min-w-0 items-center gap-3 p-4", separated && "border-t border-border/70")}><span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><CircleDollarSign className="size-4" aria-hidden="true" /></span><div className="min-w-0 flex-1"><h4 className="truncate font-medium">{item.enteredTitle ?? budgetCategoryLabels[item.category]}</h4><p className="mt-0.5 truncate text-xs text-muted-foreground">{budgetCategoryPathLabel(item.category, item.subcategory)} · {new Intl.DateTimeFormat("cs-CZ", { day: "numeric", month: "numeric" }).format(new Date(item.occurredAt))}</p></div><div className="shrink-0 text-right"><p className="font-semibold tabular-nums">{formatBudgetMoney(item.amount, item.currency)}</p>{canEdit ? <button type="button" onClick={onEdit} className="mt-1 inline-flex min-h-9 items-center gap-1 rounded-lg px-2 text-xs text-muted-foreground outline-none transition hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary"><Pencil className="size-3.5" aria-hidden="true" /> Upravit</button> : null}</div></article>;
+function ExpenseRow({ canEdit, item, onEdit, separated, timezone }: { canEdit: boolean; item: BudgetManualExpenseItem; onEdit: () => void; separated: boolean; timezone: string }) {
+  return <article className={cn("flex min-w-0 items-center gap-3 p-4", separated && "border-t border-border/70")}><span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><CircleDollarSign className="size-4" aria-hidden="true" /></span><div className="min-w-0 flex-1"><h4 className="truncate font-medium">{item.enteredTitle ?? budgetCategoryLabels[item.category]}</h4><p className="mt-0.5 truncate text-xs text-muted-foreground">{budgetCategoryPathLabel(item.category, item.subcategory)} · {new Intl.DateTimeFormat("cs-CZ", { day: "numeric", month: "numeric", timeZone: timezone }).format(new Date(item.occurredAt))}</p></div><div className="shrink-0 text-right"><p className="font-semibold tabular-nums">{formatBudgetMoney(item.amount, item.currency)}</p>{canEdit ? <button type="button" onClick={onEdit} className="mt-1 inline-flex min-h-9 items-center gap-1 rounded-lg px-2 text-xs text-muted-foreground outline-none transition hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary"><Pencil className="size-3.5" aria-hidden="true" /> Upravit</button> : null}</div></article>;
 }
 
 function ConfirmedCosts({ items, tripId }: { items: BudgetRealityItem[]; tripId: string }) {

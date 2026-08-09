@@ -15,6 +15,7 @@ import { useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Surface } from "@/components/ui/surface";
+import { TimezoneCombobox } from "@/features/timezones/timezone-combobox";
 import { cn } from "@/lib/utils";
 
 import { createTrip } from "./actions";
@@ -94,8 +95,6 @@ export function TripForm({ countries, defaultCurrency, defaultTimezone, showHead
       </ol>
 
       <form ref={formRef} action={createTrip} className="mt-6">
-        <input type="hidden" name="timezone" value={defaultTimezone} />
-
         <div data-step="1" className={step === 1 ? "grid gap-4" : "hidden"}>
           <Field label="Název cesty" name="name" placeholder="Japonsko 2027" maxLength={120} required />
           <SelectField label="Hlavní země" name="countryCode" defaultValue="" required>
@@ -108,6 +107,7 @@ export function TripForm({ countries, defaultCurrency, defaultTimezone, showHead
             <Field label="Do" name="endDate" type="date" />
           </div>
           <Field label="Hlavní měna" name="currency" defaultValue={defaultCurrency} maxLength={3} pattern="[A-Za-z]{3}" required />
+          <TimezoneCombobox name="timezone" defaultValue={defaultTimezone} />
         </div>
 
         <div data-step="2" className={step === 2 ? "grid gap-4" : "hidden"}>

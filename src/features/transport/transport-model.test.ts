@@ -40,4 +40,17 @@ describe("transport model", () => {
   it("formats stored timestamps in the trip timezone for datetime-local inputs", () => {
     expect(dateTimeInputValue("2027-06-02T06:00:00Z", "Europe/Oslo")).toBe("2027-06-02T08:00");
   });
+
+  it("formats common Asian trip timezones explicitly", () => {
+    expect(dateTimeInputValue("2027-01-01T00:30:00Z", "Asia/Seoul")).toBe("2027-01-01T09:30");
+    expect(dateTimeInputValue("2027-01-01T00:30:00Z", "Asia/Tokyo")).toBe("2027-01-01T09:30");
+    expect(dateTimeInputValue("2027-01-01T00:30:00Z", "Asia/Bangkok")).toBe("2027-01-01T07:30");
+  });
+
+  it("keeps DST transitions stable in Prague and New York", () => {
+    expect(dateTimeInputValue("2027-03-28T00:30:00Z", "Europe/Prague")).toBe("2027-03-28T01:30");
+    expect(dateTimeInputValue("2027-03-28T01:30:00Z", "Europe/Prague")).toBe("2027-03-28T03:30");
+    expect(dateTimeInputValue("2027-03-14T06:30:00Z", "America/New_York")).toBe("2027-03-14T01:30");
+    expect(dateTimeInputValue("2027-03-14T07:30:00Z", "America/New_York")).toBe("2027-03-14T03:30");
+  });
 });
