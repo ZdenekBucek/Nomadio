@@ -115,7 +115,7 @@ export default async function TripOverviewPage({
 
       <header
         className={cn(
-          "relative overflow-hidden rounded-[1.75rem] border border-border px-5 py-6 shadow-[0_28px_100px_-45px_rgba(0,0,0,0.95)] sm:px-7 sm:py-8 lg:px-9",
+          "relative overflow-hidden rounded-[1.75rem] border border-border px-4 py-4 shadow-[0_28px_100px_-45px_rgba(0,0,0,0.95)] sm:px-7 sm:py-8 lg:px-9",
           tripCoverClasses[cover.variant],
         )}
       >
@@ -124,7 +124,7 @@ export default async function TripOverviewPage({
           <img src={cover.imageUrl} alt="" className="absolute inset-0 size-full object-cover" />
         </> : null}
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,7,18,0.92),rgba(3,7,18,0.48)_65%,rgba(3,7,18,0.24))]" />
-        <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+        <div className="relative flex flex-col gap-5 sm:gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0 max-w-3xl">
             <div className="flex flex-wrap items-center gap-2">
               <StatusPill tone={tripStatusTone(status)}>
@@ -138,7 +138,7 @@ export default async function TripOverviewPage({
               </StatusPill>
             </div>
 
-            <h1 className="mt-5 text-3xl font-semibold tracking-[-0.05em] text-white sm:text-4xl lg:text-5xl">
+            <h1 className="mt-4 text-2xl font-semibold tracking-[-0.05em] text-white sm:mt-5 sm:text-4xl lg:text-5xl">
               {trip.name} {flag ? <span aria-hidden="true">{flag}</span> : null}
             </h1>
             {trip.description ? (
@@ -147,7 +147,7 @@ export default async function TripOverviewPage({
               </p>
             ) : null}
 
-            <div className="mt-6 flex flex-wrap gap-x-5 gap-y-3 text-sm text-white/72">
+            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/72 sm:mt-6 sm:gap-y-3">
               <span className="flex items-center gap-2">
                 <CalendarDays className="size-4 text-[var(--brand-highlight)]" aria-hidden="true" />
                 {formatTripDates(trip.start_date, trip.end_date)}
@@ -160,7 +160,7 @@ export default async function TripOverviewPage({
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-4 rounded-2xl border border-white/10 bg-black/25 p-4 backdrop-blur-md">
+          <div className="hidden shrink-0 items-center gap-4 rounded-2xl border border-white/10 bg-black/25 p-4 backdrop-blur-md sm:flex">
             <TravelerStack travelers={travelers} size="large" />
             <div>
               <p className="text-sm font-medium text-white">
@@ -171,6 +171,9 @@ export default async function TripOverviewPage({
               </p>
             </div>
           </div>
+        </div>
+        <div className="absolute bottom-3 right-3 sm:hidden">
+          <TravelerStack travelers={travelers} size="hero" tone="cover" />
         </div>
       </header>
 

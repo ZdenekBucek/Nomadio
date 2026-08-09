@@ -43,6 +43,7 @@ describe("TripMembers", () => {
     );
 
     expect(screen.getByText("Vlastník Cesty")).toBeInTheDocument();
+    expect(screen.getByText("Vlastník")).toBeInTheDocument();
     expect(screen.getByText("Editor Cesty")).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Role uživatele Editor Cesty" }))
       .toHaveValue("editor");

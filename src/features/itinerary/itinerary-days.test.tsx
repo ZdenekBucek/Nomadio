@@ -15,8 +15,9 @@ const days: ItineraryDayRow[] = [
 
 afterEach(cleanup);
 describe("ItineraryDays", () => {
-  it("shows dated and undated groups with editor controls", () => { render(<ItineraryDays canEdit days={days} tripId={tripId}/>); expect(screen.getByText("Dny cesty")).toBeInTheDocument(); expect(screen.getByText("Plány bez data")).toBeInTheDocument(); expect(screen.getByText("Přidat datovaný den")).toBeInTheDocument(); expect(screen.getByText("Přidat plán bez data")).toBeInTheDocument(); expect(screen.getAllByText("Upravit den")).toHaveLength(3); });
+  it("makes each day card navigable without a separate detail CTA", () => { render(<ItineraryDays canEdit days={days} tripId={tripId}/>); expect(screen.getByText("Dny cesty")).toBeInTheDocument(); expect(screen.getByText("Plány bez data")).toBeInTheDocument(); expect(screen.getByText("Přidat datovaný den")).toBeInTheDocument(); expect(screen.getByText("Přidat plán bez data")).toBeInTheDocument(); expect(screen.queryByText("Otevřít detail dne")).not.toBeInTheDocument(); expect(screen.getByRole("link", { name: "Otevřít detail dne První den" })).toHaveAttribute("href", `/app/trips/${tripId}/itinerary/2`); });
   it("keeps itinerary read-only for viewers", () => { render(<ItineraryDays canEdit={false} days={days} tripId={tripId}/>); expect(screen.getByText("Deštivý plán")).toBeInTheDocument(); expect(screen.queryByText("Upravit den")).not.toBeInTheDocument(); expect(screen.queryByRole("button")).not.toBeInTheDocument(); });
+  it("keeps edit action separate from card navigation", () => { const { container } = render(<ItineraryDays canEdit days={days} tripId={tripId}/>); const editActions = screen.getAllByLabelText("Upravit den"); expect(editActions).toHaveLength(3); fireEvent.click(editActions[0]!); expect(container.querySelectorAll("details[open]")).toHaveLength(1); expect(editActions[0]).not.toHaveAttribute("href"); });
   it("uses a shared DatePicker for canonical day dates", () => {
     const { container } = render(<ItineraryDays canEdit days={days} tripId={tripId}/>);
     fireEvent.click(screen.getAllByText("Upravit den")[0]!);
