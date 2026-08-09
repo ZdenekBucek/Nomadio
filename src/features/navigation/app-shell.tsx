@@ -1,15 +1,13 @@
-import { LogOut, Wifi } from "lucide-react";
+import { LogOut } from "lucide-react";
 import Image from "next/image";
 import type { ReactNode } from "react";
 
 import { BrandMark } from "@/components/brand/brand-mark";
 import { Button } from "@/components/ui/button";
-import { StatusPill } from "@/components/ui/status-pill";
-import { Surface } from "@/components/ui/surface";
 import { signOut } from "@/features/auth/actions";
 import type { ProfileViewModel } from "@/features/auth/profile";
 
-import { AppNavigation, JourneyPlaceholder } from "./app-navigation";
+import { AppNavigation } from "./app-navigation";
 
 type AppShellProps = {
   children: ReactNode;
@@ -22,24 +20,11 @@ export function AppShell({ children, profile }: AppShellProps) {
       <aside className="sticky top-0 hidden h-dvh min-h-0 flex-col border-r border-border bg-sidebar/82 p-4 backdrop-blur-2xl lg:flex">
         <BrandMark tagline className="px-2 py-2" />
 
-        <div className="mt-8 min-h-0 flex-1">
+        <div className="mt-7 min-h-0 flex-1 overflow-y-auto pr-1">
           <AppNavigation />
         </div>
 
-        <Surface depth="inset" className="mt-4 p-3.5">
-          <div className="flex items-center justify-between gap-3">
-            <StatusPill tone="success">
-              <Wifi className="size-3" aria-hidden="true" />
-              Online
-            </StatusPill>
-            <span className="text-[0.62rem] text-muted-foreground">PWA</span>
-          </div>
-          <div className="mt-3">
-            <JourneyPlaceholder />
-          </div>
-        </Surface>
-
-        <div className="mt-3 flex min-w-0 items-center gap-3 rounded-2xl border border-border bg-card/68 p-3">
+        <div className="mt-4 flex min-w-0 items-center gap-3 border-t border-border pt-4">
           <ProfileAvatar profile={profile} size="small" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs font-medium">{profile.displayName}</p>
