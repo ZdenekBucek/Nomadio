@@ -31,7 +31,7 @@ describe("accommodation payment UI", () => {
     expect(screen.getByRole("spinbutton", { name: "Celková cena" })).toHaveValue(18500);
     expect(screen.getByRole("spinbutton", { name: "Již zaplaceno" })).toHaveValue(5000);
     expect(screen.getByText(/13[\s ]500 CZK/)).toBeInTheDocument();
-    expect(screen.getByLabelText("Datum splatnosti zbývající částky")).toHaveValue("2026-10-15");
+    expect(screen.getByRole("button", { name: "Datum splatnosti zbývající částky" })).toHaveTextContent("15. 10. 2026");
     fireEvent.change(screen.getByRole("spinbutton", { name: "Již zaplaceno" }), { target: { value: "6500" } });
     expect(screen.getByText(/12[\s ]000 CZK/)).toBeInTheDocument();
   });
@@ -53,6 +53,56 @@ describe("accommodation payment UI", () => {
     expect(screen.getByRole("combobox", { name: "Stav platby" })).toHaveValue("pay_on_site");
     expect(screen.getByText(/Platba na místě\. Datum splatnosti může zůstat prázdné/)).toBeInTheDocument();
     expect(screen.getByLabelText("Datum splatnosti zbývající částky")).toHaveValue("");
+  });
+
+  it("uses shared date and time pickers for an editable accommodation stay", () => {
+    const { container } = render(
+      <AccommodationForm
+        accommodation={accommodation({
+          check_in_date: "2026-08-14",
+          check_in_time: "15:00:00",
+          check_out_date: "2026-08-18",
+          check_out_time: "10:00:00",
+        })}
+        canEdit
+        geoapifyConfigured={false}
+        mapAccessToken={null}
+        places={[]}
+        trip={trip}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Pobyt" })).toHaveTextContent("14. 8. 2026 → 18. 8. 2026");
+    expect(screen.getByLabelText("Check-in")).toHaveValue("15:00");
+    expect(screen.getByLabelText("Check-out")).toHaveValue("10:00");
+    expect(container.querySelector('input[name="checkInDate"]')).toHaveValue("2026-08-14");
+    expect(container.querySelector('input[name="checkOutDate"]')).toHaveValue("2026-08-18");
+    expect(container.querySelectorAll('input[type="date"]')).toHaveLength(0);
+  });
+
+  it("prefills a new accommodation stay from the trip date range", () => {
+    render(
+      <AccommodationForm
+        accommodation={null}
+        canEdit
+        geoapifyConfigured={false}
+        mapAccessToken={null}
+        places={[]}
+        trip={{ ...trip, end_date: "2026-08-28", start_date: "2026-08-14" }}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Pobyt" })).toHaveTextContent("14. 8. 2026 → 28. 8. 2026");
+    expect(screen.getByLabelText("Check-in")).toHaveValue("");
+    expect(screen.getByLabelText("Check-out")).toHaveValue("");
+  });
+
+  it("keeps all accommodation pickers read-only for viewers", () => {
+    render(<AccommodationForm accommodation={accommodation()} canEdit={false} geoapifyConfigured={false} mapAccessToken={null} places={[]} trip={trip} />);
+    expect(screen.getByRole("button", { name: "Pobyt" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Datum splatnosti zbývající částky" })).toBeDisabled();
+    expect(screen.getByLabelText("Check-in")).toBeDisabled();
+    expect(screen.getByLabelText("Check-out")).toBeDisabled();
   });
 
   it("shows total, paid, remaining and due date on a partially paid card", () => {

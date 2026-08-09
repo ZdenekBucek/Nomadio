@@ -6,10 +6,9 @@ import type {
   AccommodationPaymentStatus,
   AccommodationType,
 } from "@/lib/supabase/database.types";
+import { isValidDateOnly, isValidTimeOnly } from "@/lib/date-time";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 export type AccommodationInput = {
   accommodationType: AccommodationType;
@@ -79,9 +78,9 @@ export function parseAccommodation(formData: FormData): Result {
   if (
     name.length < 1 || name.length > 160
     || !accommodationTypes.includes(accommodationType as AccommodationType)
-    || !datePattern.test(checkInDate) || !datePattern.test(checkOutDate) || checkOutDate <= checkInDate
-    || (checkInTime !== null && !timePattern.test(checkInTime))
-    || (checkOutTime !== null && !timePattern.test(checkOutTime))
+    || !isValidDateOnly(checkInDate) || !isValidDateOnly(checkOutDate) || checkOutDate <= checkInDate
+    || (checkInTime !== null && !isValidTimeOnly(checkInTime))
+    || (checkOutTime !== null && !isValidTimeOnly(checkOutTime))
     || (guestCount !== null && (!Number.isInteger(guestCount) || guestCount <= 0))
     || (roomType?.length ?? 0) > 160
     || (bookingReference?.length ?? 0) > 160
@@ -89,7 +88,7 @@ export function parseAccommodation(formData: FormData): Result {
     || (totalPrice !== null && (!Number.isFinite(totalPrice) || totalPrice < 0))
     || (paidAmount !== null && (!Number.isFinite(paidAmount) || paidAmount < 0))
     || (totalPrice !== null && paidAmount !== null && paidAmount > totalPrice)
-    || (balanceDueDate !== null && !datePattern.test(balanceDueDate))
+    || (balanceDueDate !== null && !isValidDateOnly(balanceDueDate))
     || (currency !== null && !/^[A-Z]{3}$/.test(currency))
     || !paymentStatuses.includes(paymentStatus as AccommodationPaymentStatus)
     || (paymentStatus === "unpaid" && paidAmount !== null && paidAmount !== 0)

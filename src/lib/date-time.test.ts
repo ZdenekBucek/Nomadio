@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dateOnlyToCalendarDate, formatDateOnly, formatDateOnlyLong, formatTripDateTime, formatTripTime, isValidDateOnly } from "./date-time";
+import { dateOnlyToCalendarDate, formatDateOnly, formatDateOnlyLong, formatTripDateTime, formatTripTime, isValidDateOnly, isValidTimeOnly } from "./date-time";
 
 describe("date-time formatters", () => {
   it("formats date-only values without changing the calendar day", () => {
@@ -18,6 +18,12 @@ describe("date-time formatters", () => {
     expect(date?.getFullYear()).toBe(2026);
     expect(date?.getMonth()).toBe(9);
     expect(date?.getDate()).toBe(14);
+  });
+
+  it("accepts only canonical 24-hour time values", () => {
+    expect(isValidTimeOnly("15:00")).toBe(true);
+    expect(isValidTimeOnly("5:00")).toBe(false);
+    expect(isValidTimeOnly("24:00")).toBe(false);
   });
 
   it.each([

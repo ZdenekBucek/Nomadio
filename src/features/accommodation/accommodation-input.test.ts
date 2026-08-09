@@ -48,6 +48,7 @@ describe("parseAccommodation", () => {
   it.each([
     ["name", ""],
     ["checkOutDate", "2027-06-01"],
+    ["checkOutDate", "2027-05-31"],
     ["guestCount", "0"],
     ["totalPrice", "-1"],
     ["paidAmount", "-1"],
@@ -63,6 +64,18 @@ describe("parseAccommodation", () => {
     const form = validData();
     form.set("totalPrice", "1000");
     form.set("paidAmount", "1001");
+    expect(parseAccommodation(form).success).toBe(false);
+  });
+
+  it.each([
+    ["checkInDate", "2026-02-31"],
+    ["checkOutDate", "2026-02-31"],
+    ["balanceDueDate", "2026-02-31"],
+    ["checkInTime", "25:00"],
+    ["checkOutTime", "15:61"],
+  ])("rejects an invalid calendar or time value for %s", (key, value) => {
+    const form = validData();
+    form.set(key, value);
     expect(parseAccommodation(form).success).toBe(false);
   });
 

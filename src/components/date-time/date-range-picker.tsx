@@ -5,7 +5,7 @@ import { Popover } from "@base-ui/react/popover";
 import { DayPicker, type DateRange } from "@daypicker/react";
 import { cs } from "@daypicker/react/locale";
 import { CalendarDays, ChevronDown, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +14,8 @@ import {
   formatDateOnly,
 } from "@/lib/date-time";
 import { cn } from "@/lib/utils";
+
+import { useDesktopPickerPresentation } from "./picker-presentation";
 
 type CanonicalDateRange = {
   endDate: string | null;
@@ -29,23 +31,6 @@ type DateRangePickerProps = {
   label?: string;
   startName: string;
 };
-
-const desktopMediaQuery = "(min-width: 640px)";
-
-function useDesktopPresentation() {
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  useEffect(() => {
-    if (!window.matchMedia) return;
-    const mediaQuery = window.matchMedia(desktopMediaQuery);
-    const update = () => setIsDesktop(mediaQuery.matches);
-    update();
-    mediaQuery.addEventListener("change", update);
-    return () => mediaQuery.removeEventListener("change", update);
-  }, []);
-
-  return isDesktop;
-}
 
 function normalizedRange(startDate?: string | null, endDate?: string | null): CanonicalDateRange {
   return {
@@ -161,7 +146,7 @@ export function DateRangePicker({
   const [draftRange, setDraftRange] = useState(initialRange);
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const isDesktop = useDesktopPresentation();
+  const isDesktop = useDesktopPickerPresentation();
 
   function beginSelection() {
     setDraftRange(committedRange);

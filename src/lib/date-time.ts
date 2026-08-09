@@ -1,4 +1,5 @@
 const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+const TIME_ONLY_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 function dateOnlyParts(value: string) {
   const match = DATE_ONLY_PATTERN.exec(value);
@@ -36,6 +37,11 @@ export function calendarDateToDateOnly(value: Date) {
   const month = String(value.getMonth() + 1).padStart(2, "0");
   const day = String(value.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+/** Validates a canonical 24-hour time without adding date or timezone semantics. */
+export function isValidTimeOnly(value: string | null | undefined) {
+  return typeof value === "string" && TIME_ONLY_PATTERN.test(value);
 }
 
 function dateOnlyValue(value: string) {

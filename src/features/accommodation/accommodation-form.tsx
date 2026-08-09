@@ -4,6 +4,9 @@ import { LoaderCircle, MapPin, Search, Trash2 } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/date-time/date-picker";
+import { DateRangePicker } from "@/components/date-time/date-range-picker";
+import { TimePicker } from "@/components/date-time/time-picker";
 import { placeCategories, placeCategoryLabels } from "@/features/places/categories";
 import { PlacePreviewMap } from "@/features/places/place-preview-map";
 import type { PlaceSearchResult } from "@/features/places/place-search-result";
@@ -64,10 +67,16 @@ export function AccommodationForm({
 
       <section className="grid min-w-0 gap-4 rounded-2xl border border-border bg-muted/18 p-4 sm:grid-cols-2">
         <h3 className="sm:col-span-2 font-medium">Termín pobytu</h3>
-        <label className={labelClass}>Check-in datum *<input className={fieldClass} type="date" name="checkInDate" required defaultValue={accommodation?.check_in_date ?? trip.start_date ?? ""} /></label>
-        <label className={labelClass}>Check-out datum *<input className={fieldClass} type="date" name="checkOutDate" required defaultValue={accommodation?.check_out_date ?? trip.end_date ?? ""} /></label>
-        <label className={labelClass}>Čas check-in<input className={fieldClass} type="time" name="checkInTime" defaultValue={accommodation?.check_in_time?.slice(0, 5) ?? ""} /></label>
-        <label className={labelClass}>Čas check-out<input className={fieldClass} type="time" name="checkOutTime" defaultValue={accommodation?.check_out_time?.slice(0, 5) ?? ""} /></label>
+        <DateRangePicker
+          className="sm:col-span-2"
+          defaultStartDate={accommodation?.check_in_date ?? trip.start_date}
+          defaultEndDate={accommodation?.check_out_date ?? trip.end_date}
+          endName="checkOutDate"
+          label="Pobyt"
+          startName="checkInDate"
+        />
+        <TimePicker label="Check-in" name="checkInTime" defaultValue={accommodation?.check_in_time?.slice(0, 5) ?? ""} />
+        <TimePicker label="Check-out" name="checkOutTime" defaultValue={accommodation?.check_out_time?.slice(0, 5) ?? ""} />
       </section>
 
       <section className="grid min-w-0 gap-4 rounded-2xl border border-border bg-muted/18 p-4 sm:grid-cols-2">
@@ -89,7 +98,7 @@ export function AccommodationForm({
         <label className={labelClass}>Měna<input className={`${fieldClass} uppercase`} name="currency" pattern="[A-Za-z]{3}" maxLength={3} value={currency} onChange={(event) => setCurrency(event.target.value.toUpperCase())} /></label>
         <label className={labelClass}>Již zaplaceno<input className={fieldClass} type="number" name="paidAmount" min={0} step="0.01" value={paidAmount} onChange={(event) => { const next = event.target.value; setPaidAmount(next); updateDerivedStatus(totalPrice, next); }} /></label>
         <label className={labelClass}>Zbývá doplatit<output aria-live="polite" className={`${fieldClass} flex items-center bg-muted/30 text-foreground`}>{remaining === null ? "Doplňte obě částky" : `${amountFormatter.format(remaining)} ${currency}`}</output></label>
-        {hasRemainingBalance ? <label className={labelClass}>Datum splatnosti zbývající částky<input className={fieldClass} type="date" name="balanceDueDate" defaultValue={accommodation?.balance_due_date ?? ""} /></label> : <input type="hidden" name="balanceDueDate" value="" />}
+        {hasRemainingBalance ? <DatePicker label="Datum splatnosti zbývající částky" name="balanceDueDate" defaultValue={accommodation?.balance_due_date ?? ""} /> : <input type="hidden" name="balanceDueDate" value="" />}
         <label className={labelClass}>Stav platby<select className={fieldClass} name="paymentStatus" value={paymentStatus} onChange={(event) => setPaymentStatus(event.target.value as AccommodationPaymentStatus)}>{paymentStatuses.map((status) => <option key={status} value={status}>{paymentStatusLabels[status]}</option>)}</select></label>
         {paymentStatus === "pay_on_site" ? <p className="self-end rounded-xl border border-primary/20 bg-primary/8 px-3 py-3 text-sm text-muted-foreground">Platba na místě. Datum splatnosti může zůstat prázdné.</p> : null}
       </section>
