@@ -1,5 +1,5 @@
 import type { AccommodationRow, TaskRow, TripRow } from "@/lib/supabase/database.types";
-import type { BudgetRow } from "@/features/budget/budget-model";
+import type { BudgetPaymentItem } from "@/features/budget/budget-domain";
 
 export type CalendarEventType =
   | "trip_start"
@@ -49,9 +49,72 @@ export type CalendarTransportEvent = {
   tripId: string;
 };
 
+export type CalendarPaymentEvent = {
+  amount: number;
+  currency: string;
+  date: string;
+  href: string;
+  id: string;
+  title: string;
+  tripId: string;
+};
+
+export type MonthEventType = Extract<
+  CalendarEventType,
+  "accommodation_check_in" | "accommodation_check_out" | "payment" | "transport"
+>;
+
+export type MonthEvent = Omit<Pick<
+  CalendarAgendaItem,
+  "amount" | "currency" | "date" | "href" | "id" | "subtitle" | "title" | "tripId" | "type"
+>, "type"> & { type: MonthEventType };
+
+const monthEventTypes = new Set<CalendarEventType>([
+  "accommodation_check_in",
+  "accommodation_check_out",
+  "payment",
+  "transport",
+]);
+
+export function calendarMonthEvents(items: CalendarAgendaItem[]): MonthEvent[] {
+  return items
+    .filter((item): item is CalendarAgendaItem & { type: MonthEventType } => monthEventTypes.has(item.type))
+    .map(({ amount, currency, date, href, id, subtitle, title, tripId, type }) => ({
+      amount,
+      currency,
+      date,
+      href,
+      id,
+      subtitle,
+      title,
+      tripId,
+      type,
+    }));
+}
+
+export function calendarPaymentEvents(items: BudgetPaymentItem[]): CalendarPaymentEvent[] {
+  return items.flatMap((item) => {
+    if (
+      (item.sourceType !== "accommodation" && item.sourceType !== "transport")
+      || !item.dueDate
+      || item.remainingAmount === null
+      || item.remainingAmount <= 0
+    ) return [];
+    return [{
+      amount: item.remainingAmount,
+      currency: item.currency,
+      date: item.dueDate,
+      href: `/app/trips/${item.tripId}/${item.sourceType}`,
+      id: `payment:${item.id}`,
+      title: `Doplatek ${item.title}`,
+      tripId: item.tripId,
+    }];
+  });
+}
+
 export type CalendarAgendaSources = {
   accommodations: AccommodationRow[];
-  budget: Array<BudgetRow & { tripId: string }>;
+  payments: CalendarPaymentEvent[];
   tasks: TaskRow[];
   transports: CalendarTransportEvent[];
   trips: CalendarTrip[];
@@ -208,10 +271,10 @@ export function buildCalendarAgenda(sources: CalendarAgendaSources, today = date
     const trip = trips.get(item.tripId); if (!trip) continue;
     add({ amount: null, currency: null, date: item.date, href: item.href, id: `transport:${item.id}`, startTime: item.startTime, subtitle: item.subtitle ?? trip.name, title: item.title, tripId: trip.id, tripName: trip.name, type: "transport" });
   }
-  for (const item of sources.budget) {
+  for (const item of sources.payments) {
     const eventTrip = trips.get(item.tripId);
-    if (!eventTrip || !item.balanceDueDate || item.remainingAmount === null || item.remainingAmount <= 0) continue;
-    add({ amount: item.remainingAmount, currency: item.currency, date: item.balanceDueDate, href: item.href ?? `/app/trips/${eventTrip.id}/budget`, id: `payment:${item.id}`, startTime: null, subtitle: eventTrip.name, title: `Doplatit ${item.name}`, tripId: eventTrip.id, tripName: eventTrip.name, type: "payment" });
+    if (!eventTrip) continue;
+    add({ amount: item.amount, currency: item.currency, date: item.date, href: item.href, id: item.id, startTime: null, subtitle: eventTrip.name, title: item.title, tripId: eventTrip.id, tripName: eventTrip.name, type: "payment" });
   }
   for (const item of sources.tasks) {
     const trip = trips.get(item.trip_id); if (!trip || !item.due_date || item.status === "completed" || item.status === "cancelled") continue;

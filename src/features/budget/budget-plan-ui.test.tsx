@@ -85,11 +85,12 @@ describe("new budget page", () => {
     expect(screen.queryByRole("button", { name: "Přidat plán" })).not.toBeInTheDocument();
   });
 
-  it("renders Reality and keeps only Payments as a placeholder", () => {
+  it("renders the Reality and Payments tabs without fake data", () => {
     const { rerender } = render(view({ activeTab: "reality" }));
     expect(screen.getByRole("heading", { name: "Skutečné náklady" })).toBeInTheDocument();
     rerender(view({ activeTab: "payments" }));
-    expect(screen.getByText("Přehled plateb bude dostupný zde.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Platby" })).toBeInTheDocument();
+    expect(screen.getByText("Ubytování ani Doprava zatím nemají platební údaje.")).toBeInTheDocument();
   });
 
   it("keeps currencies separate and displays over-budget percentage above 100", () => {

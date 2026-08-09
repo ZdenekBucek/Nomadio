@@ -5,7 +5,6 @@ import {
   CalendarDays,
   Check,
   CheckSquare2,
-  CircleDollarSign,
   FileText,
   Hotel,
   Luggage,
@@ -94,15 +93,13 @@ function TravelHero({ data }: { data: GlobalOverview }) {
 
 function Preparation({ data }: { data: GlobalOverview }) {
   const preparation = data.dominantPreparation!;
-  const budget = preparation.budget[0] ?? null;
   return (
     <section aria-labelledby="preparation-title" className="min-w-0">
       <h2 id="preparation-title" className="text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">Připravenost cesty</h2>
-      <div className="mt-3 grid min-w-0 gap-2 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-3 grid min-w-0 gap-2 sm:grid-cols-3">
         <Readiness icon={<Hotel />} label="Ubytování" value={`${preparation.accommodation.complete}/${preparation.accommodation.total} nocí`} percent={preparation.accommodation.percent} />
         <Readiness icon={<CheckSquare2 />} label="Checklist" value={`${preparation.checklist.complete}/${preparation.checklist.total}`} percent={preparation.checklist.percent} />
         <Readiness icon={<FileText />} label="Dokumenty" value={`${preparation.documents.complete}/${preparation.documents.total}`} percent={preparation.documents.percent} />
-        <Readiness icon={<CircleDollarSign />} label="Rozpočet" value={budget ? `${budget.percent} % využito` : "Bez rozpočtu"} percent={budget?.percent ?? 0} />
       </div>
     </section>
   );
@@ -149,9 +146,21 @@ function Upcoming({ items }: { items: CalendarAgendaItem[] }) {
 }
 
 function Finance({ data }: { data: GlobalOverview }) {
-  const summaries = data.dominantPreparation?.budget ?? [];
-  const nearest = data.payments[0] ?? null;
-  return <Surface depth="panel" className="min-w-0 p-5"><p className="text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">Finance</p>{summaries.length ? <div className="mt-4 space-y-4">{summaries.map((summary) => <div key={summary.currency}><div className="flex items-end justify-between gap-3"><div><p className="text-xs text-muted-foreground">Cesta stojí</p><p className="mt-1 text-xl font-semibold">{formatBudgetMoney(summary.actual, summary.currency)}</p></div><p className="text-xs text-muted-foreground">Plán {formatBudgetMoney(summary.plan, summary.currency)}</p></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${summary.percent}%` }} /></div><p className="mt-1 text-right text-[0.65rem] text-muted-foreground">{summary.percent} % využito</p></div>)}</div> : <p className="mt-3 text-sm text-muted-foreground">Zatím nejsou evidované náklady.</p>}{nearest ? <Link href={nearest.href ?? `/app/trips/${nearest.tripId}/budget`} className="mt-5 block border-t border-border pt-4"><p className="text-xs text-muted-foreground">Nejbližší platba · {nearest.tripName}</p><p className="mt-1 truncate text-sm font-medium">{nearest.name}</p><p className="mt-1 text-xs text-muted-foreground">{formatBudgetMoney(nearest.remainingAmount ?? 0, nearest.currency)}{nearest.balanceDueDate ? ` · ${nearest.balanceDueDate}` : ""}</p></Link> : null}</Surface>;
+  return <Surface depth="panel" className="min-w-0 p-5">
+    <p className="text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">Finance</p>
+    <div className="mt-4">
+      <p className="text-xs text-muted-foreground">Skutečné náklady</p>
+      {data.financeReality.length ? <div className="mt-2 space-y-1.5">{data.financeReality.map((summary) => <p key={summary.currency} className="flex items-baseline justify-between gap-3 text-sm"><span className="font-medium">{summary.currency}</span><strong className="tabular-nums">{formatBudgetMoney(summary.amount, summary.currency)}</strong></p>)}</div> : <p className="mt-2 text-sm text-muted-foreground">Zatím nejsou evidované náklady.</p>}
+      {data.financeReality.length > 1 ? <p className="mt-2 text-[0.65rem] text-muted-foreground">Měny jsou oddělené bez FX přepočtu.</p> : null}
+    </div>
+    <div className="mt-5 border-t border-border pt-4">
+      <p className="text-xs text-muted-foreground">Nejbližší platby</p>
+      {data.payments.length ? <div className="mt-2 divide-y divide-border">{data.payments.map((item) => <Link key={item.id} href={item.href} className="block min-w-0 py-2.5 first:pt-0 last:pb-0">
+        <span className="flex min-w-0 items-start justify-between gap-3"><span className="min-w-0"><span className="block truncate text-sm font-medium">{item.title}</span><span className="block truncate text-xs text-muted-foreground">{item.tripName}</span></span><strong className="shrink-0 text-sm tabular-nums">{formatBudgetMoney(item.remainingAmount ?? 0, item.currency)}</strong></span>
+        <span className={cn("mt-1 block text-xs", item.isOverdue ? "text-destructive" : "text-muted-foreground")}>{item.dueDate ? `${item.isOverdue ? "Po splatnosti" : "Splatnost"} ${item.dueDate}` : "Bez data splatnosti"}</span>
+      </Link>)}</div> : <p className="mt-2 text-sm text-muted-foreground">Žádné zbývající platby.</p>}
+    </div>
+  </Surface>;
 }
 
 function Tasks({ data }: { data: GlobalOverview }) {

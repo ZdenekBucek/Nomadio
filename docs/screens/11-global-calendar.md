@@ -21,8 +21,16 @@ check-out ubytování, odjezdy transport segmentů, zbývající platby se
 splatností a nedokončené úkoly s termínem. Položky jsou filtrovány podle cesty
 a typu, výchozí stav ukazuje dnešek a budoucnost.
 
+Platební události jsou read-only projekcí existujícího Payments modelu nad
+`accommodations` a `transport_bookings`. Vzniknou pouze tehdy, když má rezervace
+kladnou zbývající částku a datum splatnosti. Kalendář nečte `budget_items`,
+plánované částky ani manuální expenses; realita nákladů patří do Budgetu.
+Kliknutí vede do zdrojového modulu Ubytování nebo Doprava bez otevření editace.
+Částky různých měn se nesčítají.
+
 Transportní `timestamptz` se převádí na serveru v časové zóně daného tripu.
 Ubytování používá uložené datum a čas bez nového klientského timezone systému.
+Datum splatnosti je date-only hodnota a nepřevádí se na falešný časový údaj.
 
 ## Další fáze
 

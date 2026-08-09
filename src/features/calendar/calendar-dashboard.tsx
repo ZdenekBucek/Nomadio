@@ -6,14 +6,14 @@ import { useMemo, useState } from "react";
 import { Surface } from "@/components/ui/surface";
 import { formatBudgetMoney } from "@/features/budget/budget-model";
 import { cn } from "@/lib/utils";
-import { calendarEventTypeMeta, dateKey, filterAgenda, formatCalendarDate, groupAgendaByDate, monthStart, type CalendarAgendaItem, type CalendarEventFilter, type CalendarTrip } from "./calendar-model";
+import { calendarEventTypeMeta, dateKey, filterAgenda, formatCalendarDate, groupAgendaByDate, monthStart, type CalendarAgendaItem, type CalendarEventFilter, type CalendarTrip, type MonthEvent } from "./calendar-model";
 import { CalendarMonth } from "./calendar-month";
 
 type View = "month" | "agenda";
 const eventFilters: { label: string; value: CalendarEventFilter }[] = [{ label: "Vše", value: "all" }, { label: "Cesty", value: "trip" }, { label: "Doprava", value: "transport" }, { label: "Ubytování", value: "accommodation" }, { label: "Platby", value: "payment" }, { label: "Úkoly", value: "task" }];
 const eventIcons = { accommodation_check_in: BedDouble, accommodation_check_out: BedDouble, payment: CircleDollarSign, task: CheckSquare2, transport: Plane, trip_end: Route, trip_start: Route };
 
-export function CalendarDashboard({ agenda = [], initialMonth, initialView = "month", trips }: { agenda?: CalendarAgendaItem[]; initialMonth?: string; initialView?: View; trips: CalendarTrip[] }) {
+export function CalendarDashboard({ agenda = [], initialMonth, initialView = "month", monthEvents = [], trips }: { agenda?: CalendarAgendaItem[]; initialMonth?: string; initialView?: View; monthEvents?: MonthEvent[]; trips: CalendarTrip[] }) {
   const [month, setMonth] = useState(() => monthStart(initialMonth ? new Date(`${initialMonth}-01T00:00:00Z`) : new Date()));
   const [tripId, setTripId] = useState("all");
   const [eventType, setEventType] = useState<CalendarEventFilter>("all");
@@ -31,7 +31,7 @@ export function CalendarDashboard({ agenda = [], initialMonth, initialView = "mo
   };
   return <div className="mt-6 min-w-0 space-y-5">
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div role="tablist" aria-label="Režim kalendáře" className="inline-flex w-full rounded-xl border border-border bg-card/55 p-1 sm:w-auto">{(["month", "agenda"] as const).map((item) => <Link key={item} href={`/app/calendar?view=${item}${item === "month" ? `&month=${dateKey(month).slice(0, 7)}` : ""}`} role="tab" aria-selected={initialView === item} className={cn("min-h-10 flex-1 rounded-lg px-4 py-2 text-center text-sm font-medium transition sm:flex-none", initialView === item ? "bg-primary/16 text-[var(--brand-highlight)] shadow-sm" : "text-muted-foreground hover:text-foreground")}>{item === "month" ? "Měsíc" : "Agenda"}</Link>)}</div><label className="flex min-h-10 items-center gap-2 text-sm text-muted-foreground">Cesta<select value={tripId} onChange={(event) => setTripId(event.target.value)} className="min-w-0 rounded-lg border border-border bg-card px-2 py-1.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"><option value="all">Všechny cesty</option>{trips.map((trip) => <option key={trip.id} value={trip.id}>{trip.name}</option>)}</select></label></div>
-    {initialView === "month" ? <CalendarMonth month={month} onMonthChange={changeMonth} today={today} trips={visibleTrips} /> : <AgendaView eventType={eventType} includePast={includePast} items={visibleAgenda} onEventType={setEventType} onIncludePast={setIncludePast} upcoming={upcoming} />}
+    {initialView === "month" ? <CalendarMonth events={tripId === "all" ? monthEvents : monthEvents.filter((item) => item.tripId === tripId)} month={month} onMonthChange={changeMonth} today={today} trips={visibleTrips} /> : <AgendaView eventType={eventType} includePast={includePast} items={visibleAgenda} onEventType={setEventType} onIncludePast={setIncludePast} upcoming={upcoming} />}
   </div>;
 }
 

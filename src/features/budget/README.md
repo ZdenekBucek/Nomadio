@@ -14,7 +14,7 @@ tři části. Měny agreguje samostatně a neprovádí FX přepočet.
 ## Stav UI
 
 Route `/app/trips/{tripId}/budget` má nový kompaktní shell se summary a záložkami
-Plán, Realita a Platby. Implementované jsou Plán a Realita:
+Plán, Realita a Platby. Implementované jsou všechny tři pohledy:
 
 - owner/editor vytváří, upravuje a maže plánované položky,
 - viewer a archivovaný trip mají read-only zobrazení,
@@ -27,7 +27,12 @@ Plán, Realita a Platby. Implementované jsou Plán a Realita:
 - Accommodation a Transport se promítají read-only bez ukládání kopií,
 - kategoriální porovnání označuje překročení a náklady bez plánu,
 - všechny měny zůstávají oddělené bez FX přepočtu.
+- Platby čtou pouze `total_price`, `paid_amount`, `balance_due_date` a
+  `payment_status` z Ubytování a Dopravy,
+- po splatnosti se řadí od nejstaršího data, nadcházející od nejbližšího a
+  závazky bez data jsou na konci,
+- zaplacené částky jsou pouze souhrn; historie jednotlivých plateb se v této
+  fázi neeviduje.
 
-Platby zatím zobrazují pouze placeholder. Další fáze připojí platební cashflow.
 Legacy `budget_items` není zdrojem nové Budget obrazovky; dočasně zůstává pouze
 kvůli dosud nepřepojeným přehledovým modulům.

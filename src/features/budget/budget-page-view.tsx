@@ -4,6 +4,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { Surface } from "@/components/ui/surface";
 import { cn } from "@/lib/utils";
 import type { TripBudgetDashboard } from "./budget-dashboard-model";
+import { BudgetPaymentsSection } from "./budget-payments-section";
 import { BudgetPlanSection } from "./budget-plan-section";
 import { BudgetRealitySection } from "./budget-reality-section";
 import { formatBudgetMoney } from "./budget-model";
@@ -46,7 +47,7 @@ export function BudgetPageView({ activeTab, archived, canEdit, dashboard, messag
     <div className="mt-5 min-w-0">
       {activeTab === "plan" ? <BudgetPlanSection canEdit={canEdit} items={dashboard.plan.items} tripCurrency={tripCurrency} tripId={tripId} /> : null}
       {activeTab === "reality" ? <BudgetRealitySection canEdit={canEdit} comparison={dashboard.comparison} reality={dashboard.reality} today={today} tripCurrency={tripCurrency} tripId={tripId} /> : null}
-      {activeTab === "payments" ? <Placeholder title="Platby">Přehled plateb bude dostupný zde.</Placeholder> : null}
+      {activeTab === "payments" ? <BudgetPaymentsSection payments={dashboard.payments} /> : null}
     </div>
   </div>;
 }
@@ -96,10 +97,6 @@ function BudgetTabs({ activeTab, tripId }: { activeTab: BudgetTab; tripId: strin
   return <nav aria-label="Části rozpočtu" className="mt-6 grid grid-cols-3 rounded-xl border border-border bg-muted/25 p-1">
     {tabs.map((tab) => <Link key={tab.value} href={`/app/trips/${tripId}/budget?tab=${tab.value}`} aria-current={activeTab === tab.value ? "page" : undefined} className={cn("flex min-h-10 items-center justify-center rounded-lg px-2 text-sm font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-primary", activeTab === tab.value ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground")}>{tab.label}</Link>)}
   </nav>;
-}
-
-function Placeholder({ children, title }: { children: React.ReactNode; title: string }) {
-  return <Surface className="flex min-h-44 items-center justify-center p-6 text-center"><div><h2 className="text-lg font-semibold">{title}</h2><p className="mt-2 text-sm text-muted-foreground">{children}</p></div></Surface>;
 }
 
 function Notice({ children, icon }: { children: React.ReactNode; icon: React.ReactNode }) {

@@ -49,7 +49,9 @@ implementaci.
   Neimplementované globální moduly mají klikací placeholdery místo falešně
   deaktivovaných trip položek.
 - Dokončeno: globální Kalendář kombinuje měsíční zobrazení datovaných cest a
-  odvozenou Agendu termínů z cest, ubytování, dopravy, rozpočtu a checklistu.
+  odvozenou Agendu termínů z cest, ubytování, dopravy, platebních závazků a
+  checklistu. Platby jsou read-only projekcí Accommodation/Transport Payments
+  modelu; Kalendář nečte Budget Plan, Reality ani legacy `budget_items`.
   Nevytváří vlastní databázové události ani nemění RLS.
 - Chování po expiraci session je ověřené syntetickou expirovanou session proti
   běžící aplikaci: privátní route přesměruje na přihlášení, zachová návratovou
@@ -207,8 +209,11 @@ implementaci.
   `budget_plan_items`.
 - Dokončena druhá UI fáze redesignu: Reality nabízí rychlý CRUD manuálních
   `expenses`, časovou osu, read-only projekce Ubytování a Dopravy a kategoriální
-  porovnání Plán vs Realita. Měny zůstávají oddělené bez FX. Payments zůstává
-  pravdivý placeholder pro další řez.
+  porovnání Plán vs Realita. Měny zůstávají oddělené bez FX.
+- Dokončena třetí UI fáze redesignu: Payments zobrazuje známé uhrazené částky,
+  odvozené zůstatky a splatnosti Ubytování a Dopravy. Po splatnosti a budoucí
+  závazky mají deterministické řazení, položky bez data jsou viditelné na konci
+  a všechny odkazy vedou do zdrojového modulu. Nevzniká payments tabulka.
 - Lokálně dokončen první vertikální řez centrálního rozpočtu. Serverový read
   model skládá ruční `budget_items` s finančními údaji Ubytování a Dopravy bez
   kopírování zdrojových rezervací.

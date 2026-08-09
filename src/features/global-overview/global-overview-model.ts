@@ -1,10 +1,7 @@
 import { accommodationCoverage } from "@/features/accommodation/accommodation-model";
-import {
-  formatBudgetMoney,
-  pendingBudgetPayments,
-  summarizeBudgetByCurrency,
-  type BudgetRow,
-} from "@/features/budget/budget-model";
+import type { TripBudgetDashboard } from "@/features/budget/budget-dashboard-model";
+import { summarizeBudgetAmounts, type BudgetPaymentItem } from "@/features/budget/budget-domain";
+import { formatBudgetMoney } from "@/features/budget/budget-model";
 import {
   summarizePacking,
   summarizeTasks,
@@ -28,7 +25,6 @@ import type {
   TripTravelerRow,
 } from "@/lib/supabase/database.types";
 
-export type GlobalBudgetRow = BudgetRow & { tripId: string };
 export type OverviewDocument = Pick<DocumentRow, "id" | "is_important" | "name" | "offline_enabled" | "trip_id">;
 export type GlobalAttention = {
   detail: string;
@@ -70,9 +66,15 @@ function selectNextEvent(events: CalendarAgendaItem[]) {
     .toSorted((left, right) => eventPriority[left.type] - eventPriority[right.type] || (left.startTime ?? "99:99").localeCompare(right.startTime ?? "99:99"))[0] ?? null;
 }
 
+function paymentHref(item: BudgetPaymentItem) {
+  return item.sourceType === "accommodation" || item.sourceType === "transport"
+    ? `/app/trips/${item.tripId}/${item.sourceType}?edit=${item.sourceId}`
+    : `/app/trips/${item.tripId}/budget?tab=payments`;
+}
+
 export function buildGlobalOverview(input: {
   accommodations: AccommodationRow[];
-  budget: GlobalBudgetRow[];
+  budgetDashboards: TripBudgetDashboard[];
   destinations: TripDestinationRow[];
   documents: OverviewDocument[];
   packingItems: PackingItemRow[];
@@ -85,13 +87,6 @@ export function buildGlobalOverview(input: {
   const destinations = input.destinations ?? [];
   const travelers = input.travelers ?? [];
   const tripById = new Map(input.trips.map((trip) => [trip.id, trip]));
-  const agenda = buildCalendarAgenda({
-    accommodations: input.accommodations,
-    budget: input.budget,
-    tasks: input.tasks,
-    transports: input.transports,
-    trips: input.trips,
-  } satisfies CalendarAgendaSources, today);
   const activeTrips = input.trips.filter((trip) => getEffectiveTripStatus(trip, now) === "active");
   const upcomingTrips = input.trips.filter((trip) => {
     const status = getEffectiveTripStatus(trip, now);
@@ -99,12 +94,24 @@ export function buildGlobalOverview(input: {
   }).toSorted((left, right) => (left.start_date ?? "9999-12-31").localeCompare(right.start_date ?? "9999-12-31"));
   const dominantTrip = activeTrips.toSorted((left, right) => (left.start_date ?? "").localeCompare(right.start_date ?? ""))[0] ?? upcomingTrips[0] ?? null;
 
-  const payments = (pendingBudgetPayments(input.budget) as GlobalBudgetRow[]).toSorted((left, right) => {
-    const leftOverdue = Boolean(left.balanceDueDate && left.balanceDueDate < today);
-    const rightOverdue = Boolean(right.balanceDueDate && right.balanceDueDate < today);
+  const payments = input.budgetDashboards.flatMap((dashboard) => [
+    ...dashboard.payments.overduePayments,
+    ...dashboard.payments.upcomingPayments,
+  ]).toSorted((left, right) => {
+    const leftOverdue = Boolean(left.dueDate && left.dueDate < today);
+    const rightOverdue = Boolean(right.dueDate && right.dueDate < today);
     if (leftOverdue !== rightOverdue) return leftOverdue ? -1 : 1;
-    return (left.balanceDueDate ?? "9999-12-31").localeCompare(right.balanceDueDate ?? "9999-12-31") || left.name.localeCompare(right.name, "cs");
+    return (left.dueDate ?? "9999-12-31").localeCompare(right.dueDate ?? "9999-12-31") || left.title.localeCompare(right.title, "cs") || left.id.localeCompare(right.id);
   });
+  const agenda = [
+    ...buildCalendarAgenda({ accommodations: input.accommodations, payments: [], tasks: input.tasks, transports: input.transports, trips: input.trips } satisfies CalendarAgendaSources, today),
+    ...payments.flatMap((item): CalendarAgendaItem[] => {
+      const trip = tripById.get(item.tripId);
+      if (!trip || !item.dueDate || item.remainingAmount === null || item.remainingAmount <= 0) return [];
+      return [{ amount: item.remainingAmount, currency: item.currency, date: item.dueDate, href: paymentHref(item), id: `payment:${item.id}`, isOverdue: item.dueDate < today, startTime: null, subtitle: trip.name, title: `Doplatit ${item.title}`, tripId: trip.id, tripName: trip.name, type: "payment" }];
+    }),
+  ].toSorted((left, right) => left.date.localeCompare(right.date) || (left.startTime ?? "00:00").localeCompare(right.startTime ?? "00:00") || eventPriority[left.type] - eventPriority[right.type] || left.title.localeCompare(right.title, "cs"));
+  const financeReality = summarizeBudgetAmounts(input.budgetDashboards.flatMap((dashboard) => dashboard.reality.totalsByCurrency));
   const openTasks = input.tasks.filter((task) => task.status !== "completed" && task.status !== "cancelled").toSorted((left, right) => {
     const leftOverdue = Boolean(left.due_date && left.due_date < today);
     const rightOverdue = Boolean(right.due_date && right.due_date < today);
@@ -114,10 +121,10 @@ export function buildGlobalOverview(input: {
   });
 
   const alerts: GlobalAttention[] = [];
-  for (const payment of payments.filter((item) => item.balanceDueDate && item.balanceDueDate < today)) {
+  for (const payment of payments.filter((item) => item.dueDate && item.dueDate < today)) {
     const trip = tripById.get(payment.tripId);
     if (!trip) continue;
-    alerts.push({ detail: `${formatBudgetMoney(payment.remainingAmount ?? 0, payment.currency)} bylo splatné ${payment.balanceDueDate}.`, href: payment.href ?? `/app/trips/${trip.id}/budget`, id: `payment:${payment.id}`, severity: "high", tripId: trip.id, tripName: trip.name, title: payment.name, type: "payment" });
+    alerts.push({ detail: `${formatBudgetMoney(payment.remainingAmount ?? 0, payment.currency)} bylo splatné ${payment.dueDate}.`, href: paymentHref(payment), id: `payment:${payment.id}`, severity: "high", tripId: trip.id, tripName: trip.name, title: payment.title, type: "payment" });
   }
   for (const trip of input.trips) {
     const coverage = accommodationCoverage(input.accommodations.filter((item) => item.trip_id === trip.id), trip.start_date, trip.end_date);
@@ -149,13 +156,8 @@ export function buildGlobalOverview(input: {
     const document = documentSummary(tripDocuments);
     const documentTarget = document.important || document.total;
     const documentReady = document.important ? tripDocuments.filter((item) => item.is_important && item.offline_enabled).length : document.offline;
-    const currencies = summarizeBudgetByCurrency(input.budget.filter((item) => item.tripId === dominantTrip.id)).map((summary) => {
-      const plan = summary.actual + summary.estimated;
-      return { ...summary, percent: percent(summary.actual, plan), plan };
-    });
     return {
       accommodation: { complete: coveredNights, percent: percent(coveredNights, nights), total: nights },
-      budget: currencies,
       checklist: { complete: task.completed, percent: percent(task.completed, task.total), total: task.total },
       documents: { complete: documentReady, percent: percent(documentReady, documentTarget), total: documentTarget },
       packing: summarizePacking(tripPacking),
@@ -181,9 +183,10 @@ export function buildGlobalOverview(input: {
     dominantPreparation,
     dominantTrip,
     documents: documentSummary(input.documents),
+    financeReality,
     nextEvent,
     openTasks: visibleTasks,
-    payments: payments.slice(0, 3).map((item) => ({ ...item, tripName: tripById.get(item.tripId)?.name ?? "Cesta" })),
+    payments: payments.slice(0, 3).map((item) => ({ ...item, href: paymentHref(item), isOverdue: Boolean(item.dueDate && item.dueDate < today), tripName: tripById.get(item.tripId)?.name ?? "Cesta" })),
     stats: { active: activeTrips.length, completed: input.trips.filter((trip) => getEffectiveTripStatus(trip, now) === "completed").length, upcoming: upcomingTrips.length },
     upcoming: futureAgenda.filter((event) => event.id !== nextEvent?.id).slice(0, 5),
   };

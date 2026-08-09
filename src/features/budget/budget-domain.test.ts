@@ -204,6 +204,19 @@ describe("budget payments and dashboard summary", () => {
     expect(summary.totalPaid).toEqual([{ amount: 1900, currency: "CZK" }]);
   });
 
+  it("sorts overdue oldest first and upcoming without a date last", () => {
+    const base = mapManualExpenseToPayment(manualExpense);
+    const summary = summarizeBudgetPayments([
+      { ...base, dueDate: null, id: "no-date" },
+      { ...base, dueDate: "2027-06-20", id: "later" },
+      { ...base, dueDate: "2027-06-10", id: "sooner" },
+      { ...base, dueDate: "2027-05-20", id: "overdue-later" },
+      { ...base, dueDate: "2027-05-10", id: "overdue-earlier" },
+    ], "2027-06-01");
+    expect(summary.overduePayments.map((item) => item.id)).toEqual(["overdue-earlier", "overdue-later"]);
+    expect(summary.upcomingPayments.map((item) => item.id)).toEqual(["sooner", "later", "no-date"]);
+  });
+
   it("builds a dashboard contract with Plan, Reality, comparison and Payments", () => {
     const summary = buildBudgetDashboardSummary([plan()], [reality()], [mapManualExpenseToPayment(manualExpense)], "2027-06-01");
     expect(summary.planSummary).toEqual([{ amount: 10_000, currency: "CZK" }]);

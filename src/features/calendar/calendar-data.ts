@@ -1,10 +1,10 @@
 import "server-only";
 
 import { cache } from "react";
-import type { AccommodationRow, BudgetItemRow, TaskRow, TransportBookingRow, TransportSegmentRow, TripRow } from "@/lib/supabase/database.types";
-import { normalizeAccommodationBudgetRow, normalizeManualBudgetRow, normalizeTransportBudgetRow } from "@/features/budget/budget-model";
+import { mapAccommodationToPayment, mapTransportToPayment } from "@/features/budget/budget-domain";
+import type { AccommodationRow, TaskRow, TransportBookingRow, TransportSegmentRow, TripRow } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
-import { buildCalendarAgenda, type CalendarTransportEvent } from "./calendar-model";
+import { buildCalendarAgenda, calendarMonthEvents, calendarPaymentEvents, type CalendarTransportEvent } from "./calendar-model";
 
 function dateAndTimeInTripZone(value: string, timeZone: string) {
   const format = new Intl.DateTimeFormat("en-CA", { day: "2-digit", hour: "2-digit", hour12: false, minute: "2-digit", month: "2-digit", timeZone, year: "numeric" });
@@ -23,19 +23,17 @@ export const getCalendarTrips = cache(async () => {
 export const getGlobalCalendarData = cache(async () => {
   const supabase = await createClient();
   const trips = await getCalendarTrips();
-  if (!trips.length) return { agenda: [], loadWarnings: [], trips };
+  if (!trips.length) return { agenda: [], loadWarnings: [], monthEvents: [], trips };
   const tripIds = trips.map((trip) => trip.id);
-  const [accommodationResult, budgetResult, bookingResult, taskResult] = await Promise.all([
+  const [accommodationResult, bookingResult, taskResult] = await Promise.all([
     supabase.from("accommodations").select("*").in("trip_id", tripIds),
-    supabase.from("budget_items").select("*").in("trip_id", tripIds),
     supabase.from("transport_bookings").select("*").in("trip_id", tripIds),
     supabase.from("tasks").select("*").in("trip_id", tripIds),
   ]);
   const bookings = (bookingResult.data ?? []) as TransportBookingRow[];
   const segmentResult = bookings.length ? await supabase.from("transport_segments").select("*").in("booking_id", bookings.map((booking) => booking.id)) : { data: [], error: null };
-  const warnings = [accommodationResult.error, budgetResult.error, bookingResult.error, taskResult.error, segmentResult.error].filter(Boolean).map(() => "Některé sekundární události se nepodařilo načíst.");
+  const warnings = [accommodationResult.error, bookingResult.error, taskResult.error, segmentResult.error].filter(Boolean).map(() => "Některé sekundární události se nepodařilo načíst.");
   const accommodations = (accommodationResult.data ?? []) as AccommodationRow[];
-  const manual = (budgetResult.data ?? []) as BudgetItemRow[];
   const tasks = (taskResult.data ?? []) as TaskRow[];
   const segments = (segmentResult.data ?? []) as TransportSegmentRow[];
   const tripById = new Map(trips.map((trip) => [trip.id, trip]));
@@ -47,11 +45,10 @@ export const getGlobalCalendarData = cache(async () => {
     const local = dateAndTimeInTripZone(segment.departure_at, trip.timezone);
     return [{ date: local.date, href: `/app/trips/${trip.id}/transport?edit=${booking.id}`, id: segment.id, startTime: local.time, subtitle: segment.service_number ? `${booking.title} · ${segment.service_number}` : booking.title, title: booking.title, tripId: trip.id }];
   });
-  const budget = [
-    ...manual.map((item) => ({ ...normalizeManualBudgetRow(item), tripId: item.trip_id })),
-    ...accommodations.map((item) => ({ ...normalizeAccommodationBudgetRow(item, tripById.get(item.trip_id)?.currency ?? "CZK"), tripId: item.trip_id })),
-    ...bookings.map((item) => ({ ...normalizeTransportBudgetRow(item, tripById.get(item.trip_id)?.currency ?? "CZK"), tripId: item.trip_id })),
-  ];
-  const agenda = buildCalendarAgenda({ accommodations, budget, tasks, transports, trips });
-  return { agenda, loadWarnings: warnings.slice(0, 1), trips };
+  const payments = calendarPaymentEvents([
+    ...accommodations.map((item) => mapAccommodationToPayment(item, tripById.get(item.trip_id)?.currency ?? "CZK")),
+    ...bookings.map((item) => mapTransportToPayment(item, tripById.get(item.trip_id)?.currency ?? "CZK")),
+  ].filter((item) => item !== null));
+  const agenda = buildCalendarAgenda({ accommodations, payments, tasks, transports, trips });
+  return { agenda, loadWarnings: warnings.slice(0, 1), monthEvents: calendarMonthEvents(agenda), trips };
 });

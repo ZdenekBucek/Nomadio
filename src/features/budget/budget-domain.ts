@@ -57,6 +57,7 @@ export type BudgetPaymentItem = {
   paidAmount: number | null;
   paymentStatus: BudgetPaymentStatus;
   remainingAmount: number | null;
+  sourceId: string;
   sourceType: BudgetPaymentSourceType;
   title: string;
   tripId: string;
@@ -254,6 +255,7 @@ export function mapAccommodationToPayment(item: AccommodationRow, tripCurrency: 
     id: `accommodation:${item.id}`,
     paidAmount: item.paid_amount,
     paymentStatus: item.payment_status,
+    sourceId: item.id,
     sourceType: "accommodation",
     title: item.name,
     tripId: item.trip_id,
@@ -293,6 +295,7 @@ export function mapTransportToPayment(item: TransportBookingRow, tripCurrency: s
     id: `transport:${item.id}`,
     paidAmount: item.paid_amount,
     paymentStatus: item.payment_status,
+    sourceId: item.id,
     sourceType: "transport",
     title: item.title,
     tripId: item.trip_id,
@@ -323,6 +326,7 @@ export function mapManualExpenseToPayment(item: ManualExpenseSource): BudgetPaym
     id: `manual:${item.id}`,
     paidAmount: item.paidAmount,
     paymentStatus: item.paymentStatus,
+    sourceId: item.id,
     sourceType: "manual",
     title: item.title,
     tripId: item.tripId,
@@ -364,7 +368,7 @@ export function summarizeBudgetPayments(items: BudgetPaymentItem[], today: strin
     overduePayments: pending.filter((item) => item.dueDate !== null && item.dueDate < today).sort(byDueDate),
     totalDue: summarizeBudgetAmounts(pending.map((item) => ({ amount: item.remainingAmount!, currency: item.currency }))),
     totalPaid: summarizeBudgetAmounts(items.flatMap((item) => item.paidAmount === null ? [] : [{ amount: item.paidAmount, currency: item.currency }])),
-    upcomingPayments: pending.filter((item) => item.dueDate !== null && item.dueDate >= today).sort(byDueDate),
+    upcomingPayments: pending.filter((item) => item.dueDate === null || item.dueDate >= today).sort(byDueDate),
   };
 }
 

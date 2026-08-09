@@ -125,10 +125,17 @@ projekce s odkazem na zdrojovou entitu, takže se jejich data nekopírují.
 Kategoriální porovnání používá jednotný dashboard read model a označuje
 překročený plán i náklady bez odpovídajícího plánu.
 
+Třetí UI fáze implementuje Platby jako read-only cashflow pohled nad existujícími
+finančními poli Ubytování a Dopravy. Zobrazuje známé zaplacené a odvozené
+zbývající částky, platby po splatnosti od nejstarší a nadcházející platby od
+nejbližší. Závazky bez data splatnosti zůstávají viditelné na konci seznamu.
+Každá položka vede do zdrojového modulu; nevzniká tabulka plateb ani kopie
+rezervace. Neznámý `paid_amount` se nevydává za nulu a zůstatek se nikdy
+neukládá.
+
 Kompaktní souhrn porovnává Plán a Realitu, ukazuje procento využití i překročení
 nad 100 %. Každá měna má samostatný blok; bez FX kurzu se nikdy nevytváří
-falešný společný total. Záložka Platby má v této fázi pouze pravdivý placeholder
-bez demo dat. Platební cashflow přijde v dalším řezu.
+falešný společný total. Stejné pravidlo používá také platební souhrn.
 
 ### Hierarchie kategorií
 
