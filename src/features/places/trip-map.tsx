@@ -1,7 +1,7 @@
 "use client";
 
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Crosshair, Layers3, MapPinned, MapPinOff, Plus, X } from "lucide-react";
+import { ChevronDown, Crosshair, Layers3, MapPinned, MapPinOff, Plus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Map as MapboxMap, Marker as MapboxMarker } from "mapbox-gl";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -206,7 +206,7 @@ export function TripMap({
             </p>
           </div>
           <div className="flex w-full min-w-0 flex-col-reverse items-stretch gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-            {canEdit && accessToken ? <Button className="w-full sm:w-auto" type="button" size="lg" variant={picking ? "secondary" : "default"} aria-pressed={picking} onClick={togglePicking}>{picking ? <X /> : <Plus />}{picking ? "Ukončit výběr" : "Přidat vlastní místo"}</Button> : null}
+            {canEdit && accessToken ? <Button className="w-full sm:w-auto" type="button" size="lg" variant={picking ? "secondary" : "default"} aria-pressed={picking} onClick={togglePicking}>{picking ? <X /> : <Plus />}{picking ? "Ukončit výběr" : "Přidat místo z mapy"}</Button> : null}
             {canEdit && !accessToken ? <p role="status" className="max-w-xs rounded-xl border border-amber-400/20 bg-amber-400/8 px-3 py-2 text-xs leading-5 text-amber-200">Přidání vlastního místa vyžaduje nakonfigurovanou Mapbox mapu.</p> : null}
             <StatusPill className="self-start sm:self-auto">{visiblePlaces.length} z {model.mapped.length} na mapě</StatusPill>
           </div>
@@ -344,6 +344,7 @@ function MapLayers({
   onShowAll: () => void;
   onToggle: (category: PlaceCategory) => void;
 }) {
+  const [collapsed, setCollapsed] = useState(true);
   const availableCategories = placeCategories.filter((category) =>
     model.mapped.some((place) => place.category === category),
   );
@@ -352,12 +353,24 @@ function MapLayers({
   );
 
   return (
-    <div className="border-b border-border bg-background/25 p-4 sm:p-5">
-      <div className="mb-3 flex items-center gap-2">
-        <Layers3 className="size-4 text-primary" />
-        <h3 className="text-sm font-semibold">Vrstvy mapy</h3>
-      </div>
-      <div role="group" aria-label="Filtrovat místa podle kategorie" className="flex flex-wrap gap-2">
+    <div className="border-b border-border bg-background/25 p-2 sm:p-3">
+      <button
+        type="button"
+        aria-expanded={!collapsed}
+        aria-controls="trip-map-layers-panel"
+        onClick={() => setCollapsed((current) => !current)}
+        className="flex min-h-10 w-full items-center justify-between gap-3 rounded-xl px-2 py-1.5 text-left text-sm font-semibold transition hover:bg-muted/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          <Layers3 className="size-4 shrink-0 text-primary" aria-hidden="true" />
+          <span>Vrstvy mapy</span>
+        </span>
+        <ChevronDown
+          className={`size-4 shrink-0 text-muted-foreground transition-transform duration-200 ${collapsed ? "" : "rotate-180"}`}
+          aria-hidden="true"
+        />
+      </button>
+      {!collapsed ? <div id="trip-map-layers-panel" role="group" aria-label="Filtrovat místa podle kategorie" className="flex flex-wrap gap-2 px-2 pb-2 pt-3">
         <button
           type="button"
           aria-pressed={allActive}
@@ -384,7 +397,7 @@ function MapLayers({
             </button>
           );
         })}
-      </div>
+      </div> : null}
     </div>
   );
 }
