@@ -45,7 +45,7 @@ export function AppShell({ children, profile }: AppShellProps) {
         </div>
       </aside>
 
-      <div className="min-w-0 pb-20 lg:pb-0">
+      <div className="min-w-0 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-0">
         <header className="sticky top-0 z-20 flex min-h-16 items-center justify-between border-b border-border bg-background/78 px-4 backdrop-blur-2xl lg:hidden">
           <BrandMark />
           <ProfileAvatar profile={profile} size="small" />
@@ -57,7 +57,7 @@ export function AppShell({ children, profile }: AppShellProps) {
         </main>
       </div>
 
-      <div className="fixed inset-x-3 bottom-3 z-30 rounded-2xl border border-border bg-sidebar/90 p-1.5 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.95)] backdrop-blur-2xl lg:hidden">
+      <div className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-30 rounded-2xl border border-border bg-sidebar/90 p-1.5 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.95)] backdrop-blur-2xl lg:hidden">
         <AppNavigation mobile />
       </div>
     </div>
