@@ -46,6 +46,37 @@ describe("transport UI", () => {
     expect(JSON.parse(hidden!.value).map((item: { serviceNumber: string }) => item.serviceNumber)).toEqual(["SECOND", "FIRST"]);
   });
 
+  it("opens only the first existing segment and keeps the collapsed summary useful", () => {
+    const first = booking().segments[0]!;
+    const second = { ...first, arrival_at: null, departure_at: "2026-08-26T09:30:00Z", id: "segment-2", service_number: "EC 170" };
+    render(<TransportForm booking={booking({ segments: [first, second] })} canEdit geoapifyConfigured={false} places={[]} trip={trip} />);
+
+    const headers = screen.getAllByRole("button", { name: /^Segment/ });
+    expect(headers[0]).toHaveAttribute("aria-expanded", "true");
+    expect(headers[1]).toHaveAttribute("aria-expanded", "false");
+    expect(headers[1]).toHaveAccessibleName("Segment 2: Trasa zatím není vyplněná, 11:30 · EC 170");
+
+    fireEvent.click(headers[1]!);
+    expect(headers[1]).toHaveAttribute("aria-expanded", "true");
+    fireEvent.click(headers[1]!);
+    expect(headers[1]).toHaveAttribute("aria-expanded", "false");
+    fireEvent.invalid(screen.getAllByLabelText("Číslo letu / spoje")[1]!);
+    expect(headers[1]).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByLabelText("Segment obsahuje chybu")).toBeInTheDocument();
+    expect(screen.getAllByLabelText("Číslo letu / spoje")[1]).toHaveValue("EC 170");
+  });
+
+  it("opens a newly added segment without changing the existing segment", () => {
+    render(<TransportForm booking={null} canEdit geoapifyConfigured={false} places={[]} trip={trip} />);
+    fireEvent.click(screen.getByRole("button", { name: "Přidat segment" }));
+    const headers = screen.getAllByRole("button", { name: /^Segment/ });
+    expect(headers).toHaveLength(2);
+    expect(headers[0]).toHaveAttribute("aria-expanded", "true");
+    expect(headers[1]).toHaveAttribute("aria-expanded", "true");
+    fireEvent.click(screen.getByRole("button", { name: "Odstranit segment 2" }));
+    expect(screen.getAllByRole("button", { name: /^Segment/ })).toHaveLength(1);
+  });
+
   it("keeps one segment and exposes Geoapify fallback safely when not configured", () => {
     render(<TransportForm booking={null} canEdit geoapifyConfigured={false} places={[]} trip={trip} />);
     expect(screen.getByRole("button", { name: "Odstranit segment 1" })).toBeDisabled();

@@ -1,12 +1,13 @@
 "use client";
 
-import { ArrowDown, ArrowUp, LoaderCircle, MapPin, Plus, Search, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowUp, ChevronDown, LoaderCircle, MapPin, Plus, Search, Trash2 } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { placeCategories, placeCategoryLabels } from "@/features/places/categories";
 import type { PlaceSearchResult } from "@/features/places/place-search-result";
 import type { PlaceCategory, TransportPaymentStatus, TripPlaceRow, TripRow } from "@/lib/supabase/database.types";
+import { cn } from "@/lib/utils";
 import { deleteTransportBooking, saveTransportBooking } from "./transport-actions";
 import type { TransportPlaceSelection } from "./transport-input";
 import { bookingStatusLabels, bookingStatuses, dateTimeInputValue, deriveTransportPaymentStatus, remainingTransportAmount, transportPaymentStatusLabels, transportPaymentStatuses, transportTypeLabels, transportTypes, type TransportBookingWithSegments } from "./transport-model";
@@ -60,6 +61,8 @@ export function TransportForm({
   const [paidAmount, setPaidAmount] = useState(booking?.paid_amount?.toString() ?? "");
   const [currency, setCurrency] = useState(booking?.currency ?? trip.currency);
   const [paymentStatus, setPaymentStatus] = useState<TransportPaymentStatus>(booking?.payment_status ?? "unknown");
+  const [openSegmentKeys, setOpenSegmentKeys] = useState<Set<string>>(() => new Set([booking?.segments[0]?.id ?? "new-0"]));
+  const [segmentErrorKeys, setSegmentErrorKeys] = useState<Set<string>>(() => new Set());
   const parsedTotal = totalPrice === "" ? null : Number(totalPrice);
   const parsedPaid = paidAmount === "" ? null : Number(paidAmount);
   const remaining = Number.isFinite(parsedTotal) && Number.isFinite(parsedPaid) ? remainingTransportAmount(parsedTotal, parsedPaid) : null;
@@ -84,6 +87,30 @@ export function TransportForm({
     });
   }
 
+  function toggleSegment(key: string) {
+    setOpenSegmentKeys((current) => {
+      const next = new Set(current);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  function addSegment() {
+    const key = `new-${nextKey.current++}`;
+    setSegments((current) => [...current, emptySegment(key)]);
+    setOpenSegmentKeys((current) => new Set(current).add(key));
+  }
+
+  function removeSegment(key: string, index: number) {
+    setSegments((current) => current.filter((_, itemIndex) => itemIndex !== index));
+    setOpenSegmentKeys((current) => {
+      const next = new Set(current);
+      next.delete(key);
+      return next;
+    });
+  }
+
   const serializedSegments = JSON.stringify(segments.map((segment) => ({
     arrivalAt: segment.arrivalAt,
     arrivalPlace: segment.arrivalPlace,
@@ -96,7 +123,13 @@ export function TransportForm({
     serviceNumber: segment.serviceNumber,
     terminal: segment.terminal,
   })));
-  return <form action={canEdit ? saveTransportBooking : undefined} className="mt-5 grid min-w-0 gap-5">
+  return <form action={canEdit ? saveTransportBooking : undefined} className="mt-5 grid min-w-0 gap-5" onInvalid={(event) => {
+    const key = (event.target as HTMLElement).closest<HTMLElement>("[data-segment-key]")?.dataset.segmentKey;
+    if (key) {
+      setOpenSegmentKeys((current) => new Set(current).add(key));
+      setSegmentErrorKeys((current) => new Set(current).add(key));
+    }
+  }}>
     <input type="hidden" name="tripId" value={trip.id} />
     <input type="hidden" name="bookingId" value={booking?.id ?? ""} />
     <input type="hidden" name="segments" value={serializedSegments} />
@@ -122,8 +155,8 @@ export function TransportForm({
       </section>
 
       <section className="grid min-w-0 gap-4 rounded-2xl border border-border bg-muted/18 p-4">
-        <div className="flex min-w-0 flex-wrap items-start justify-between gap-3"><div><h3 className="font-medium">Segmenty cesty</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Pořadí určíte tlačítky nahoru a dolů. Časy se ukládají v časovém pásmu cesty {trip.timezone}.</p></div>{canEdit ? <Button type="button" size="sm" variant="outline" onClick={() => { const key = `new-${nextKey.current++}`; setSegments((current) => [...current, emptySegment(key)]); }}><Plus /> Přidat segment</Button> : null}</div>
-        <div className="grid min-w-0 gap-4">{segments.map((segment, index) => <SegmentEditor key={segment.key} configured={geoapifyConfigured} index={index} places={places} segment={segment} total={segments.length} tripId={trip.id} onChange={(change) => updateSegment(index, change)} onMove={(direction) => moveSegment(index, direction)} onRemove={() => setSegments((current) => current.filter((_, itemIndex) => itemIndex !== index))} />)}</div>
+        <div className="flex min-w-0 flex-wrap items-start justify-between gap-3"><div><h3 className="font-medium">Segmenty cesty</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Pořadí určíte tlačítky nahoru a dolů. Časy se ukládají v časovém pásmu cesty {trip.timezone}.</p></div>{canEdit ? <Button type="button" size="sm" variant="outline" onClick={addSegment}><Plus /> Přidat segment</Button> : null}</div>
+        <div className="grid min-w-0 gap-4">{segments.map((segment, index) => <SegmentEditor key={segment.key} configured={geoapifyConfigured} hasError={segmentErrorKeys.has(segment.key)} index={index} open={openSegmentKeys.has(segment.key)} places={places} segment={segment} total={segments.length} tripId={trip.id} onChange={(change) => updateSegment(index, change)} onMove={(direction) => moveSegment(index, direction)} onRemove={() => removeSegment(segment.key, index)} onToggle={() => toggleSegment(segment.key)} />)}</div>
       </section>
 
       <label className={labelClass}>Poznámka k rezervaci<textarea className={`${fieldClass} h-28 resize-y py-3`} name="notes" maxLength={4000} defaultValue={booking?.notes ?? ""} /></label>
@@ -132,23 +165,44 @@ export function TransportForm({
   </form>;
 }
 
-function SegmentEditor({ configured, index, onChange, onMove, onRemove, places, segment, total, tripId }: {
-  configured: boolean; index: number; onChange: (change: Partial<SegmentDraft>) => void; onMove: (direction: -1 | 1) => void; onRemove: () => void; places: TripPlaceRow[]; segment: SegmentDraft; total: number; tripId: string;
+function SegmentEditor({ configured, hasError, index, onChange, onMove, onRemove, onToggle, open, places, segment, total, tripId }: {
+  configured: boolean; hasError: boolean; index: number; onChange: (change: Partial<SegmentDraft>) => void; onMove: (direction: -1 | 1) => void; onRemove: () => void; onToggle: () => void; open: boolean; places: TripPlaceRow[]; segment: SegmentDraft; total: number; tripId: string;
 }) {
-  return <article className="min-w-0 rounded-2xl border border-border bg-background/35 p-3 sm:p-4">
-    <div className="flex min-w-0 flex-wrap items-center justify-between gap-2"><h4 className="font-medium">Segment {index + 1}</h4><div className="flex flex-wrap gap-1"><Button type="button" size="icon-sm" variant="ghost" aria-label={`Posunout segment ${index + 1} nahoru`} disabled={index === 0} onClick={() => onMove(-1)}><ArrowUp /></Button><Button type="button" size="icon-sm" variant="ghost" aria-label={`Posunout segment ${index + 1} dolů`} disabled={index === total - 1} onClick={() => onMove(1)}><ArrowDown /></Button><Button type="button" size="icon-sm" variant="ghost" aria-label={`Odstranit segment ${index + 1}`} disabled={total === 1} onClick={onRemove}><Trash2 /></Button></div></div>
-    <div className="mt-4 grid min-w-0 gap-4 lg:grid-cols-2"><PlacePicker configured={configured} label="Odkud" places={places} selection={segment.departurePlace} tripId={tripId} onChange={(departurePlace) => onChange({ departurePlace })} /><PlacePicker configured={configured} label="Kam" places={places} selection={segment.arrivalPlace} tripId={tripId} onChange={(arrivalPlace) => onChange({ arrivalPlace })} /></div>
-    <div className="mt-4 grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <label className={labelClass}>Odjezd / odlet<input className={fieldClass} type="datetime-local" value={segment.departureAt} onChange={(event) => onChange({ departureAt: event.target.value })} /></label>
-      <label className={labelClass}>Příjezd / přílet<input className={fieldClass} type="datetime-local" min={segment.departureAt || undefined} value={segment.arrivalAt} onChange={(event) => onChange({ arrivalAt: event.target.value })} /></label>
-      <label className={labelClass}>Číslo letu / spoje<input className={fieldClass} maxLength={80} value={segment.serviceNumber} onChange={(event) => onChange({ serviceNumber: event.target.value })} /></label>
-      <label className={labelClass}>Terminál<input className={fieldClass} maxLength={80} value={segment.terminal} onChange={(event) => onChange({ terminal: event.target.value })} /></label>
-      <label className={labelClass}>Nástupiště<input className={fieldClass} maxLength={80} value={segment.platform} onChange={(event) => onChange({ platform: event.target.value })} /></label>
-      <label className={labelClass}>Sedadlo<input className={fieldClass} maxLength={160} value={segment.seat} onChange={(event) => onChange({ seat: event.target.value })} /></label>
-      <label className={`${labelClass} sm:col-span-2`}>Zavazadla<input className={fieldClass} maxLength={500} value={segment.baggage} onChange={(event) => onChange({ baggage: event.target.value })} /></label>
-      <label className={`${labelClass} sm:col-span-2 lg:col-span-4`}>Poznámka<textarea className={`${fieldClass} h-20 resize-y py-3`} maxLength={2000} value={segment.notes} onChange={(event) => onChange({ notes: event.target.value })} /></label>
+  const departure = placeSummary(segment.departurePlace, places);
+  const arrival = placeSummary(segment.arrivalPlace, places);
+  const route = departure || arrival ? `${departure ?? "?"} → ${arrival ?? "?"}` : "Trasa zatím není vyplněná";
+  const time = segment.departureAt ? segment.departureAt.slice(11, 16) : null;
+  const summary = [time, segment.serviceNumber].filter(Boolean).join(" · ");
+  const panelId = `transport-segment-panel-${segment.key}`;
+
+  return <article className="min-w-0 rounded-2xl border border-border bg-background/35 p-3 sm:p-4" data-segment-key={segment.key}>
+    <button type="button" aria-label={`Segment ${index + 1}: ${route}${summary ? `, ${summary}` : ""}`} aria-controls={panelId} aria-expanded={open} onClick={onToggle} className="flex min-h-11 w-full min-w-0 items-center gap-3 rounded-xl text-left transition hover:bg-muted/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+      <span className="shrink-0 text-xs font-semibold text-primary">{index + 1}</span>
+      <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{route}</span>{summary ? <span className="mt-0.5 block truncate text-xs text-muted-foreground">{summary}</span> : null}</span>
+      {hasError ? <AlertTriangle aria-label="Segment obsahuje chybu" className="size-4 shrink-0 text-amber-300" /> : null}
+      <ChevronDown aria-hidden="true" className={cn("size-4 shrink-0 text-muted-foreground transition-transform duration-200", open && "rotate-180")} />
+    </button>
+    <div id={panelId} hidden={!open} className="mt-4 grid min-w-0 gap-4">
+      <div className="grid min-w-0 gap-4 lg:grid-cols-2"><PlacePicker configured={configured} label="Odkud" places={places} selection={segment.departurePlace} tripId={tripId} onChange={(departurePlace) => onChange({ departurePlace })} /><PlacePicker configured={configured} label="Kam" places={places} selection={segment.arrivalPlace} tripId={tripId} onChange={(arrivalPlace) => onChange({ arrivalPlace })} /></div>
+      <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <label className={labelClass}>Odjezd / odlet<input className={fieldClass} type="datetime-local" value={segment.departureAt} onChange={(event) => onChange({ departureAt: event.target.value })} /></label>
+        <label className={labelClass}>Příjezd / přílet<input className={fieldClass} type="datetime-local" min={segment.departureAt || undefined} value={segment.arrivalAt} onChange={(event) => onChange({ arrivalAt: event.target.value })} /></label>
+        <label className={labelClass}>Číslo letu / spoje<input className={fieldClass} maxLength={80} value={segment.serviceNumber} onChange={(event) => onChange({ serviceNumber: event.target.value })} /></label>
+        <label className={labelClass}>Terminál<input className={fieldClass} maxLength={80} value={segment.terminal} onChange={(event) => onChange({ terminal: event.target.value })} /></label>
+        <label className={labelClass}>Nástupiště<input className={fieldClass} maxLength={80} value={segment.platform} onChange={(event) => onChange({ platform: event.target.value })} /></label>
+        <label className={labelClass}>Sedadlo<input className={fieldClass} maxLength={160} value={segment.seat} onChange={(event) => onChange({ seat: event.target.value })} /></label>
+        <label className={`${labelClass} sm:col-span-2`}>Zavazadla<input className={fieldClass} maxLength={500} value={segment.baggage} onChange={(event) => onChange({ baggage: event.target.value })} /></label>
+        <label className={`${labelClass} sm:col-span-2 lg:col-span-4`}>Poznámka<textarea className={`${fieldClass} h-20 resize-y py-3`} maxLength={2000} value={segment.notes} onChange={(event) => onChange({ notes: event.target.value })} /></label>
+        <div className="flex flex-wrap gap-1 sm:col-span-2 lg:col-span-4"><Button type="button" size="icon-sm" variant="ghost" aria-label={`Posunout segment ${index + 1} nahoru`} disabled={index === 0} onClick={() => onMove(-1)}><ArrowUp /></Button><Button type="button" size="icon-sm" variant="ghost" aria-label={`Posunout segment ${index + 1} dolů`} disabled={index === total - 1} onClick={() => onMove(1)}><ArrowDown /></Button><Button type="button" size="sm" variant="destructive" aria-label={`Odstranit segment ${index + 1}`} disabled={total === 1} onClick={onRemove}><Trash2 /> Odstranit segment</Button></div>
+      </div>
     </div>
   </article>;
+}
+
+function placeSummary(selection: TransportPlaceSelection, places: TripPlaceRow[]) {
+  if (selection.mode === "external") return selection.result.name;
+  if (selection.mode === "saved") return places.find((place) => place.id === selection.placeId)?.name ?? null;
+  return null;
 }
 
 function PlacePicker({ configured, label, onChange, places, selection, tripId }: { configured: boolean; label: string; onChange: (selection: TransportPlaceSelection) => void; places: TripPlaceRow[]; selection: TransportPlaceSelection; tripId: string }) {
