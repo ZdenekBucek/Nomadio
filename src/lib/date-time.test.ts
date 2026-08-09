@@ -1,10 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { formatDateOnly, formatDateOnlyLong, formatTripDateTime, formatTripTime } from "./date-time";
+import { dateOnlyToCalendarDate, formatDateOnly, formatDateOnlyLong, formatTripDateTime, formatTripTime, isValidDateOnly } from "./date-time";
 
 describe("date-time formatters", () => {
   it("formats date-only values without changing the calendar day", () => {
     expect(formatDateOnly("2026-08-14")).toBe("14. 8. 2026");
     expect(formatDateOnlyLong("2026-08-14")).toContain("14. srpna 2026");
+  });
+
+  it("validates real calendar dates, including leap years", () => {
+    expect(isValidDateOnly("2028-02-29")).toBe(true);
+    expect(isValidDateOnly("2027-02-29")).toBe(false);
+    expect(isValidDateOnly("2026-02-31")).toBe(false);
+  });
+
+  it("creates a calendar date without shifting a date-only value", () => {
+    const date = dateOnlyToCalendarDate("2026-10-14");
+    expect(date?.getFullYear()).toBe(2026);
+    expect(date?.getMonth()).toBe(9);
+    expect(date?.getDate()).toBe(14);
   });
 
   it.each([

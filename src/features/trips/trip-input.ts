@@ -6,6 +6,7 @@ import type {
 
 import { getCountryOption } from "./countries";
 import { isValidTimeZone } from "@/features/timezones/timezone-catalog";
+import { isValidDateOnly } from "@/lib/date-time";
 
 export type NewTripInput = {
   city: string | null;
@@ -31,19 +32,6 @@ export type TripInputResult =
 function optionalText(value: FormDataEntryValue | null) {
   const text = value?.toString().trim();
   return text || null;
-}
-
-function isIsoDate(value: string | null) {
-  if (!value) {
-    return true;
-  }
-
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return false;
-  }
-
-  const date = new Date(`${value}T00:00:00Z`);
-  return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === value;
 }
 
 export function parseNewTrip(formData: FormData): TripInputResult {
@@ -82,8 +70,8 @@ export function parseNewTrip(formData: FormData): TripInputResult {
     travelerNames.length > 10 ||
     travelerNames.some((travelerName) => travelerName.length > 120) ||
     !/^[A-Z]{3}$/.test(currency) ||
-    !isIsoDate(startDate) ||
-    !isIsoDate(endDate) ||
+    (startDate !== null && !isValidDateOnly(startDate)) ||
+    (endDate !== null && !isValidDateOnly(endDate)) ||
     !["idea", "planning"].includes(status) ||
     !["violet", "ocean", "sunset", "forest"].includes(coverVariant) ||
     (continentOverride &&

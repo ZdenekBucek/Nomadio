@@ -1,3 +1,4 @@
+@import "@daypicker/react/style.css";
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -230,6 +231,88 @@
   pointer-events: none;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+}
+
+.nomadio-date-picker.rdp-root {
+  --rdp-accent-background-color: color-mix(in oklch, var(--primary) 18%, transparent);
+  --rdp-accent-color: var(--primary);
+  --rdp-day_button-border: 2px solid transparent;
+  --rdp-day_button-height: 2.35rem;
+  --rdp-day_button-width: 2.35rem;
+  --rdp-day-height: 2.45rem;
+  --rdp-day-width: 2.45rem;
+  --rdp-range_end-date-background-color: var(--primary);
+  --rdp-range_middle-background-color: color-mix(in oklch, var(--primary) 18%, transparent);
+  --rdp-range_middle-color: var(--foreground);
+  --rdp-range_start-date-background-color: var(--primary);
+  --rdp-today-color: var(--brand-highlight);
+  color: var(--foreground);
+  margin: 0 auto;
+}
+
+.nomadio-date-picker .rdp-month_caption {
+  align-items: center;
+  color: var(--foreground);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.nomadio-date-picker .rdp-caption_label {
+  text-transform: capitalize;
+}
+
+.nomadio-date-picker .rdp-button_next,
+.nomadio-date-picker .rdp-button_previous {
+  border-radius: 0.7rem;
+  color: var(--muted-foreground);
+}
+
+.nomadio-date-picker .rdp-button_next:hover,
+.nomadio-date-picker .rdp-button_previous:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.nomadio-date-picker .rdp-button_next:focus-visible,
+.nomadio-date-picker .rdp-button_previous:focus-visible,
+.nomadio-date-picker .rdp-day_button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.nomadio-date-picker .rdp-chevron {
+  fill: currentColor;
+}
+
+.nomadio-date-picker .rdp-weekday {
+  color: var(--muted-foreground);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.nomadio-date-picker .rdp-day_button {
+  border-radius: 0.7rem;
+  color: var(--foreground);
+  font-size: 0.8rem;
+}
+
+.nomadio-date-picker .rdp-day_button:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--primary) 16%, transparent);
+}
+
+.nomadio-date-picker .rdp-outside {
+  color: var(--muted-foreground);
+  opacity: 0.42;
+}
+
+.nomadio-date-picker .rdp-today:not(.rdp-outside) .rdp-day_button {
+  border-color: color-mix(in oklch, var(--primary) 58%, transparent);
+}
+
+.nomadio-date-picker .rdp-range_start .rdp-day_button,
+.nomadio-date-picker .rdp-range_end .rdp-day_button {
+  border-radius: 0.7rem;
+  box-shadow: 0 8px 18px -10px var(--brand-glow);
 }
 
 .nomadio-day-map-pin[data-selected="true"] {

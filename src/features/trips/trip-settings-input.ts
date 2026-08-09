@@ -6,6 +6,7 @@ import type {
 
 import { getCountryOption } from "./countries";
 import { isValidTimeZone } from "@/features/timezones/timezone-catalog";
+import { isValidDateOnly } from "@/lib/date-time";
 
 export type TripSettingsInput = {
   coverVariant: TripCoverVariant;
@@ -35,14 +36,6 @@ function optionalText(value: FormDataEntryValue | null) {
   return text || null;
 }
 
-function isIsoDate(value: string | null) {
-  if (!value) return true;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-
-  const date = new Date(`${value}T00:00:00Z`);
-  return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === value;
-}
-
 function isContinent(value: string): value is ContinentCode {
   return [
     "africa",
@@ -69,8 +62,8 @@ export function parseTripSettings(formData: FormData): InputResult<TripSettingsI
     name.length < 1 ||
     name.length > 120 ||
     (description?.length ?? 0) > 600 ||
-    !isIsoDate(startDate) ||
-    !isIsoDate(endDate) ||
+    (startDate !== null && !isValidDateOnly(startDate)) ||
+    (endDate !== null && !isValidDateOnly(endDate)) ||
     !/^[A-Z]{3}$/.test(currency) ||
     timezone.length < 1 ||
     timezone.length > 80 ||

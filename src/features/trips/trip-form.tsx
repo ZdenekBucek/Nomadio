@@ -14,6 +14,7 @@ import {
 import { useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { DateRangePicker } from "@/components/date-time/date-range-picker";
 import { Surface } from "@/components/ui/surface";
 import { TimezoneCombobox } from "@/features/timezones/timezone-combobox";
 import { cn } from "@/lib/utils";
@@ -102,10 +103,7 @@ export function TripForm({ countries, defaultCurrency, defaultTimezone, showHead
             {countries.map((country) => <option key={country.code} value={country.code}>{country.name}</option>)}
           </SelectField>
           <Field label="První město nebo oblast" name="city" placeholder="Tokio" maxLength={120} />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Od" name="startDate" type="date" />
-            <Field label="Do" name="endDate" type="date" />
-          </div>
+          <DateRangePicker startName="startDate" endName="endDate" />
           <Field label="Hlavní měna" name="currency" defaultValue={defaultCurrency} maxLength={3} pattern="[A-Za-z]{3}" required />
           <TimezoneCombobox name="timezone" defaultValue={defaultTimezone} />
         </div>

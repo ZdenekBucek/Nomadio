@@ -4,6 +4,7 @@ import { ImagePlus, Save, Trash2 } from "lucide-react";
 import { useActionState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { DateRangePicker } from "@/components/date-time/date-range-picker";
 import { TimezoneCombobox } from "@/features/timezones/timezone-combobox";
 import type { TripRow } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
@@ -41,8 +42,14 @@ export function TripSettingsForm({ canEdit, cover, trip }: { canEdit: boolean; c
         <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Název cesty" name="name" defaultValue={trip.name} maxLength={120} required disabled={!canEdit} className="sm:col-span-2" />
         <TextAreaField label="Krátký popis" name="description" defaultValue={trip.description ?? ""} maxLength={600} disabled={!canEdit} className="sm:col-span-2" />
-        <Field label="Od" name="startDate" type="date" defaultValue={trip.start_date ?? ""} disabled={!canEdit} />
-        <Field label="Do" name="endDate" type="date" defaultValue={trip.end_date ?? ""} disabled={!canEdit} />
+        <DateRangePicker
+          className="sm:col-span-2"
+          defaultStartDate={trip.start_date}
+          defaultEndDate={trip.end_date}
+          disabled={!canEdit}
+          startName="startDate"
+          endName="endDate"
+        />
         <Field label="Hlavní měna" name="currency" defaultValue={trip.currency} maxLength={3} pattern="[A-Za-z]{3}" required disabled={!canEdit} />
         <TimezoneCombobox name="timezone" defaultValue={trip.timezone} disabled={!canEdit} />
         <SelectField label="Fáze cesty" name="status" defaultValue={trip.status} disabled={!canEdit} className="sm:col-span-2">

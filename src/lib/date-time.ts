@@ -1,11 +1,46 @@
 const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 
-function dateOnlyValue(value: string) {
+function dateOnlyParts(value: string) {
   const match = DATE_ONLY_PATTERN.exec(value);
   if (!match) return null;
   const [, year, month, day] = match;
   const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
-  return Number.isNaN(date.valueOf()) ? null : date;
+
+  if (
+    Number.isNaN(date.valueOf()) ||
+    date.getUTCFullYear() !== Number(year) ||
+    date.getUTCMonth() !== Number(month) - 1 ||
+    date.getUTCDate() !== Number(day)
+  ) {
+    return null;
+  }
+
+  return { day: Number(day), month: Number(month), year: Number(year) };
+}
+
+/** Validates a canonical calendar date without converting it through a timezone. */
+export function isValidDateOnly(value: string | null | undefined) {
+  return typeof value === "string" && dateOnlyParts(value) !== null;
+}
+
+/** Converts a canonical date-only value into a local calendar Date for a calendar UI. */
+export function dateOnlyToCalendarDate(value: string | null | undefined) {
+  if (!value) return null;
+  const parts = dateOnlyParts(value);
+  return parts ? new Date(parts.year, parts.month - 1, parts.day, 12) : null;
+}
+
+/** Serializes a calendar UI Date back to the canonical date-only contract. */
+export function calendarDateToDateOnly(value: Date) {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function dateOnlyValue(value: string) {
+  const parts = dateOnlyParts(value);
+  return parts ? new Date(Date.UTC(parts.year, parts.month - 1, parts.day)) : null;
 }
 
 /** Formats a calendar date without converting it through the runtime timezone. */
