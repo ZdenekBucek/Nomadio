@@ -17,6 +17,11 @@ import { accommodationTypeLabels, accommodationTypes, deriveAccommodationPayment
 const fieldClass = "mt-2 h-11 w-full min-w-0 rounded-xl border border-input bg-background/55 px-3 text-sm outline-none transition focus:border-primary/55 focus:ring-3 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-65";
 const labelClass = "text-xs font-medium text-muted-foreground";
 const amountFormatter = new Intl.NumberFormat("cs-CZ", { maximumFractionDigits: 2 });
+const newAccommodationDefaults = {
+  checkInTime: "15:00",
+  checkOutTime: "11:00",
+  guestCount: 2,
+} as const;
 
 export function AccommodationForm({
   accommodation,
@@ -62,7 +67,7 @@ export function AccommodationForm({
         <h3 className="sm:col-span-2 font-medium">Základní údaje</h3>
         <label className={`${labelClass} sm:col-span-2`}>Název ubytování *<input className={fieldClass} name="name" required maxLength={160} defaultValue={accommodation?.name ?? ""} /></label>
         <label className={labelClass}>Typ<select className={fieldClass} name="accommodationType" defaultValue={accommodation?.accommodation_type ?? "hotel"}>{accommodationTypes.map((type) => <option key={type} value={type}>{accommodationTypeLabels[type]}</option>)}</select></label>
-        <label className={labelClass}>Počet hostů<input className={fieldClass} type="number" name="guestCount" min={1} step={1} defaultValue={accommodation?.guest_count ?? ""} /></label>
+        <label className={labelClass}>Počet hostů<input className={fieldClass} type="number" name="guestCount" min={1} step={1} defaultValue={accommodation ? accommodation.guest_count ?? "" : newAccommodationDefaults.guestCount} /></label>
       </section>
 
       <section className="grid min-w-0 gap-4 rounded-2xl border border-border bg-muted/18 p-4 sm:grid-cols-2">
@@ -75,8 +80,8 @@ export function AccommodationForm({
           label="Pobyt"
           startName="checkInDate"
         />
-        <TimePicker label="Check-in" name="checkInTime" defaultValue={accommodation?.check_in_time?.slice(0, 5) ?? ""} />
-        <TimePicker label="Check-out" name="checkOutTime" defaultValue={accommodation?.check_out_time?.slice(0, 5) ?? ""} />
+        <TimePicker label="Check-in" name="checkInTime" defaultValue={accommodation ? accommodation.check_in_time?.slice(0, 5) ?? "" : newAccommodationDefaults.checkInTime} />
+        <TimePicker label="Check-out" name="checkOutTime" defaultValue={accommodation ? accommodation.check_out_time?.slice(0, 5) ?? "" : newAccommodationDefaults.checkOutTime} />
       </section>
 
       <section className="grid min-w-0 gap-4 rounded-2xl border border-border bg-muted/18 p-4 sm:grid-cols-2">

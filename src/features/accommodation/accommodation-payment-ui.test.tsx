@@ -93,8 +93,26 @@ describe("accommodation payment UI", () => {
     );
 
     expect(screen.getByRole("button", { name: "Pobyt" })).toHaveTextContent("14. 8. 2026 → 28. 8. 2026");
+    expect(screen.getByLabelText("Check-in")).toHaveValue("15:00");
+    expect(screen.getByLabelText("Check-out")).toHaveValue("11:00");
+    expect(screen.getByRole("spinbutton", { name: "Počet hostů" })).toHaveValue(2);
+  });
+
+  it("keeps stored values when editing an accommodation", () => {
+    render(
+      <AccommodationForm
+        accommodation={accommodation({ check_in_time: null, check_out_time: "09:30:00", guest_count: null })}
+        canEdit
+        geoapifyConfigured={false}
+        mapAccessToken={null}
+        places={[]}
+        trip={trip}
+      />,
+    );
+
     expect(screen.getByLabelText("Check-in")).toHaveValue("");
-    expect(screen.getByLabelText("Check-out")).toHaveValue("");
+    expect(screen.getByLabelText("Check-out")).toHaveValue("09:30");
+    expect(screen.getByRole("spinbutton", { name: "Počet hostů" })).toHaveValue(null);
   });
 
   it("keeps all accommodation pickers read-only for viewers", () => {
