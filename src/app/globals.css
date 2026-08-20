@@ -51,6 +51,13 @@
 
 :root {
   color-scheme: light;
+  --mobile-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --mobile-bottom-nav-edge: 0.75rem;
+  --mobile-bottom-nav-height: 3.75rem;
+  --mobile-bottom-nav-gap: 1rem;
+  --mobile-bottom-nav-bottom: calc(var(--mobile-bottom-nav-edge) + var(--mobile-safe-area-bottom));
+  --mobile-content-bottom-padding: calc(var(--mobile-bottom-nav-edge) + var(--mobile-bottom-nav-height) + 0.5rem + var(--mobile-safe-area-bottom));
+  --mobile-fab-bottom: calc(var(--mobile-bottom-nav-edge) + var(--mobile-bottom-nav-height) + var(--mobile-bottom-nav-gap) + var(--mobile-safe-area-bottom));
   --background: oklch(0.975 0.006 250);
   --foreground: oklch(0.19 0.016 255);
   --card: oklch(0.995 0.003 250);

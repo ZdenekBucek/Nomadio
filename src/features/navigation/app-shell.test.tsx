@@ -39,7 +39,7 @@ describe("AppShell", () => {
     expect(screen.getByRole("navigation", { name: "Mobilní navigace" })).toBeInTheDocument();
     expect(screen.queryByText("Online")).not.toBeInTheDocument();
     expect(screen.queryByText("PWA")).not.toBeInTheDocument();
-    expect(container.innerHTML).toContain("env(safe-area-inset-bottom)");
-    expect(container.innerHTML).toContain("pb-[calc(5rem+env(safe-area-inset-bottom))]");
+    expect(container.innerHTML).toContain("bottom-[var(--mobile-bottom-nav-bottom)]");
+    expect(container.innerHTML).toContain("pb-[var(--mobile-content-bottom-padding)]");
   });
 });

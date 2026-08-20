@@ -15,12 +15,16 @@ afterEach(cleanup);
 
 describe("QuickExpenseFab", () => {
   it("opens the expense form directly for one active trip", () => {
-    render(<QuickExpenseFab trips={[trips[0]!] } />);
-    fireEvent.click(screen.getByRole("button", { name: "Přidat výdaj" }));
+    const { container } = render(<QuickExpenseFab trips={[trips[0]!] } />);
+    const trigger = screen.getByRole("button", { name: "Přidat výdaj" });
+    expect(trigger.className).toContain("bottom-[var(--mobile-fab-bottom)]");
+    fireEvent.click(trigger);
     expect(screen.getByText("Cesta:")).toBeInTheDocument();
     expect(screen.getByText("Praha")).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: /částka/i })).toBeInTheDocument();
     expect(document.querySelector('input[name="occurredDate"]')).toHaveValue("2026-08-20");
+    expect(container.ownerDocument.querySelector('[data-visual-viewport-sheet="quick-expense"]')).toHaveClass("h-dvh", "overflow-hidden");
+    expect(container.ownerDocument.querySelector("[data-quick-expense-scroll]")).toHaveClass("overflow-y-auto", "overscroll-contain");
   });
 
   it("shows a compact selector for an active and a future-enabled trip", () => {
