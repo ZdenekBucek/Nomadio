@@ -27,6 +27,7 @@ import {
   moveTripDestination,
   removeTripDestination,
   updateTripDestination,
+  updateTripQuickExpenseBeforeStart,
   updateTripSettings,
   uploadTripCover,
 } from "./settings-actions";
@@ -106,6 +107,34 @@ describe("trip settings actions", () => {
       trip_timezone: "Europe/Oslo",
     });
     expect(revalidatePathMock).toHaveBeenCalledWith(`/app/trips/${tripId}/settings`);
+  });
+
+  it("updates the narrow trip Quick Expense preference and refreshes AppShell", async () => {
+    rpcMock.mockResolvedValue({ data: "updated", error: null });
+    const form = new FormData();
+    form.set("tripId", tripId);
+    form.set("quickExpenseBeforeStartEnabled", "true");
+
+    await expect(updateTripQuickExpenseBeforeStart(form)).rejects.toThrow(
+      `REDIRECT:/app/trips/${tripId}/settings?quickExpense=saved`,
+    );
+    expect(rpcMock).toHaveBeenCalledWith("set_trip_quick_expense_before_start", {
+      enabled: true,
+      target_trip_id: tripId,
+    });
+    expect(revalidatePathMock).toHaveBeenCalledWith("/app", "layout");
+  });
+
+  it("rejects an invalid trip Quick Expense preference before authentication", async () => {
+    const form = new FormData();
+    form.set("tripId", tripId);
+    form.set("quickExpenseBeforeStartEnabled", "yes");
+
+    await expect(updateTripQuickExpenseBeforeStart(form)).rejects.toThrow(
+      `REDIRECT:/app/trips/${tripId}/settings?quickExpense=invalid`,
+    );
+    expect(getUserMock).not.toHaveBeenCalled();
+    expect(rpcMock).not.toHaveBeenCalled();
   });
 
   it("returns validation feedback without navigating or losing form values", async () => {

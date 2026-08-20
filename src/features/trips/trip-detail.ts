@@ -17,6 +17,7 @@ export type TripDetail = {
   members: TripMemberProfileRow[];
   travelers: TripTravelerRow[];
   trip: TripRow;
+  userQuickExpenseFabEnabled: boolean;
 };
 
 export const getTripDetail = cache(async (tripId: string): Promise<TripDetail | null> => {
@@ -57,5 +58,6 @@ export const getTripDetail = cache(async (tripId: string): Promise<TripDetail | 
     members: memberResult.data ?? [],
     travelers: travelerResult.data ?? [],
     trip,
+    userQuickExpenseFabEnabled: auth.profile.quickExpenseFabEnabled,
   };
 });

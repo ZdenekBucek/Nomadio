@@ -12,7 +12,7 @@ export const getActiveEditableTrips = cache(async (): Promise<ActiveEditableTrip
   if (!userData.user) return [];
 
   const [tripResult, memberResult] = await Promise.all([
-    supabase.from("trips").select("id,name,currency,timezone,start_date,end_date,status").neq("status", "archived"),
+    supabase.from("trips").select("id,name,currency,timezone,start_date,end_date,status,quick_expense_before_start_enabled").neq("status", "archived"),
     supabase.from("trip_members").select("trip_id,role,user_id").eq("user_id", userData.user.id),
   ]);
   if (tripResult.error || memberResult.error) return [];

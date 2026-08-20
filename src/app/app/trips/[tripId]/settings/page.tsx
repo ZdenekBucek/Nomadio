@@ -10,13 +10,14 @@ import { memberRoleLabel } from "@/features/trips/trip-presentation";
 import { TripCoverSettings, TripSettingsForm } from "@/features/trips/trip-settings-form";
 import { getTripCover } from "@/features/trips/trip-cover";
 import { TripMembers } from "@/features/trips/trip-members";
+import { TripQuickExpenseSettings } from "@/features/trips/trip-quick-expense-settings";
 import { shareTrip } from "@/features/trips/actions";
 import { TripSettingsSection } from "@/features/trips/trip-settings-section";
 import { cn } from "@/lib/utils";
 
 type TripSettingsPageProps = {
   params: Promise<{ tripId: string }>;
-  searchParams: Promise<{ cover?: string; destination?: string; lifecycle?: string; settings?: string }>;
+  searchParams: Promise<{ cover?: string; destination?: string; lifecycle?: string; quickExpense?: string; settings?: string }>;
 };
 
 const destinationMessages = {
@@ -66,6 +67,8 @@ export default async function TripSettingsPage({ params, searchParams }: TripSet
 
       {isArchived ? <div className="mt-5 flex items-start gap-3 rounded-2xl border border-amber-400/20 bg-amber-400/8 p-4 text-sm text-amber-100"><Archive className="mt-0.5 size-4 shrink-0" aria-hidden="true" /><p>Cesta je archivovaná. Veškerý obsah je pouze pro čtení; vlastník ji může níže obnovit.</p></div> : !canEdit ? <div className="mt-5 flex items-start gap-3 rounded-2xl border border-primary/20 bg-primary/8 p-4 text-sm text-muted-foreground"><Eye className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" /><p>Máte přístup pouze pro čtení. Nastavení i destinace můžete prohlížet, ale ne měnit.</p></div> : null}
       {query.settings === "saved" ? <Feedback success>Základní nastavení bylo uloženo.</Feedback> : null}
+      {query.quickExpense === "saved" ? <Feedback success>Nastavení rychlých výdajů bylo uloženo.</Feedback> : null}
+      {query.quickExpense && query.quickExpense !== "saved" ? <Feedback success={false}>Nastavení rychlých výdajů se nepodařilo uložit.</Feedback> : null}
       {coverMessage ? <Feedback success={query.cover === "uploaded" || query.cover === "removed"}>{coverMessage}</Feedback> : null}
       {query.lifecycle === "error" ? <Feedback success={false}>Akci se nepodařilo provést. Ověřte stav cesty a zkuste to znovu.</Feedback> : null}
       {destinationMessage ? <Feedback success={success}>{destinationMessage}</Feedback> : null}
@@ -74,6 +77,12 @@ export default async function TripSettingsPage({ params, searchParams }: TripSet
         <TripSettingsSection defaultOpen description="Název, termín, měna, stav a destinace cesty." icon={<Settings2 className="size-5" aria-hidden="true" />} id="trip-settings-basic" title="Základní informace">
           <div className="grid gap-5 pt-5">
             <TripSettingsForm canEdit={canEdit} cover={cover} includeCover={false} trip={detail.trip} />
+            <TripQuickExpenseSettings
+              canEdit={canEdit}
+              enabled={detail.trip.quick_expense_before_start_enabled}
+              globalEnabled={detail.userQuickExpenseFabEnabled}
+              tripId={tripId}
+            />
             <div className="border-t border-border pt-5">
               <div className="flex items-start gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/12 text-primary"><MapPinned className="size-5" aria-hidden="true" /></span><div><h3 className="text-base font-semibold">Destinace</h3><p className="mt-1 text-sm text-muted-foreground">Hlavní místo a navazující zastávky v pořadí cesty.</p></div></div>
               <TripDestinations canEdit={canEdit} destinations={detail.destinations} tripId={tripId} />

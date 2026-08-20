@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ActiveEditableTrip } from "./active-trips";
 import { QuickExpenseFab } from "./quick-expense-fab";
@@ -7,9 +7,11 @@ import { QuickExpenseFab } from "./quick-expense-fab";
 vi.mock("@/features/budget/budget-expense-actions", () => ({ createExpense: vi.fn(), deleteExpense: vi.fn(), updateExpense: vi.fn() }));
 
 const trips: ActiveEditableTrip[] = [
-  { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", name: "Praha", currency: "CZK", timezone: "Europe/Prague", role: "owner", startDate: "2026-08-20", endDate: "2026-08-20" },
-  { id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", name: "Soul", currency: "KRW", timezone: "Asia/Seoul", role: "editor", startDate: "2026-08-20", endDate: "2026-08-20" },
+  { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", name: "Praha", currency: "CZK", timezone: "Europe/Prague", role: "owner", startDate: "2026-08-20", endDate: "2026-08-20", today: "2026-08-20" },
+  { id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", name: "Soul", currency: "KRW", timezone: "Asia/Seoul", role: "editor", startDate: "2026-08-25", endDate: "2026-08-30", today: "2026-08-21" },
 ];
+
+afterEach(cleanup);
 
 describe("QuickExpenseFab", () => {
   it("opens the expense form directly for one active trip", () => {
@@ -18,13 +20,15 @@ describe("QuickExpenseFab", () => {
     expect(screen.getByText("Cesta:")).toBeInTheDocument();
     expect(screen.getByText("Praha")).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: /částka/i })).toBeInTheDocument();
+    expect(document.querySelector('input[name="occurredDate"]')).toHaveValue("2026-08-20");
   });
 
-  it("shows a compact trip selector for multiple active trips", () => {
+  it("shows a compact selector for an active and a future-enabled trip", () => {
     render(<QuickExpenseFab trips={trips} />);
     fireEvent.click(screen.getByRole("button", { name: "Přidat výdaj" }));
     expect(screen.getByText("Do které cesty přidat výdaj?")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /Soul/ }));
     expect(screen.getByText("KRW")).toBeInTheDocument();
+    expect(document.querySelector('input[name="occurredDate"]')).toHaveValue("2026-08-21");
   });
 });

@@ -19,7 +19,8 @@ import {
 const controlClass = "mt-2 h-11 w-full min-w-0 rounded-xl border border-input bg-background/55 px-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/60 focus:border-primary/55 focus:ring-3 focus:ring-primary/15";
 const labelClass = "text-xs font-medium text-muted-foreground";
 
-export function BudgetExpenseForm({ item, tripCurrency, tripId, global = false, onGlobalSuccess }: {
+export function BudgetExpenseForm({ defaultOccurredDate, item, tripCurrency, tripId, global = false, onGlobalSuccess }: {
+  defaultOccurredDate?: string;
   item?: BudgetManualExpenseItem | null;
   tripCurrency: string;
   tripId: string;
@@ -78,7 +79,7 @@ export function BudgetExpenseForm({ item, tripCurrency, tripId, global = false, 
             {subcategories.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
           </select>
         </label>
-        <DatePicker label="Datum" name="occurredDate" defaultValue={item?.occurredAt.slice(0, 10) ?? calendarDateToDateOnly(new Date())} />
+        <DatePicker label="Datum" name="occurredDate" defaultValue={item?.occurredAt.slice(0, 10) ?? defaultOccurredDate ?? calendarDateToDateOnly(new Date())} />
         <label className={`${labelClass} sm:col-span-2`}>Poznámka
           <textarea className="mt-2 min-h-20 w-full min-w-0 resize-y rounded-xl border border-input bg-background/55 px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary/55 focus:ring-3 focus:ring-primary/15" name="notes" maxLength={4000} defaultValue={item?.notes ?? ""} />
         </label>

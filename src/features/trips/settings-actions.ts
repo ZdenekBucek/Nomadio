@@ -17,7 +17,7 @@ export type TripSettingsActionState = {
 const coverTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const maxCoverBytes = 5 * 1024 * 1024;
 
-function settingsPath(tripId: string, key: "destination" | "settings", status: string) {
+function settingsPath(tripId: string, key: "destination" | "quickExpense" | "settings", status: string) {
   const params = new URLSearchParams({ [key]: status });
   return uuidPattern.test(tripId)
     ? `/app/trips/${tripId}/settings?${params.toString()}`
@@ -86,6 +86,27 @@ export async function updateTripSettings(
 
   revalidateTrip(tripId);
   redirect(settingsPath(tripId, "settings", "saved"));
+}
+
+export async function updateTripQuickExpenseBeforeStart(formData: FormData) {
+  const tripId = formData.get("tripId")?.toString().trim() ?? "";
+  const value = formData.get("quickExpenseBeforeStartEnabled");
+  if (!uuidPattern.test(tripId) || (value !== "true" && value !== "false")) {
+    redirect(settingsPath(tripId, "quickExpense", "invalid"));
+  }
+
+  const supabase = await authenticatedClient(tripId);
+  const { data, error } = await supabase.rpc("set_trip_quick_expense_before_start", {
+    enabled: value === "true",
+    target_trip_id: tripId,
+  });
+  if (error || data !== "updated") {
+    redirect(settingsPath(tripId, "quickExpense", "error"));
+  }
+
+  revalidatePath("/app", "layout");
+  revalidatePath(`/app/trips/${tripId}/settings`);
+  redirect(settingsPath(tripId, "quickExpense", "saved"));
 }
 
 export async function uploadTripCover(formData: FormData) {

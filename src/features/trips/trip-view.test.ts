@@ -21,6 +21,7 @@ const trip: TripRow = {
   end_date: "2027-05-30",
   id: "trip-1",
   name: "Japonsko",
+  quick_expense_before_start_enabled: false,
   start_date: "2027-05-15",
   status: "planning",
   status_before_archive: null,

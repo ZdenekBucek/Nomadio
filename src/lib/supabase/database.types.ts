@@ -289,6 +289,7 @@ export type TripRow = {
   end_date: string | null;
   id: string;
   name: string;
+  quick_expense_before_start_enabled: boolean;
   start_date: string | null;
   status: TripStatus;
   status_before_archive: TripStatus | null;
@@ -686,6 +687,7 @@ export type Database = {
           end_date?: string | null;
           id?: string;
           name: string;
+          quick_expense_before_start_enabled?: boolean;
           start_date?: string | null;
           status?: TripStatus;
           status_before_archive?: TripStatus | null;
@@ -840,6 +842,10 @@ export type Database = {
       set_primary_trip_destination: {
         Args: { target_destination_id: string };
         Returns: "updated" | "no_change";
+      };
+      set_trip_quick_expense_before_start: {
+        Args: { enabled: boolean; target_trip_id: string };
+        Returns: "updated";
       };
       set_trip_cover_upload: {
         Args: { target_storage_path: string; target_trip_id: string };

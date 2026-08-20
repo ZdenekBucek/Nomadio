@@ -35,7 +35,7 @@ export function QuickExpenseFab({ trips }: { trips: ActiveEditableTrip[] }) {
             <div className="pr-12"><p className="flex items-center gap-2 text-xs font-medium tracking-[0.16em] text-primary uppercase"><ReceiptText className="size-4" aria-hidden="true" /> Rychlý výdaj</p><Dialog.Title className="mt-2 text-2xl font-semibold">Přidat výdaj</Dialog.Title><Dialog.Description className="mt-1 text-sm text-muted-foreground">Stačí částka a kategorie. Podrobnosti můžete doplnit později.</Dialog.Description></div>
             {selectedTrip ? <>
               <p className="mt-4 rounded-xl border border-border bg-muted/25 px-3 py-2 text-sm text-muted-foreground">Cesta: <strong className="text-foreground">{selectedTrip.name}</strong></p>
-              <BudgetExpenseForm global tripCurrency={selectedTrip.currency} tripId={selectedTrip.id} onGlobalSuccess={close} />
+              <BudgetExpenseForm defaultOccurredDate={selectedTrip.today} global tripCurrency={selectedTrip.currency} tripId={selectedTrip.id} onGlobalSuccess={close} />
             </> : <TripSelector trips={trips} onSelect={setSelectedTrip} />}
           </Dialog.Popup>
         </Dialog.Viewport>
