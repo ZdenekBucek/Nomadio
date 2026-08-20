@@ -120,6 +120,19 @@ describe("calendar agenda model", () => {
     expect(result.map((item) => [item.tripId, item.amount, item.currency])).toEqual([[trip.id, 13500, "CZK"], [sharedTrip.id, 200, "EUR"]]);
   });
 
+  it("evaluates overdue status in each trip's timezone", () => {
+    const seoulTrip = { ...trip, id: "seoul", timezone: "Asia/Seoul" };
+    const pragueTrip = { ...trip, id: "prague", timezone: "America/New_York" };
+    const items = [
+      payment({ id: "payment:seoul", tripId: seoulTrip.id, dueDate: "2026-08-19" }),
+      payment({ id: "payment:prague", tripId: pragueTrip.id, dueDate: "2026-08-19" }),
+    ];
+    const result = buildCalendarAgenda({ accommodations: [], payments: calendarPaymentEvents(items), tasks: [], transports: [], trips: [seoulTrip, pragueTrip] }, (item) => item.timezone === "Asia/Seoul" ? "2026-08-20" : "2026-08-19");
+    const payments = result.filter((item) => item.type === "payment");
+    expect(payments.find((item) => item.tripId === "seoul")?.isOverdue).toBe(true);
+    expect(payments.find((item) => item.tripId === "prague")?.isOverdue).toBe(false);
+  });
+
   it("filters by trip and category and groups chronologically by date", () => {
     expect(filterAgenda(agenda, trip.id, "transport", true, "2026-10-01")).toHaveLength(1);
     expect(filterAgenda(agenda, trip.id, "payment", true, "2026-10-01").every((item) => item.type === "payment")).toBe(true);

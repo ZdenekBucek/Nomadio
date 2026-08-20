@@ -7,6 +7,7 @@ import { getCalendarTrips } from "@/features/calendar/calendar-data";
 import { withTraveler } from "@/features/checklist/checklist-model";
 import type { AccommodationRow, BudgetPlanItemRow, ExpenseRow, PackingItemRow, TaskRow, TransportBookingRow, TransportSegmentRow, TripDestinationRow, TripTravelerRow } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
+import { todayInTimeZone } from "@/lib/date-time";
 import { buildGlobalOverview, type OverviewDocument } from "./global-overview-model";
 
 function localDateTime(value: string, timezone: string) {
@@ -47,7 +48,7 @@ export const getGlobalOverviewData = cache(async () => {
     accommodations: accommodations.filter((item) => item.trip_id === trip.id),
     expenses: expenses.filter((item) => item.tripId === trip.id),
     planItems: planItems.filter((item) => item.tripId === trip.id),
-    today: new Date().toISOString().slice(0, 10),
+    today: todayInTimeZone(trip.timezone),
     transportBookings: bookings.filter((item) => item.trip_id === trip.id).map((booking) => ({
       ...booking,
       segments: (segmentsByBooking.get(booking.id) ?? []).map((segment) => ({ ...segment, arrivalPlace: null, departurePlace: null })),

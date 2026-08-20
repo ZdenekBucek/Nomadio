@@ -2,10 +2,11 @@
 
 import { BedDouble, CalendarDays, CheckSquare2, CircleDollarSign, Plane, Route } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Surface } from "@/components/ui/surface";
 import { formatBudgetMoney } from "@/features/budget/budget-model";
 import { cn } from "@/lib/utils";
+import { todayInTimeZone } from "@/lib/date-time";
 import { calendarEventTypeMeta, dateKey, filterAgenda, formatCalendarDate, groupAgendaByDate, monthStart, type CalendarAgendaItem, type CalendarEventFilter, type CalendarTrip, type MonthEvent } from "./calendar-model";
 import { CalendarMonth } from "./calendar-month";
 
@@ -18,10 +19,13 @@ export function CalendarDashboard({ agenda = [], initialMonth, initialView = "mo
   const [tripId, setTripId] = useState("all");
   const [eventType, setEventType] = useState<CalendarEventFilter>("all");
   const [includePast, setIncludePast] = useState(false);
-  const today = dateKey(new Date());
+  const now = new Date();
+  const tripById = new Map(trips.map((trip) => [trip.id, trip]));
+  const today = dateKey(now);
+  const todayForItem = (item: CalendarAgendaItem) => todayInTimeZone(tripById.get(item.tripId)?.timezone ?? "Europe/Prague", now);
   const visibleTrips = tripId === "all" ? trips : trips.filter((trip) => trip.id === tripId);
-  const visibleAgenda = useMemo(() => filterAgenda(agenda, tripId, eventType, includePast, today), [agenda, eventType, includePast, today, tripId]);
-  const upcoming = visibleAgenda.filter((item) => item.date >= today).slice(0, 3);
+  const visibleAgenda = filterAgenda(agenda, tripId, eventType, includePast, todayForItem);
+  const upcoming = visibleAgenda.filter((item) => item.date >= todayForItem(item)).slice(0, 3);
   const changeMonth = (nextMonth: Date) => {
     setMonth(nextMonth);
     const nextUrl = new URL(window.location.href);

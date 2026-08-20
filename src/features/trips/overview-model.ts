@@ -6,11 +6,9 @@ import { summarizePacking, summarizeTasks, type ChecklistPackingItem, type Check
 import { documentSummary, type DocumentWithLink } from "@/features/documents/document-model";
 import type { ItineraryDayRow, ItineraryItemRow } from "@/lib/supabase/database.types";
 import type { TransportBookingWithSegments } from "@/features/transport/transport-model";
-import { formatDateOnly } from "@/lib/date-time";
+import { formatDateOnly, todayInTimeZone } from "@/lib/date-time";
 
 export type OverviewAlert = { href: string; id: string; title: string; detail: string };
-
-const today = () => new Date().toISOString().slice(0, 10);
 
 function paymentHref(item: BudgetPaymentItem) {
   return item.sourceType === "accommodation" || item.sourceType === "transport"
@@ -37,8 +35,8 @@ function overviewFinance(dashboard: TripBudgetDashboard) {
   });
 }
 
-export function buildTripOverview(input: { accommodations: AccommodationWithPlace[]; budgetDashboard: TripBudgetDashboard; documents: DocumentWithLink[]; itineraryDays: ItineraryDayRow[]; itineraryItems: ItineraryItemRow[]; tasks: ChecklistTask[]; packingItems: ChecklistPackingItem[]; timezone: string; transport: TransportBookingWithSegments[]; tripEnd: string | null; tripId: string; tripStart: string | null }) {
-  const now = today();
+export function buildTripOverview(input: { accommodations: AccommodationWithPlace[]; budgetDashboard: TripBudgetDashboard; documents: DocumentWithLink[]; itineraryDays: ItineraryDayRow[]; itineraryItems: ItineraryItemRow[]; tasks: ChecklistTask[]; packingItems: ChecklistPackingItem[]; timezone: string; transport: TransportBookingWithSegments[]; tripEnd: string | null; tripId: string; tripStart: string | null }, nowDate = new Date()) {
+  const now = todayInTimeZone(input.timezone, nowDate);
   const coverage = accommodationCoverage(input.accommodations, input.tripStart, input.tripEnd);
   const accommodation = accommodationSummary(input.accommodations);
   const finance = overviewFinance(input.budgetDashboard);
@@ -50,7 +48,7 @@ export function buildTripOverview(input: { accommodations: AccommodationWithPlac
   const plannedDays = datedDays.filter((day) => daysWithItems.has(day.id));
   const selectedDay = [...plannedDays].sort((left, right) => (left.day_date ?? "9999").localeCompare(right.day_date ?? "9999"))[0] ?? null;
   const dayItems = selectedDay ? input.itineraryItems.filter((item) => item.day_id === selectedDay.id).sort((left, right) => left.sort_order - right.sort_order).slice(0, 4) : [];
-  const nearestTransport = input.transport.flatMap((booking) => booking.segments.map((segment) => ({ booking, segment }))).filter(({ segment }) => segment.departure_at && segment.departure_at >= new Date().toISOString()).sort((left, right) => (left.segment.departure_at ?? "").localeCompare(right.segment.departure_at ?? ""))[0] ?? null;
+  const nearestTransport = input.transport.flatMap((booking) => booking.segments.map((segment) => ({ booking, segment }))).filter(({ segment }) => segment.departure_at && segment.departure_at >= nowDate.toISOString()).sort((left, right) => (left.segment.departure_at ?? "").localeCompare(right.segment.departure_at ?? ""))[0] ?? null;
   const upcomingAccommodation = input.accommodations.find((item) => item.check_out_date >= now) ?? null;
   const openTasks = input.tasks.filter((task) => task.status !== "completed" && task.status !== "cancelled").sort((left, right) => {
     const leftOverdue = Boolean(left.due_date && left.due_date < now); const rightOverdue = Boolean(right.due_date && right.due_date < now);

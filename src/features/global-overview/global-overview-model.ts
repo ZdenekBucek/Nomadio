@@ -9,7 +9,6 @@ import {
 } from "@/features/checklist/checklist-model";
 import {
   buildCalendarAgenda,
-  dateKey,
   type CalendarAgendaItem,
   type CalendarAgendaSources,
   type CalendarTransportEvent,
@@ -24,7 +23,7 @@ import type {
   TripRow,
   TripTravelerRow,
 } from "@/lib/supabase/database.types";
-import { formatDateOnly } from "@/lib/date-time";
+import { formatDateOnly, todayInTimeZone } from "@/lib/date-time";
 
 export type OverviewDocument = Pick<DocumentRow, "id" | "is_important" | "name" | "offline_enabled" | "trip_id">;
 export type GlobalAttention = {
@@ -84,14 +83,14 @@ export function buildGlobalOverview(input: {
   travelers: TripTravelerRow[];
   trips: TripRow[];
 }, now = new Date()) {
-  const today = dateKey(now);
   const destinations = input.destinations ?? [];
   const travelers = input.travelers ?? [];
   const tripById = new Map(input.trips.map((trip) => [trip.id, trip]));
+  const tripToday = (tripId: string) => todayInTimeZone(tripById.get(tripId)?.timezone ?? "Europe/Prague", now);
   const activeTrips = input.trips.filter((trip) => getEffectiveTripStatus(trip, now) === "active");
   const upcomingTrips = input.trips.filter((trip) => {
     const status = getEffectiveTripStatus(trip, now);
-    return status !== "archived" && status !== "completed" && Boolean(trip.start_date && trip.start_date >= today);
+    return status !== "archived" && status !== "completed" && Boolean(trip.start_date && trip.start_date >= tripToday(trip.id));
   }).toSorted((left, right) => (left.start_date ?? "9999-12-31").localeCompare(right.start_date ?? "9999-12-31"));
   const dominantTrip = activeTrips.toSorted((left, right) => (left.start_date ?? "").localeCompare(right.start_date ?? ""))[0] ?? upcomingTrips[0] ?? null;
 
@@ -99,30 +98,30 @@ export function buildGlobalOverview(input: {
     ...dashboard.payments.overduePayments,
     ...dashboard.payments.upcomingPayments,
   ]).toSorted((left, right) => {
-    const leftOverdue = Boolean(left.dueDate && left.dueDate < today);
-    const rightOverdue = Boolean(right.dueDate && right.dueDate < today);
+    const leftOverdue = Boolean(left.dueDate && left.dueDate < tripToday(left.tripId));
+    const rightOverdue = Boolean(right.dueDate && right.dueDate < tripToday(right.tripId));
     if (leftOverdue !== rightOverdue) return leftOverdue ? -1 : 1;
     return (left.dueDate ?? "9999-12-31").localeCompare(right.dueDate ?? "9999-12-31") || left.title.localeCompare(right.title, "cs") || left.id.localeCompare(right.id);
   });
   const agenda = [
-    ...buildCalendarAgenda({ accommodations: input.accommodations, payments: [], tasks: input.tasks, transports: input.transports, trips: input.trips } satisfies CalendarAgendaSources, today),
+    ...buildCalendarAgenda({ accommodations: input.accommodations, payments: [], tasks: input.tasks, transports: input.transports, trips: input.trips } satisfies CalendarAgendaSources, (trip) => todayInTimeZone(trip.timezone ?? "Europe/Prague", now), now),
     ...payments.flatMap((item): CalendarAgendaItem[] => {
       const trip = tripById.get(item.tripId);
       if (!trip || !item.dueDate || item.remainingAmount === null || item.remainingAmount <= 0) return [];
-      return [{ amount: item.remainingAmount, currency: item.currency, date: item.dueDate, href: paymentHref(item), id: `payment:${item.id}`, isOverdue: item.dueDate < today, startTime: null, subtitle: trip.name, title: `Doplatit ${item.title}`, tripId: trip.id, tripName: trip.name, type: "payment" }];
+      return [{ amount: item.remainingAmount, currency: item.currency, date: item.dueDate, href: paymentHref(item), id: `payment:${item.id}`, isOverdue: item.dueDate < tripToday(item.tripId), startTime: null, subtitle: trip.name, title: `Doplatit ${item.title}`, tripId: trip.id, tripName: trip.name, type: "payment" }];
     }),
   ].toSorted((left, right) => left.date.localeCompare(right.date) || (left.startTime ?? "00:00").localeCompare(right.startTime ?? "00:00") || eventPriority[left.type] - eventPriority[right.type] || left.title.localeCompare(right.title, "cs"));
   const financeReality = summarizeBudgetAmounts(input.budgetDashboards.flatMap((dashboard) => dashboard.reality.totalsByCurrency));
   const openTasks = input.tasks.filter((task) => task.status !== "completed" && task.status !== "cancelled").toSorted((left, right) => {
-    const leftOverdue = Boolean(left.due_date && left.due_date < today);
-    const rightOverdue = Boolean(right.due_date && right.due_date < today);
+    const leftOverdue = Boolean(left.due_date && left.due_date < tripToday(left.trip_id));
+    const rightOverdue = Boolean(right.due_date && right.due_date < tripToday(right.trip_id));
     if (leftOverdue !== rightOverdue) return leftOverdue ? -1 : 1;
     if (left.priority !== right.priority) return left.priority === "high" ? -1 : right.priority === "high" ? 1 : 0;
     return (left.due_date ?? "9999-12-31").localeCompare(right.due_date ?? "9999-12-31");
   });
 
   const alerts: GlobalAttention[] = [];
-  for (const payment of payments.filter((item) => item.dueDate && item.dueDate < today)) {
+  for (const payment of payments.filter((item) => item.dueDate && item.dueDate < tripToday(item.tripId))) {
     const trip = tripById.get(payment.tripId);
     if (!trip) continue;
     alerts.push({ detail: `${formatBudgetMoney(payment.remainingAmount ?? 0, payment.currency)} bylo splatné ${payment.dueDate}.`, href: paymentHref(payment), id: `payment:${payment.id}`, severity: "high", tripId: trip.id, tripName: trip.name, title: payment.title, type: "payment" });
@@ -132,7 +131,7 @@ export function buildGlobalOverview(input: {
     if (coverage.gapNights) alerts.push({ detail: `Chybí ubytování na ${coverage.gapNights} ${coverage.gapNights === 1 ? "noc" : "noci"}.`, href: `/app/trips/${trip.id}/accommodation`, id: `gap:${trip.id}`, severity: "high", tripId: trip.id, tripName: trip.name, title: "Chybí ubytování", type: "accommodation" });
     if (coverage.overlapCount) alerts.push({ detail: `${coverage.overlapCount} překrývající se rezervace.`, href: `/app/trips/${trip.id}/accommodation`, id: `overlap:${trip.id}`, severity: "medium", tripId: trip.id, tripName: trip.name, title: "Překrývající se ubytování", type: "accommodation" });
   }
-  for (const task of openTasks.filter((task) => task.due_date && task.due_date < today)) {
+  for (const task of openTasks.filter((task) => task.due_date && task.due_date < tripToday(task.trip_id))) {
     const trip = tripById.get(task.trip_id);
     if (!trip) continue;
     alerts.push({ detail: `Termín ${formatDateOnly(task.due_date)} už uplynul.`, href: `/app/trips/${trip.id}/checklist`, id: `task:${task.id}`, severity: "high", tripId: trip.id, tripName: trip.name, title: task.title, type: "task" });
@@ -143,7 +142,7 @@ export function buildGlobalOverview(input: {
     alerts.push({ detail: "Důležitý dokument není označený pro offline použití.", href: `/app/trips/${trip.id}/documents/${document.id}`, id: `document:${document.id}`, severity: "medium", tripId: trip.id, tripName: trip.name, title: document.name, type: "document" });
   }
 
-  const futureAgenda = agenda.filter((event) => event.date >= today);
+  const futureAgenda = agenda.filter((event) => event.date >= tripToday(event.tripId));
   const nextEvent = selectNextEvent(futureAgenda);
   const dominantPreparation = dominantTrip ? (() => {
     const tripAccommodations = input.accommodations.filter((item) => item.trip_id === dominantTrip.id);
@@ -169,7 +168,7 @@ export function buildGlobalOverview(input: {
     countryCode: primaryDestination?.country_code ?? null,
     destination: primaryDestination ? [primaryDestination.city, primaryDestination.country_name].filter(Boolean).join(", ") : dominantTrip.cities?.[0] ?? dominantTrip.countries?.[0] ?? null,
     isActive: getEffectiveTripStatus(dominantTrip, now) === "active",
-    dayNumber: dominantTrip.start_date ? Math.max(1, Math.floor((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${dominantTrip.start_date}T00:00:00Z`)) / DAY_MS) + 1) : null,
+    dayNumber: dominantTrip.start_date ? Math.max(1, Math.floor((Date.parse(`${tripToday(dominantTrip.id)}T00:00:00Z`) - Date.parse(`${dominantTrip.start_date}T00:00:00Z`)) / DAY_MS) + 1) : null,
     totalDays: daysInclusive(dominantTrip.start_date, dominantTrip.end_date),
     travelerCount: travelers.filter((item) => item.trip_id === dominantTrip.id).length,
   } : null;
@@ -187,7 +186,7 @@ export function buildGlobalOverview(input: {
     financeReality,
     nextEvent,
     openTasks: visibleTasks,
-    payments: payments.slice(0, 3).map((item) => ({ ...item, href: paymentHref(item), isOverdue: Boolean(item.dueDate && item.dueDate < today), tripName: tripById.get(item.tripId)?.name ?? "Cesta" })),
+    payments: payments.slice(0, 3).map((item) => ({ ...item, href: paymentHref(item), isOverdue: Boolean(item.dueDate && item.dueDate < tripToday(item.tripId)), tripName: tripById.get(item.tripId)?.name ?? "Cesta" })),
     stats: { active: activeTrips.length, completed: input.trips.filter((trip) => getEffectiveTripStatus(trip, now) === "completed").length, upcoming: upcomingTrips.length },
     upcoming: futureAgenda.filter((event) => event.id !== nextEvent?.id).slice(0, 5),
   };

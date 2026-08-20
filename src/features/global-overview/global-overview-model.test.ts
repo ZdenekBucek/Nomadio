@@ -44,6 +44,17 @@ describe("global overview model", () => {
     expect(view.alerts[0]).toMatchObject({ id: "payment:late", tripId: "a", href: "/app/trips/a/accommodation?edit=late" });
   });
 
+  it("uses each trip timezone at a local-date boundary", () => {
+    const seoul = { ...trip("seoul", "2026-08-20", "2026-08-22"), timezone: "Asia/Seoul" };
+    const prague = { ...trip("prague", "2026-08-20", "2026-08-22"), timezone: "America/New_York" };
+    const view = buildGlobalOverview(sources({
+      budgetDashboards: [dashboard("seoul", [], [payment("seoul-payment", "seoul", "2026-08-19")]), dashboard("prague", [], [payment("prague-payment", "prague", "2026-08-19")])],
+      trips: [seoul, prague],
+    }), new Date("2026-08-20T00:30:00Z"));
+    expect(view.payments.find((item) => item.id === "seoul-payment")?.isOverdue).toBe(true);
+    expect(view.payments.find((item) => item.id === "prague-payment")?.isOverdue).toBe(false);
+  });
+
   it("aggregates reality across trips per currency without creating a false FX total", () => {
     const view = buildGlobalOverview(sources({
       budgetDashboards: [

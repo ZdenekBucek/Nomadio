@@ -3,6 +3,7 @@ import { getTripBudgetDashboard } from "@/features/budget/budget-dashboard-data"
 import { BudgetPageView, normalizeBudgetTab } from "@/features/budget/budget-page-view";
 import { getTripDetail } from "@/features/trips/trip-detail";
 import { memberRoleLabel } from "@/features/trips/trip-presentation";
+import { todayInTimeZone } from "@/lib/date-time";
 
 type Props = {
   params: Promise<{ tripId: string }>;
@@ -42,7 +43,7 @@ export default async function BudgetPage({ params, searchParams }: Props) {
     dashboard={dashboard}
     message={message}
     roleLabel={memberRoleLabel(role)}
-    today={new Date().toISOString().slice(0, 10)}
+    today={todayInTimeZone(detail.trip.timezone)}
     timezone={detail.trip.timezone}
     tripCurrency={detail.trip.currency}
     tripName={detail.trip.name}

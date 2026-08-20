@@ -1,6 +1,6 @@
 import type { AccommodationRow, TaskRow, TripRow } from "@/lib/supabase/database.types";
 import type { BudgetPaymentItem } from "@/features/budget/budget-domain";
-import { formatDateOnly, formatDateOnlyLong } from "@/lib/date-time";
+import { formatDateOnly, formatDateOnlyLong, todayInTimeZone } from "@/lib/date-time";
 
 function utcDate(date: string) {
   return new Date(`${date}T00:00:00.000Z`);
@@ -30,7 +30,7 @@ export type CalendarAgendaItem = {
   type: CalendarEventType;
 };
 
-export type CalendarTrip = Pick<TripRow, "end_date" | "id" | "name" | "start_date">;
+export type CalendarTrip = Pick<TripRow, "end_date" | "id" | "name" | "start_date"> & { timezone?: string };
 
 export const calendarEventTypeMeta: Record<CalendarEventType, { label: string; filter: CalendarEventFilter }> = {
   accommodation_check_in: { label: "Check-in", filter: "accommodation" },
@@ -247,12 +247,13 @@ export function buildMonthCalendar(month: Date, trips: CalendarTrip[], maxVisibl
   return { weeks };
 }
 
-export function buildCalendarAgenda(sources: CalendarAgendaSources, today = dateKey(new Date())) {
+export function buildCalendarAgenda(sources: CalendarAgendaSources, today?: string | ((trip: CalendarTrip) => string), now = new Date()) {
   const trips = new Map(sources.trips.map((trip) => [trip.id, trip]));
+  const todayResolver = today ?? ((trip: CalendarTrip) => todayInTimeZone(trip.timezone ?? "Europe/Prague", now));
   const events: CalendarAgendaItem[] = [];
   const add = (item: Omit<CalendarAgendaItem, "isOverdue">) => events.push({
     ...item,
-    isOverdue: (item.type === "payment" || item.type === "task") && item.date < today,
+    isOverdue: (item.type === "payment" || item.type === "task") && item.date < (typeof todayResolver === "function" ? todayResolver(trips.get(item.tripId) ?? { id: item.tripId, name: item.tripName, start_date: null, end_date: null }) : todayResolver),
   });
 
   for (const trip of sources.trips) {
@@ -281,8 +282,8 @@ export function buildCalendarAgenda(sources: CalendarAgendaSources, today = date
   return events.sort((left, right) => left.date.localeCompare(right.date) || (left.startTime ?? "00:00").localeCompare(right.startTime ?? "00:00") || Number(right.isOverdue) - Number(left.isOverdue) || left.title.localeCompare(right.title, "cs"));
 }
 
-export function filterAgenda(items: CalendarAgendaItem[], tripId: string, type: CalendarEventFilter, includePast: boolean, today = dateKey(new Date())) {
-  return items.filter((item) => (tripId === "all" || item.tripId === tripId) && (type === "all" || calendarEventTypeMeta[item.type].filter === type) && (includePast || item.date >= today));
+export function filterAgenda(items: CalendarAgendaItem[], tripId: string, type: CalendarEventFilter, includePast: boolean, today: string | ((item: CalendarAgendaItem) => string) = dateKey(new Date())) {
+  return items.filter((item) => (tripId === "all" || item.tripId === tripId) && (type === "all" || calendarEventTypeMeta[item.type].filter === type) && (includePast || item.date >= (typeof today === "function" ? today(item) : today)));
 }
 
 export function groupAgendaByDate(items: CalendarAgendaItem[]) {

@@ -5,6 +5,7 @@ import type {
   TripStatus,
   TripTravelerRow,
 } from "@/lib/supabase/database.types";
+import { todayInTimeZone } from "@/lib/date-time";
 
 export type TripFilter = "upcoming" | "active" | "completed" | "all" | "archive";
 
@@ -24,14 +25,10 @@ export const tripStatusLabels: Record<TripStatus, string> = {
   ready: "Připraveno",
 };
 
-function dateOnly(date: Date) {
-  return date.toISOString().slice(0, 10);
-}
-
 export function getEffectiveTripStatus(trip: TripRow, now = new Date()): TripStatus {
   if (trip.status === "archived" || trip.status === "completed") return trip.status;
 
-  const today = dateOnly(now);
+  const today = todayInTimeZone(trip.timezone, now);
   if (trip.start_date && trip.end_date && trip.start_date <= today && trip.end_date >= today) {
     return "active";
   }
@@ -55,7 +52,7 @@ export function tripTimingLabel(trip: TripRow, now = new Date()) {
   if (status === "archived") return "V archivu";
   if (!trip.start_date) return "Termín je otevřený";
 
-  const today = new Date(`${dateOnly(now)}T00:00:00Z`);
+  const today = new Date(`${todayInTimeZone(trip.timezone, now)}T00:00:00Z`);
   const start = new Date(`${trip.start_date}T00:00:00Z`);
   const days = Math.ceil((start.valueOf() - today.valueOf()) / 86_400_000);
   if (days <= 0) return "Začíná dnes";
