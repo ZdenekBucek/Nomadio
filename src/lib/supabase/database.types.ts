@@ -6,6 +6,7 @@ export type ProfileRow = {
   email: string | null;
   id: string;
   locale: string;
+  quick_expense_fab_enabled: boolean;
   timezone: string;
   updated_at: string;
 };
@@ -613,6 +614,7 @@ export type Database = {
           email?: string | null;
           id: string;
           locale?: string;
+          quick_expense_fab_enabled?: boolean;
           timezone?: string;
           updated_at?: string;
         };

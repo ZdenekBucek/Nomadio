@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(9);
+select plan(11);
 
 select ok(
   (select relrowsecurity from pg_class where oid = 'public.profiles'::regclass),
@@ -36,6 +36,12 @@ select is(
   ),
   'CZK',
   'profile defaults are applied'
+);
+
+select is(
+  (select quick_expense_fab_enabled from public.profiles where id = '11111111-1111-4111-8111-111111111111'),
+  false,
+  'quick expense FAB defaults to disabled'
 );
 
 delete from public.profiles;
@@ -89,10 +95,16 @@ select results_eq(
 select lives_ok(
   $$
     update public.profiles
-    set display_name = 'Updated User One'
+    set display_name = 'Updated User One', quick_expense_fab_enabled = true
     where id = '11111111-1111-4111-8111-111111111111'
   $$,
   'an authenticated user can update their own profile'
+);
+
+select is(
+  (select quick_expense_fab_enabled from public.profiles where id = '11111111-1111-4111-8111-111111111111'),
+  true,
+  'a user can update their own quick expense FAB preference'
 );
 
 reset role;

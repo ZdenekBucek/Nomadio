@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { getAuthenticatedProfile } from "@/features/auth/session";
 import { AppShell } from "@/features/navigation/app-shell";
+import { getActiveEditableTrips } from "@/features/quick-expense/active-trips";
 
 export default async function ProtectedAppLayout({
   children,
@@ -13,5 +14,6 @@ export default async function ProtectedAppLayout({
     redirect("/login?next=/app");
   }
 
-  return <AppShell profile={auth.profile}>{children}</AppShell>;
+  const activeTrips = auth.profile.quickExpenseFabEnabled ? await getActiveEditableTrips() : [];
+  return <AppShell activeTrips={activeTrips} profile={auth.profile}>{children}</AppShell>;
 }

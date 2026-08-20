@@ -13,6 +13,7 @@ describe("profile presentation", () => {
         email: "ada@example.com",
         id: "user-id",
         locale: "en-GB",
+        quick_expense_fab_enabled: true,
         timezone: "Europe/London",
         updated_at: "2026-08-04T00:00:00Z",
       },

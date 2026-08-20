@@ -1,6 +1,18 @@
 const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 const TIME_ONLY_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
+/** Returns today's date-only value in an explicit IANA timezone. */
+export function todayInTimeZone(timeZone: string, now = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    day: "2-digit",
+    month: "2-digit",
+    timeZone,
+    year: "numeric",
+  }).formatToParts(now);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}
+
 function dateOnlyParts(value: string) {
   const match = DATE_ONLY_PATTERN.exec(value);
   if (!match) return null;

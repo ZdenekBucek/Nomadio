@@ -39,18 +39,29 @@ function databaseValues(input: ExpenseInput) {
 
 export async function createExpense(formData: FormData) {
   const tripId = formData.get("tripId")?.toString().trim() ?? "";
+  const globalFlow = formData.get("flow") === "global";
   if (!uuidPattern.test(tripId)) redirect("/app/trips");
   const { currency, supabase, userId } = await authenticatedContext(tripId);
   const parsed = parseExpenseInput(formData, { currency });
-  if (!parsed.success) redirect(budgetPath(tripId, "expense-invalid"));
+  if (!parsed.success) {
+    if (globalFlow) return { ok: false as const, error: "invalid" as const };
+    redirect(budgetPath(tripId, "expense-invalid"));
+  }
 
   const { error } = await supabase.from("expenses").insert({
     ...databaseValues(parsed.data),
     created_by: userId,
     trip_id: tripId,
   });
-  if (error) redirect(budgetPath(tripId, "expense-error"));
+  if (error) {
+    if (globalFlow) return { ok: false as const, error: "save" as const };
+    redirect(budgetPath(tripId, "expense-error"));
+  }
   revalidatePath(`/app/trips/${tripId}/budget`);
+  if (globalFlow) {
+    revalidatePath("/app", "layout");
+    return { ok: true as const };
+  }
   redirect(budgetPath(tripId, "expense-created"));
 }
 

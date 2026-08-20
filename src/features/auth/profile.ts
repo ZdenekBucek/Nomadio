@@ -13,6 +13,7 @@ export type ProfileViewModel = {
   email: string;
   initials: string;
   locale: string;
+  quickExpenseFabEnabled: boolean;
   timezone: string;
 };
 
@@ -65,6 +66,7 @@ export function getProfileViewModel(
     email,
     initials: getInitials(displayName),
     locale: profile?.locale ?? "cs-CZ",
+    quickExpenseFabEnabled: profile?.quick_expense_fab_enabled ?? false,
     timezone: profile?.timezone ?? "Europe/Prague",
   };
 }

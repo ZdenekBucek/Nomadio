@@ -22,6 +22,7 @@ const profile = {
   email: "zdenek@example.com",
   initials: "ZB",
   locale: "cs-CZ",
+  quickExpenseFabEnabled: false,
   timezone: "Europe/Prague",
 };
 

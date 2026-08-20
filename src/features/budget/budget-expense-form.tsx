@@ -19,17 +19,27 @@ import {
 const controlClass = "mt-2 h-11 w-full min-w-0 rounded-xl border border-input bg-background/55 px-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/60 focus:border-primary/55 focus:ring-3 focus:ring-primary/15";
 const labelClass = "text-xs font-medium text-muted-foreground";
 
-export function BudgetExpenseForm({ item, tripCurrency, tripId }: {
-  item: BudgetManualExpenseItem | null;
+export function BudgetExpenseForm({ item, tripCurrency, tripId, global = false, onGlobalSuccess }: {
+  item?: BudgetManualExpenseItem | null;
   tripCurrency: string;
   tripId: string;
+  global?: boolean;
+  onGlobalSuccess?: () => void;
 }) {
   const [category, setCategory] = useState<BudgetCategory>(item?.category ?? "other");
   const [subcategory, setSubcategory] = useState<BudgetSubcategory | "">(item?.subcategory ?? "");
   const subcategories = budgetSubcategoriesFor(category);
 
-  return <form action={item ? updateExpense : createExpense} className="mt-5 min-w-0 space-y-4">
+  const action: (formData: FormData) => void | Promise<void> = global && !item
+    ? async (formData: FormData) => {
+      const result = await createExpense(formData);
+      if (result?.ok) onGlobalSuccess?.();
+    }
+    : item ? updateExpense : async (formData: FormData) => { await createExpense(formData); };
+
+  return <form action={action} className="mt-5 min-w-0 space-y-4">
     <input type="hidden" name="tripId" value={tripId} />
+    {global && !item ? <input type="hidden" name="flow" value="global" /> : null}
     {item?.sourceId ? <input type="hidden" name="itemId" value={item.sourceId} /> : null}
     {item?.paidByTravelerId ? <input type="hidden" name="paidByTravelerId" value={item.paidByTravelerId} /> : null}
     <div className="grid min-w-0 gap-4 sm:grid-cols-2">
