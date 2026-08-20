@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 import { getSafeNextPath } from "@/features/auth/redirects";
-import { getAppUrl } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
@@ -14,9 +13,11 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      return NextResponse.redirect(new URL(nextPath, getAppUrl()));
+      return NextResponse.redirect(new URL(nextPath, requestUrl.origin));
     }
   }
 
-  return NextResponse.redirect(new URL("/login?error=callback", getAppUrl()));
+  return NextResponse.redirect(
+    new URL("/login?error=callback", requestUrl.origin),
+  );
 }
